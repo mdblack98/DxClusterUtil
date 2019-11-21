@@ -1,0 +1,21 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="W3LPL.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Callsign" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ClusterServer" Type="System.String" Scope="User">
+      <Value Profile="(Default)">dxc.w3lpl.net:7373</Value>
+    </Setting>
+    <Setting Name="Location" Type="System.Drawing.Point" Scope="User">
+      <Value Profile="(Default)">0, 19</Value>
+    </Setting>
+    <Setting Name="PortLocal" Type="System.String" Scope="User">
+      <Value Profile="(Default)">7373</Value>
+    </Setting>
+    <Setting Name="Size" Type="System.Drawing.Size" Scope="User">
+      <Value Profile="(Default)">705, 263</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
