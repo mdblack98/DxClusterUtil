@@ -80,8 +80,11 @@ namespace W3LPL
 
             // Now start the server for Log4OM to get the spots from the queue
             if (Int32.TryParse(textBoxPortLocal.Text, out int qport)) {
-                server = new QServer(qport,clientQueue, w3lplQueue);
-                _ = Task.Run(() => server.Start());
+                if (server == null)
+                {
+                    server = new QServer(qport, clientQueue, w3lplQueue);
+                    _ = Task.Run(() => server.Start());
+                }
             }
             return true;
         }

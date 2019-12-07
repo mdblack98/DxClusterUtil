@@ -15,7 +15,7 @@
         {
             if (disposing && (components != null))
             {
-                w3lpl.Dispose();
+                if (w3lpl != null) w3lpl.Dispose();
                 components.Dispose();
             }
             base.Dispose(disposing);
@@ -135,7 +135,7 @@
             this.Location = global::W3LPL.Properties.Settings.Default.Location;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
-            this.Text = "W3LPL V0.8";
+            this.Text = "W3LPL V0.10";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);

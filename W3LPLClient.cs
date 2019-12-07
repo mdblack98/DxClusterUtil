@@ -80,6 +80,7 @@ namespace W3LPL
             {
                 cache.Clear();
                 client = new TcpClient();
+                client.ReceiveTimeout = 3000;
                 client.Connect(myHost, myPort);
                 client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, 1);
                 nStream = client.GetStream();
@@ -115,8 +116,11 @@ namespace W3LPL
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "W3LPL");
-                throw;
+                client.Close();
+                client.Dispose();
+                client = null;
+                //MessageBox.Show(ex.Message, "W3LPL");
+                //throw;
                 //return false;
             }
             return false;
@@ -130,6 +134,7 @@ namespace W3LPL
                 var outmsg = Encoding.ASCII.GetBytes(result);
                 nStream.Write(outmsg, 0, outmsg.Length);
             }
+            if (client == null) return null;
             if (client.Connected && nStream != null && nStream.DataAvailable)
             {
                 while (w3lplQueue.TryTake(out string command))
@@ -146,7 +151,7 @@ namespace W3LPL
                 if (tokens == null || tokens.Length == 0) return null;
                 foreach (string s in tokens)
                 {
-                    if (s.Contains("DX de") && s.Length > 73)
+                    if (s.ToUpperInvariant().StartsWith("DX DE",StringComparison.InvariantCultureIgnoreCase) && s.Length == 75)
                     {
                         var freq = s.Substring(17, 9);
                         var ffreq = float.Parse(freq,CultureInfo.InvariantCulture);
@@ -203,8 +208,8 @@ namespace W3LPL
                     else
                     {
                         // Once in a while the time isn't on the DX message so we just skip it
-                        //if (s.Contains("DX de") && s.Length < 74)
-                        //    MessageBox.Show("Length wrong\n" + s);
+                        if (s.Contains("DX de") && s.Length < 74)
+                            MessageBox.Show("Length wrong??\n" + s);
                         if (s.Length > 1) sreturn += s + "\r\n";
                     }
                 }
