@@ -250,8 +250,8 @@ namespace W3LPL
             {
                 if (disposing)
                 {
-                    client.Dispose();
-                    nStream.Dispose();
+                    if (client != null) client.Dispose();
+                    if (nStream != null) nStream.Dispose();
                     // TODO: dispose managed state (managed objects).
                 }
 
