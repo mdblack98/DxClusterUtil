@@ -17,5 +17,11 @@
     <Setting Name="Size" Type="System.Drawing.Size" Scope="User">
       <Value Profile="(Default)">705, 263</Value>
     </Setting>
+    <Setting Name="ReviewedSpotters" Type="System.String" Scope="User">
+      <Value Profile="(Default)">4U1UN,2;</Value>
+    </Setting>
+    <Setting Name="NewSpotters" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

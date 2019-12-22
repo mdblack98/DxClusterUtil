@@ -27,12 +27,16 @@ namespace W3LPL
         public UInt64 totalLinesKept;
         private int lastMinute = 1; // for cache usage
         private readonly byte[] databuf;
+        public bool filterOn = true;
+        public List<string> callSuffixList = new List<string>();
+        public string reviewedSpotters = "";
         public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ)
         {
             myHost = host;
             myPort = port;
             w3lplQueue = w3lplQ;
             databuf = new byte[16384 * 4];
+            callSuffixList.Add("4U1UN");
         }
 
         ~W3LPLClient()
@@ -79,8 +83,10 @@ namespace W3LPL
             try
             {
                 cache.Clear();
-                client = new TcpClient();
-                client.ReceiveTimeout = 3000;
+                client = new TcpClient
+                {
+                    ReceiveTimeout = 2000
+                };
                 client.Connect(myHost, myPort);
                 client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, 1);
                 nStream = client.GetStream();
@@ -89,32 +95,45 @@ namespace W3LPL
                 int loopcount = 5;
                 while (!loggedIn)
                 {
+                    Application.DoEvents();
                     int bytesRead = 0;
-                    if (nStream.DataAvailable && --loopcount > 0)
+                    if (--loopcount > 0 && nStream.DataAvailable )
                     {
                         bytesRead = nStream.Read(buffer, 0, buffer.Length);
-                        if (bytesRead == 0) return false;
-                        var response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                        debug.AppendText(response);
-                        clientQueue.Add(response);
-                        if (response.Contains("call:") || response.Contains("callsign:"))
+                        while (bytesRead > 0)
                         {
-                            var msg = Encoding.ASCII.GetBytes(callsign + "\r\n");
-                            nStream.Write(msg, 0, msg.Length);
+                            var response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                            debug.AppendText(response);
+                            clientQueue.Add(response);
+                            if (response.Contains("call:") || response.Contains("callsign:"))
+                            {
+                                var msg = Encoding.ASCII.GetBytes(callsign + "\r\n");
+                                nStream.Write(msg, 0, msg.Length);
+                            }
+                            if (response.Contains(callsign + " de W3LPL"))
+                            {
+                                loggedIn = true;
+                                //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
+                                //var msg = Encoding.ASCII.GetBytes("SET/FILTER K,VE/PASS\n");
+                                //nStream.Write(msg, 0, msg.Length);
+                                return true;
+                            }
+                            bytesRead = nStream.Read(buffer, 0, buffer.Length);
                         }
-                        if (response.Contains(callsign + " de W3LPL"))
-                        {
-                            loggedIn = true;
-                            //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
-                            //var msg = Encoding.ASCII.GetBytes("SET/FILTER K,VE/PASS\n");
-                            //nStream.Write(msg, 0, msg.Length);
-                            return true;
-                        }
+                    }
+                    if (loopcount < 0)
+                    {
+                        client.Client.Shutdown(SocketShutdown.Receive);
+                        client.Close();
+                        client = null;
+                        return false;
                     }
                     Thread.Sleep(1000);
                 }
             }
-            catch (Exception ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 client.Close();
                 client.Dispose();
@@ -125,6 +144,20 @@ namespace W3LPL
             }
             return false;
         }
+
+        public bool ReviewedSpottersIsChecked(string s)
+        {
+            string check = s + ",1";
+            bool gotem = reviewedSpotters.Contains(check);
+            return gotem;
+        }
+        public bool ReviewedSpottersIsNotChecked(string s)
+        {
+            string check = s + ",0";
+            bool gotem = reviewedSpotters.Contains(check);
+            return gotem;
+        }
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public string Get()
@@ -182,25 +215,54 @@ namespace W3LPL
                             lastMinute = minute;
                         }
                         ++totalLines;
-                        if (!cache.ContainsKey(key) && !s.Contains("4U1UN"))
+                        bool filteredOut = false;
+                        string[] tokens2 = s.Split(' ');
+                        string justCall = "";
+                        if (tokens2[2].Contains("-#"))
+                        {
+                            justCall = tokens2[2].Substring(0, tokens2[2].Length - 3);
+                        }
+                        else
+                        {
+                            justCall = tokens2[2].Substring(0, tokens2[2].Length - 1);
+                        }
+                        bool skimmer = s.Contains("WPM CQ") || s.Contains("BPS CQ");
+                        if (skimmer || ReviewedSpottersIsNotChecked(justCall))
+                        {
+                            filteredOut = true;
+                            if (!callSuffixList.Contains(tokens2[2]))
+                            {
+                                if (skimmer) callSuffixList.Insert(0, justCall+":SK");
+                                else callSuffixList.Insert(0, justCall+":OK");
+                            }
+                        }
+                        if (!cache.ContainsKey(key) && !filteredOut)
                         {
                             cache[key] = minute;
+                            ++totalLines;
                             ++totalLinesKept;
                             log4omQueue.Add(s + "\r\n");
                             sreturn += s + "\r\n";
                         }
                         else if (s.Contains(myCallsign))  // allow our own spots through too
                         {
+                            ++totalLines;
                             ++totalLinesKept;
                             log4omQueue.Add(s + "\r\n");
                             sreturn += s + "\r\n";
                         }
                         else
                         {
+                            ++totalLines;
                             if (s.Length > 2)
                             {
-                                log4omQueue.Add("**" + s.Substring(2) + "\r\n");
-                                sreturn += "**" + s.Substring(2) + "\r\n";
+                                string tag = "**";
+                                if (filteredOut)
+                                {
+                                    tag = "!!";
+                                    //log4omQueue.Add(tag + s.Substring(2) + "\r\n");
+                                }
+                                sreturn += tag + s.Substring(2) + "\r\n";
                             }
                         }
 
