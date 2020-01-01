@@ -18,7 +18,7 @@ namespace W3LPL
         private NetworkStream nStream = null;
         ConcurrentBag<string> log4omQueue = null;
         readonly ConcurrentBag<string> w3lplQueue = null;
-        readonly Dictionary<string, int> cache = new Dictionary<string, int>();
+        readonly Dictionary<string, int> cacheSpottedCalls = new Dictionary<string, int>();
         readonly string myHost;
         readonly int myPort;
         RichTextBox myDebug;
@@ -26,16 +26,16 @@ namespace W3LPL
         public UInt64 totalLines;
         public UInt64 totalLinesKept;
         private int lastMinute = 1; // for cache usage
-        private readonly byte[] databuf;
         public bool filterOn = true;
         public List<string> callSuffixList = new List<string>();
         public string reviewedSpotters = "";
-        public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ)
+        private QRZ qrz = null;
+        public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
         {
+            this.qrz = qrz;
             myHost = host;
             myPort = port;
             w3lplQueue = w3lplQ;
-            databuf = new byte[16384 * 4];
             callSuffixList.Add("4U1UN");
         }
 
@@ -82,7 +82,7 @@ namespace W3LPL
             log4omQueue = clientQueue;
             try
             {
-                cache.Clear();
+                cacheSpottedCalls.Clear();
                 client = new TcpClient
                 {
                     ReceiveTimeout = 2000
@@ -110,7 +110,7 @@ namespace W3LPL
                                 var msg = Encoding.ASCII.GetBytes(callsign + "\r\n");
                                 nStream.Write(msg, 0, msg.Length);
                             }
-                            if (response.Contains(callsign + " de W3LPL"))
+                            else if (response.Contains(callsign + " de W3LPL"))
                             {
                                 loggedIn = true;
                                 //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
@@ -119,6 +119,8 @@ namespace W3LPL
                                 return true;
                             }
                             bytesRead = nStream.Read(buffer, 0, buffer.Length);
+                            Application.DoEvents();
+                            Thread.Sleep(2000);
                         }
                     }
                     if (loopcount < 0)
@@ -151,6 +153,12 @@ namespace W3LPL
             bool gotem = reviewedSpotters.Contains(check);
             return gotem;
         }
+        public bool ReviewedSpottersContains(string s)
+        {
+            string check = s + ",";
+            bool gotem = reviewedSpotters.Contains(check);
+            return gotem;
+        }
         public bool ReviewedSpottersIsNotChecked(string s)
         {
             string check = s + ",0";
@@ -160,14 +168,17 @@ namespace W3LPL
 
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
-        public string Get()
+        public string Get(out bool cachedQRZ)
         {
+            cachedQRZ = false;
             if (w3lplQueue.TryTake(out string result))
             {
                 var outmsg = Encoding.ASCII.GetBytes(result);
                 nStream.Write(outmsg, 0, outmsg.Length);
             }
-            if (client == null) return null;
+            if (client == null) { 
+                return null; 
+            }
             if (client.Connected && nStream != null && nStream.DataAvailable)
             {
                 while (w3lplQueue.TryTake(out string command))
@@ -175,15 +186,26 @@ namespace W3LPL
                     var outmsg = Encoding.ASCII.GetBytes(command);
                     nStream.Write(outmsg, 0, outmsg.Length);
                 }
-                //var databuf = new Byte[16384*4];
-                Int32 bytesRead = nStream.Read(databuf, 0, databuf.Length);
-                var responseData = System.Text.Encoding.ASCII.GetString(databuf, 0, bytesRead);
+                string ss = "";
+                char c;
+                do
+                {
+                    c = (char)nStream.ReadByte();
+                    ss += c;
+                } while (c != '\n');
+                //Int32 bytesRead = nStream.Read(databuf, 0, databuf.Length);
+                //var responseData = System.Text.Encoding.ASCII.GetString(databuf, 0, bytesRead);
                 char [] sep = { '\n', '\r' };
-                var tokens = responseData.Split(sep);
+                var tokens = ss.Split(sep);
                 string sreturn = "";
-                if (tokens == null || tokens.Length == 0) return null;
+                if (tokens == null || tokens.Length == 0)
+                {
+                    return null;
+                }
                 foreach (string s in tokens)
                 {
+                    //if (!s.Contains("W3LPL")&&!s.Contains("VE6WZ")) continue;
+                    if (s.Length == 0) continue;
                     if (s.ToUpperInvariant().StartsWith("DX DE",StringComparison.InvariantCultureIgnoreCase) && s.Length == 75)
                     {
                         var freq = s.Substring(17, 9);
@@ -205,62 +227,91 @@ namespace W3LPL
                             // when the minute rolls over we remove the 10 minute old cache entries
                             //cache.Clear();
                             //lastTime = time;
-                            foreach (var m in cache.ToList())
+                            foreach (var m in cacheSpottedCalls.ToList())
                             {
                                 if (m.Value == removeMinute)
                                 {
-                                    cache.Remove(m.Key);
+                                    cacheSpottedCalls.Remove(m.Key);
                                 }
                             }
                             lastMinute = minute;
                         }
                         ++totalLines;
                         bool filteredOut = false;
-                        string[] tokens2 = s.Split(' ');
-                        string justCall = "";
-                        if (tokens2[2].Contains("-#"))
+                        char[] delim = { ' ' };
+                        string[] tokens2 = s.Split(delim,StringSplitOptions.RemoveEmptyEntries);
+                        string spotterCall = "";
+                        string spottedCall = "";
+                        // gotta get just the callsign to make Log4OM happy
+                        // there's a bug in 1.40.0.0 where a suffix XXXX-2-# does not get processed by Log4OM
+                        // So we remove all suffixes to send to Log4OM
+                        if (tokens2[2].Contains("-#")) 
                         {
-                            justCall = tokens2[2].Substring(0, tokens2[2].Length - 3);
+                            spotterCall = tokens2[2].Substring(0, tokens2[2].Length - 3);
                         }
                         else
                         {
-                            justCall = tokens2[2].Substring(0, tokens2[2].Length - 1);
+                            spotterCall = tokens2[2].Substring(0, tokens2[2].Length - 1);
                         }
-                        bool skimmer = s.Contains("WPM CQ") || s.Contains("BPS CQ");
-                        if (skimmer || ReviewedSpottersIsNotChecked(justCall))
+                        if (tokens2.Length < 4) return s;
+                        myCallsignExists = false;
+                        spottedCall = tokens2[4];
+                        bool skimmer = s.Contains("WPM CQ") || s.Contains("BPS CQ") || s.Contains("WPM BEACON") || s.Contains("WPM NCDXF");
+                        if (!ReviewedSpottersContains(spotterCall) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)))
                         {
                             filteredOut = true;
                             if (!callSuffixList.Contains(tokens2[2]))
                             {
-                                if (skimmer) callSuffixList.Insert(0, justCall+":SK");
-                                else callSuffixList.Insert(0, justCall+":OK");
+                                if (skimmer) callSuffixList.Insert(0, spotterCall+":SK");
+                                else callSuffixList.Insert(0, spotterCall+":OK");
                             }
                         }
-                        if (!cache.ContainsKey(key) && !filteredOut)
+                        if (!cacheSpottedCalls.ContainsKey(key) && !filteredOut)
                         {
-                            cache[key] = minute;
-                            ++totalLines;
+                            cacheSpottedCalls[key] = minute;
                             ++totalLinesKept;
                             log4omQueue.Add(s + "\r\n");
                             sreturn += s + "\r\n";
+                            cachedQRZ = true;
                         }
                         else if (s.Contains(myCallsign))  // allow our own spots through too
                         {
-                            ++totalLines;
                             ++totalLinesKept;
                             log4omQueue.Add(s + "\r\n");
                             sreturn += s + "\r\n";
+                            myCallsignExists = true;
                         }
-                        else
+                        else // need to check if QRZ is offline and do something about it
                         {
-                            ++totalLines;
                             if (s.Length > 2)
                             {
+                                // ** -- our built-in cache item -- 10 minutes
+                                // !! -- filtered out
+                                // ## -- bad QRZ lookup
+                                // %% -- QRZ cached good call
                                 string tag = "**";
-                                if (filteredOut)
+                                bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
+                                if (qrz.isOnline == false)
+                                {
+                                    tag = "ZZ"; // show QRZ is sleeping
+                                    log4omQueue.Add("QRZ not responding?\n");
+                                }
+                                else if (!validCall)
+                                {
+                                    if (qrz.xmlError.Contains("Error"))
+                                    {
+                                        log4omQueue.Add(qrz.xmlError + "\n");
+                                    }
+                                    tag = "##";
+                                }
+                                else if (filteredOut)
                                 {
                                     tag = "!!";
                                     //log4omQueue.Add(tag + s.Substring(2) + "\r\n");
+                                }
+                                else if (cacheSpottedCalls.ContainsKey(key))
+                                {
+                                    tag = "**";
                                 }
                                 sreturn += tag + s.Substring(2) + "\r\n";
                             }
@@ -300,11 +351,12 @@ namespace W3LPL
         {
             totalLines = 0;
             totalLinesKept = 0;
-            cache.Clear();
+            cacheSpottedCalls.Clear();
         }
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
+        public bool myCallsignExists;
 
         protected virtual void Dispose(bool disposing)
         {

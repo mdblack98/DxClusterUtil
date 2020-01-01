@@ -97,13 +97,25 @@ namespace W3LPL.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string NewSpotters {
+        [global::System.Configuration.DefaultSettingValueAttribute("C:/Temp/qrzcache.txt")]
+        public string Cache {
             get {
-                return ((string)(this["NewSpotters"]));
+                return ((string)(this["Cache"]));
             }
             set {
-                this["NewSpotters"] = value;
+                this["Cache"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Password {
+            get {
+                return ((string)(this["Password"]));
+            }
+            set {
+                this["Password"] = value;
             }
         }
     }

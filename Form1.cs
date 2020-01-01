@@ -2,9 +2,13 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
 namespace W3LPL
@@ -16,6 +20,9 @@ namespace W3LPL
         readonly ConcurrentBag<string> w3lplQueue = new ConcurrentBag<string>();
         private QServer server;
         readonly ToolTip tooltip = new ToolTip();
+        private QRZ qrz;
+        private int badCalls;
+
         //BindingList<FilterItem> filterList = new BindingList<FilterItem>();
         //public volatile static int keep;
 
@@ -33,6 +40,7 @@ namespace W3LPL
         public Form1()
         {
             InitializeComponent();
+            //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
             var tip = "Callsign";
             tooltip.SetToolTip(textBoxCallsign, tip);
@@ -44,16 +52,23 @@ namespace W3LPL
             tooltip.SetToolTip(labelQDepth, tip);
             tip = "Client status";
             tooltip.SetToolTip(labelStatusQServer, tip);
-            tip = "Click to enable, ctrl-click to disable, ctrl-shift-click to delete";
+            tip = "Click to enable, ctrl-click to disable, ctrl-shift-click to delete, ctrl-shift-alt-click to delete all";
             tooltip.SetToolTip(checkedListBoxReviewedSpotters, tip);
-            tip = "Click to see QRZ page, ctrl-click to transfer to Reviewed";
+            tip = "Click to see QRZ page, ctrl-click to transfer to Reviewed, ctrl-shift-click to clear all";
             tooltip.SetToolTip(checkedListBoxNewSpotters, tip);
             tip = "Backup user.config";
             tooltip.SetToolTip(buttonBackup, tip);
-            //tooltip.Dispose();
+            tip = "Click to copy, ctrl-click to copy&erase";
+            tooltip.SetToolTip(buttonCopy, tip);
+            tip = "Enabled logging of cached spots";
+            tooltip.SetToolTip(checkBoxCached, tip);
+            tip = "Enabled logging of filtered spots";
+            tooltip.SetToolTip(checkBoxFiltered, tip);
+            tip = "QRZ password";
+            tooltip.SetToolTip(textBoxPassword, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
             string[] tokens = reviewedSpotters.Split(';');
-            foreach(string arg in tokens)
+            foreach (string arg in tokens)
             {
                 if (arg.Length == 0) continue;
                 string[] tokens2 = arg.Split(',');
@@ -78,33 +93,33 @@ namespace W3LPL
                 checkedListBoxReviewedSpotters.Sorted = true;
                 checkedListBoxReviewedSpotters.Sorted = false;
             }
-            var newSpotters = Properties.Settings.Default.NewSpotters;
-            tokens = newSpotters.Split(';');
-            foreach (string arg in tokens)
-            {
-                if (arg.Length == 0) continue;
-                string[] tokens2 = arg.Split(',');
-                if (tokens2.Length == 2 && tokens2[0].Length > 0)
-                {
-                    CheckState myCheck = CheckState.Indeterminate;
-                    if (tokens2[1].Equals("1", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        myCheck = CheckState.Checked;
-                    }
-                    else if (tokens2[1].Equals("0", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        myCheck = CheckState.Unchecked;
-                    }
-                    checkedListBoxNewSpotters.Items.Add(tokens2[0], myCheck);
-                }
-                else
-                {
-                    MessageBox.Show("Unknown reviewedSpotters entry '" + arg + "'");
-                }
-                checkedListBoxReviewedSpotters.Sorted = false;
-                checkedListBoxReviewedSpotters.Sorted = true;
-                checkedListBoxReviewedSpotters.Sorted = false;
-            }
+            //var newSpotters = Properties.Settings.Default.NewSpotters;
+            //tokens = newSpotters.Split(';');
+            //foreach (string arg in tokens)
+            //{
+            //    if (arg.Length == 0) continue;
+            //    string[] tokens2 = arg.Split(',');
+            //    if (tokens2.Length == 2 && tokens2[0].Length > 0)
+            //    {
+            //       CheckState myCheck = CheckState.Indeterminate;
+            //        if (tokens2[1].Equals("1", StringComparison.InvariantCultureIgnoreCase))
+            //        {
+            //            myCheck = CheckState.Checked;
+            //        }
+            //        else if (tokens2[1].Equals("0", StringComparison.InvariantCultureIgnoreCase))
+            //        {
+            //            myCheck = CheckState.Unchecked;
+            //        }
+            //        checkedListBoxNewSpotters.Items.Add(tokens2[0], myCheck);
+            //    }
+            //    else
+            //    {
+            //        MessageBox.Show("Unknown reviewedSpotters entry '" + arg + "'");
+            //    }
+            //    checkedListBoxReviewedSpotters.Sorted = false;
+            //    checkedListBoxReviewedSpotters.Sorted = true;
+            //    checkedListBoxReviewedSpotters.Sorted = false;
+            //}
 
         }
 
@@ -119,6 +134,11 @@ namespace W3LPL
                 return false;
             }
             char[] sep = { ':' };
+            if (!textBoxClusterServer.Text.Contains("dxc.w3lpl.net:7373"))
+            {
+                MessageBox.Show("Not dxc.w3lpl.net:7373 in server box?");
+                return false;
+            }
             var tokens = textBoxClusterServer.Text.Split(sep);
             if (tokens.Length != 2)
             {
@@ -128,18 +148,24 @@ namespace W3LPL
             }
             string host = tokens[0];
             int port = Int32.Parse(tokens[1], CultureInfo.InvariantCulture);
-            w3lpl = new W3LPLClient(host,port, w3lplQueue);
+            qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text, textBoxCacheLocation.Text);
+            if (qrz == null || qrz.isOnline == false)
+            {
+                if (qrz != null) richTextBox1.AppendText("QRZ: " + qrz.xmlError + "\n");
+                return false;
+            }
+            w3lpl = new W3LPLClient(host, port, w3lplQueue, qrz);
             try
             {
                 richTextBox1.AppendText("Trying to connect\n");
                 Application.DoEvents();
                 if (w3lpl.Connect(textBoxCallsign.Text, richTextBox1, clientQueue))
                 {
-                    richTextBox1.AppendText("Connected\n");
+                    //richTextBox1.AppendText("Connected\n");
                     timer1.Start();
                     buttonStart.Text = "Disconnect";
-                    richTextBox1.SelectionStart = richTextBox1.Text.Length;
-                    richTextBox1.ScrollToCaret();
+                    //richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                    //richTextBox1.ScrollToCaret();
                 }
                 else
                 {
@@ -158,7 +184,8 @@ namespace W3LPL
             }
 
             // Now start the server for Log4OM to get the spots from the queue
-            if (Int32.TryParse(textBoxPortLocal.Text, out int qport)) {
+            if (Int32.TryParse(textBoxPortLocal.Text, out int qport))
+            {
                 if (server == null)
                 {
                     server = new QServer(qport, clientQueue, w3lplQueue);
@@ -182,7 +209,12 @@ namespace W3LPL
             else
             {
                 buttonStart.Text = "Disconnect";
-                Connect();
+                bool result = Connect();
+                if (result == false)
+                {
+                    buttonStart.Text = "Connect";
+                    richTextBox1.AppendText("Disconnected due to error\n");
+                }
             }
         }
 
@@ -193,37 +225,96 @@ namespace W3LPL
             timer1.Stop();
             if (w3lpl == null) return;
             string msg;
-            while((msg = w3lpl.Get()) != null)
+            while ((msg = w3lpl.Get(out bool cachedQRZ)) != null)
             {
-                richTextBox1.AppendText(msg);
-                //labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ")";
-                richTextBox1.SelectionStart = richTextBox1.Text.Length;
-                richTextBox1.ScrollToCaret();
-                while (richTextBox1.Lines.Length > 1000)
+                char[] delims = { '\n' };
+                string[] lines = msg.Split(delims);
+                foreach (string s in lines)
                 {
-                    richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(1));
-                    richTextBox1.SelectedText = "";
+                    if (s.Length == 0) continue;
+                    string ss = s;
+                    Color myColor = Color.Black;
+                    while (richTextBox1.Lines.Length > 1000)
+                    {
+                        richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(100));
+                        //richTextBox1.Cut();
+                        richTextBox1.SelectedText = "";
+                    }
+                    System.Drawing.Point p = richTextBox1.PointToClient(Control.MousePosition);
+                    System.Drawing.Rectangle client = richTextBox1.ClientRectangle;
+                    client.Width += 30;
+                    if (!client.Contains(p))
+                    {
+                        if (s.Length < 3) continue;
+                        // %% means qrz is cached valid call
+                        // !! means spotter is filtered out
+                        // ** means W3LPL is cached
+                        string firstFive = ss.Substring(0, 5);
+                        bool badCall = firstFive.Equals("## de",StringComparison.InvariantCultureIgnoreCase);
+                        bool filtered = firstFive.Equals("!! de",StringComparison.InvariantCultureIgnoreCase);
+                        bool w3lplCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
+                        bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
+                        if (filtered && !checkBoxFiltered.Checked) continue;
+                        else if (w3lplCached && !checkBoxCached.Checked) continue;
+                        else if (!filtered && !w3lplCached && !dxline && !badCall)
+                        {
+                            RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
+                            richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                            richTextBox1.ScrollToCaret();
+                            Application.DoEvents();
+                            continue;
+                        }
+                        // We should have display all non-spot lines in black above 
+                        // So we can set our qrz cache color now for all spots
+                        if (ss.Substring(0,2).Equals("##",StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            myColor = Color.Red;
+                            ++badCalls;
+                        }
+                        else if (cachedQRZ)
+                        {
+                            myColor = Color.Green;
+                        }
+                        else if (s.Contains(textBoxCallsign.Text))
+                        {
+                            myColor = Color.DarkBlue;
+                        }
+                        else
+                        {
+                            myColor = Color.Orange;
+                        }
+                        labelCache.Text = "" + qrz.cacheQRZ.Count + "/" + badCalls;
+
+                        char[] delim = { ' ' };
+                        string[] tokens = s.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+                        string justcall = tokens[4];
+                        ss = ss.Replace("\r", "");
+                        ss = ss.Replace("\n", "");
+                        RichTextBoxExtensions.AppendText(richTextBox1, ss + "\n", myColor);
+                        richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                        richTextBox1.ScrollToCaret();
+                        Application.DoEvents();
+                    }
                 }
             }
-            //float pct = 100;
-            //if (w3lpl.totalLines != 0) pct = (int)clientQueue.Count * 100.0f / w3lpl.totalLines;
-            string myTime = DateTime.Now.ToLongTimeString();
-            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() +") " + myTime;
-            //labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") "  +;
+            TimeSpan tzone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
+            string myTime = DateTime.UtcNow.ToString("HH:mm:ss");
 
-            
+            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + tzone.Hours.ToString("+00;-00;+00");
+
+
             // See if our filter list needs updating
-            foreach(var s in w3lpl.callSuffixList)
+            foreach (var s in w3lpl.callSuffixList)
             {
 
                 string[] tokens = s.Split(':');
                 string justcall = tokens[0];
                 if (!checkedListBoxReviewedSpotters.Items.Contains(justcall) && !checkedListBoxNewSpotters.Items.Contains(justcall))
                 {
-                    if (tokens[1].Equals("SK",StringComparison.InvariantCultureIgnoreCase))
-                    {
-                    }
-                    checkedListBoxNewSpotters.Items.Add(justcall,true);
+                    //if (tokens[1].Equals("SK",StringComparison.InvariantCultureIgnoreCase))
+                    //{
+                    //}
+                    checkedListBoxNewSpotters.Items.Add(justcall, true);
                 }
             }
             timer1.Interval = 1000;
@@ -245,7 +336,7 @@ namespace W3LPL
                         WindowState = FormWindowState.Minimized;
                         WindowState = FormWindowState.Normal;
                     }
-                    else if (labelStatusQServer.Text.Equals("W3LPL",StringComparison.InvariantCultureIgnoreCase))
+                    else if (labelStatusQServer.Text.Equals("W3LPL", StringComparison.InvariantCultureIgnoreCase))
                     {
                         labelStatusQServer.BackColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
                         labelStatusQServer.Text = "Ready for client";
@@ -270,15 +361,23 @@ namespace W3LPL
         }
         private void Form1_Activated(object sender, EventArgs e)
         {
-            if (textBoxCallsign.Text.Length > 0 && w3lpl == null)
+            if (textBoxCallsign.Text.Length > 0 && w3lpl == null && textBoxPassword.Text.Length > 0)
             {
-                Connect();
+                bool result = Connect();
+                if (result == false)
+                {
+                    buttonStart.Enabled = true;
+                    buttonStart.Text = "Start";
+                    richTextBox1.AppendText("Disconnected due to error\n");
+                }
             }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            NewSpottersSave(true);
+            qrz.CacheSave(textBoxCacheLocation.Text);
+            ReviewedSpottersSave(true);
+            Properties.Settings.Default.Password = textBoxPassword.Text;
             Properties.Settings.Default.Save();
         }
 
@@ -333,6 +432,12 @@ namespace W3LPL
             bool altKey = ModifierKeys.HasFlag(Keys.Alt);
             int selectedIndex = checkedListBoxReviewedSpotters.SelectedIndex;
             if (selectedIndex == -1) return;
+            if (ctrlKey && shiftKey && altKey)
+            {
+                checkedListBoxReviewedSpotters.Items.Clear();
+                checkedListBoxReviewedSpotters.Items.Add("4U1UN", true);
+                w3lpl.callSuffixList.Clear();
+            }
             if (ctrlKey && shiftKey && !altKey)
             {
                 checkedListBoxReviewedSpotters.Items.RemoveAt(selectedIndex);
@@ -342,41 +447,18 @@ namespace W3LPL
                 checkedListBoxReviewedSpotters.SetItemCheckState(selectedIndex, CheckState.Indeterminate);
             }
         }
-        private void NewSpottersSave(bool save)
-        {
-            var spottersChecked = checkedListBoxNewSpotters.CheckedItems;
-            string newSpotters = "";
-
-            for (int i = 0; i < spottersChecked.Count; ++i)
-            {
-                string s = spottersChecked[i].ToString();
-                if (checkedListBoxNewSpotters.GetItemCheckState(i) == CheckState.Indeterminate)
-                {
-                    newSpotters += s + ",2;";
-                }
-                else
-                {
-                    newSpotters += s + ",1;";
-                }
-            }
-            if (save)
-            {
-                Properties.Settings.Default.NewSpotters = newSpotters;
-                Properties.Settings.Default.Save();
-            }
-        }
 
         private void ReviewedSpottersSave(bool save)
         {
             var spottersChecked = checkedListBoxReviewedSpotters.CheckedItems;
             string reviewedSpotters = "";
 
-            for (int i = 0; i < spottersChecked.Count; ++i) 
+            for (int i = 0; i < spottersChecked.Count; ++i)
             {
                 string s = spottersChecked[i].ToString();
                 if (checkedListBoxReviewedSpotters.GetItemCheckState(i) == CheckState.Indeterminate)
                 {
-                    reviewedSpotters +=  s + ",2;";
+                    reviewedSpotters += s + ",2;";
                 }
                 else
                 {
@@ -400,36 +482,38 @@ namespace W3LPL
         }
         private void CheckedListBoxNewSpotters_SelectedIndexChanged(object sender, EventArgs e)
         {
+
+            if (checkedListBoxNewSpotters.SelectedItem == null)
+                return;
             bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
-            if (ctrlKey) // move to reviewed spotters
+            bool shiftKey = ModifierKeys.HasFlag(Keys.Shift);
+            if (ctrlKey && shiftKey)
             {
-                var items2 = checkedListBoxNewSpotters.CheckedItems;
-                List<string> sitems = new List<string>();
-                foreach (string s in items2)
+                checkedListBoxNewSpotters.Items.Clear();
+                w3lpl.callSuffixList.Clear();
+            }
+            else if (ctrlKey) // move to reviewed spotters
+            {
+                string curItem = checkedListBoxNewSpotters.SelectedItem.ToString();
+                int index = checkedListBoxNewSpotters.FindString(curItem);
+                if (!checkedListBoxReviewedSpotters.Items.Contains(curItem))
                 {
-                    sitems.Add(s);
-                }
-                foreach (string s in sitems)
-                {
-                    checkedListBoxNewSpotters.Items.Remove(s);
-                    if (!checkedListBoxReviewedSpotters.Items.Contains(s))
-                    {
-                        checkedListBoxReviewedSpotters.Items.Insert(0, s);
-                        checkedListBoxReviewedSpotters.TopIndex = 0;
-                    }
+                    checkedListBoxReviewedSpotters.Items.Insert(0, curItem);
+                    checkedListBoxReviewedSpotters.TopIndex = 0;
+                    checkedListBoxNewSpotters.Items.RemoveAt(index);
                 }
                 ReviewedSpottersSave(true);
             }
             else // let's look at the QRZ page
             {
-                    int selected = checkedListBoxNewSpotters.SelectedIndex;
-                    if (selected == -1) return;
-                    string callsign = checkedListBoxNewSpotters.Items[selected].ToString();
-                    checkedListBoxNewSpotters.SetItemChecked(selected, false);
-                    string[] tokens = callsign.Split('-');  // have to remove any suffix like this
-                    string url = "https://qrz.com/db/" + tokens[0];
-                    System.Diagnostics.Process.Start(url);
-                    return;
+                int selected = checkedListBoxNewSpotters.SelectedIndex;
+                if (selected == -1) return;
+                string callsign = checkedListBoxNewSpotters.Items[selected].ToString();
+                checkedListBoxNewSpotters.SetItemChecked(selected, false);
+                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens[0];
+                System.Diagnostics.Process.Start(url);
+                return;
             }
         }
 
@@ -437,7 +521,7 @@ namespace W3LPL
         {
             //System.Configuration.ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel level)
             var userConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
-            string fileName = "user.config_" + DateTime.Now.ToString("yyyy-MM-ddTHHmmss",CultureInfo.InvariantCulture); // almost ISO 8601 format but have to remove colons
+            string fileName = "user.config_" + DateTime.Now.ToString("yyyy-MM-ddTHHmmss", CultureInfo.InvariantCulture); // almost ISO 8601 format but have to remove colons
             SaveFileDialog myDialog = new SaveFileDialog
             {
                 FileName = fileName,
@@ -447,7 +531,7 @@ namespace W3LPL
             if (myDialog.ShowDialog() == DialogResult.OK)
             {
                 string myFile = myDialog.FileName;
-                System.IO.File.Copy(userConfig, myFile,true);
+                System.IO.File.Copy(userConfig, myFile, true);
             }
             myDialog.Dispose();
         }
@@ -456,6 +540,43 @@ namespace W3LPL
         {
             Application.DoEvents();
             ReviewedSpottersSave(true);
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
+            if (richTextBox1.Text.Length > 0)
+            {
+                Clipboard.SetText(richTextBox1.Text);
+                if (ctrlKey)
+                {
+                    richTextBox1.Clear();
+                }
+                else
+                {
+                    richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                    richTextBox1.SelectionLength = 0;
+                    richTextBox1.ScrollToCaret();
+                }
+            }
+        }
+
+        private void TextBoxClusterServer_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+    public static class RichTextBoxExtensions
+    {
+        public static void AppendText(this RichTextBox box, string text, Color color)
+        {
+            if (box == null) throw new ArgumentNullException(nameof(box));
+            box.SelectionStart = box.TextLength;
+            box.SelectionLength = 0;
+
+            box.SelectionColor = color;
+            box.AppendText(text);
+            box.SelectionColor = box.ForeColor;
         }
     }
 }

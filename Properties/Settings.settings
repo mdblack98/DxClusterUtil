@@ -20,7 +20,10 @@
     <Setting Name="ReviewedSpotters" Type="System.String" Scope="User">
       <Value Profile="(Default)">4U1UN,2;</Value>
     </Setting>
-    <Setting Name="NewSpotters" Type="System.String" Scope="User">
+    <Setting Name="Cache" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:/Temp/qrzcache.txt</Value>
+    </Setting>
+    <Setting Name="Password" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

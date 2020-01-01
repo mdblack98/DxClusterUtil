@@ -50,6 +50,7 @@ namespace W3LPL
             }
             else
             {
+                if (e.Index == -1) return;
                 Color textColor = this.GetItemCheckState(e.Index) == CheckState.Unchecked ? UncheckedColor : (this.GetItemCheckState(e.Index) == CheckState.Checked ? CheckedColor : IndeterminateColor);
 
                 DrawItemEventArgs e2 = new DrawItemEventArgs

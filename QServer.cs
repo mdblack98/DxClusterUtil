@@ -56,7 +56,6 @@ namespace W3LPL
                 client.ReceiveTimeout = 1000;
                 client.SendTimeout = 1000;
                 NetworkStream stream = client.GetStream();
-                var startTime = DateTime.Now;
                 byte[] bytes;
                 string msg;
                 while (running)
@@ -64,11 +63,22 @@ namespace W3LPL
                     try
                     {
                         var myTime = DateTime.Now;
-                        if (myTime.Second == 0 || myTime.Subtract(startTime).TotalSeconds < 15)
+                        if (myTime.Second == 0)
                         {
                             // Let the clock get past the zero second mark
                             while(clientQueue.TryTake(out msg))
                             {
+                                /*
+                                msg = msg.Replace("-1-#:", "-#:  ");
+                                msg = msg.Replace("-2-#:", "-#:  ");
+                                msg = msg.Replace("-3-#:", "-#:  ");
+                                msg = msg.Replace("-4-#:", "-#:  ");
+                                msg = msg.Replace("-5-#:", "-#:  ");
+                                msg = msg.Replace("-6-#:", "-#:  ");
+                                msg = msg.Replace("-7-#:", "-#:  ");
+                                msg = msg.Replace("-8-#:", "-#:  ");
+                                msg = msg.Replace("-9-#:", "-#:  ");
+                                */
                                 // we'll only send the ones that aren't dups
                                 if (msg[0] != '*')
                                 {
