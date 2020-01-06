@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -18,7 +19,7 @@ namespace W3LPL
         private NetworkStream nStream = null;
         ConcurrentBag<string> log4omQueue = null;
         readonly ConcurrentBag<string> w3lplQueue = null;
-        readonly Dictionary<string, int> cacheSpottedCalls = new Dictionary<string, int>();
+        public readonly Dictionary<string, int> cacheSpottedCalls = new Dictionary<string, int>();
         readonly string myHost;
         readonly int myPort;
         RichTextBox myDebug;
@@ -29,7 +30,8 @@ namespace W3LPL
         public bool filterOn = true;
         public List<string> callSuffixList = new List<string>();
         public string reviewedSpotters = "";
-        private QRZ qrz = null;
+        private readonly QRZ qrz = null;
+        public bool debug = false;
         public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
         {
             this.qrz = qrz;
@@ -171,6 +173,21 @@ namespace W3LPL
         public string Get(out bool cachedQRZ)
         {
             cachedQRZ = false;
+            if (client == null | qrz == null)
+            {
+                string s1, s2;
+                bool isNull = client == null;
+                if (isNull)
+                    s1 = "null";
+                else
+                    s1 = "OK";
+                isNull = qrz == null;
+                if (isNull)
+                    s2 = "null";
+                else
+                    s2 = "OK";
+                MessageBox.Show("client == null =" + s1 + " or qrz == null = " + s2);
+            }
             if (w3lplQueue.TryTake(out string result))
             {
                 var outmsg = Encoding.ASCII.GetBytes(result);
@@ -193,9 +210,10 @@ namespace W3LPL
                     c = (char)nStream.ReadByte();
                     ss += c;
                 } while (c != '\n');
+                if (debug) File.AppendAllText("C:/Temp/w3lpl_log.txt", ss);
                 //Int32 bytesRead = nStream.Read(databuf, 0, databuf.Length);
                 //var responseData = System.Text.Encoding.ASCII.GetString(databuf, 0, bytesRead);
-                char [] sep = { '\n', '\r' };
+                char[] sep = { '\n', '\r' };
                 var tokens = ss.Split(sep);
                 string sreturn = "";
                 if (tokens == null || tokens.Length == 0)
@@ -266,13 +284,26 @@ namespace W3LPL
                                 else callSuffixList.Insert(0, spotterCall+":OK");
                             }
                         }
-                        if (!cacheSpottedCalls.ContainsKey(key) && !filteredOut)
+                        bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
+                        bool isW3LPLCached = cacheSpottedCalls.ContainsKey(key);
+                        if (!isW3LPLCached && !filteredOut)
                         {
                             cacheSpottedCalls[key] = minute;
                             ++totalLinesKept;
-                            log4omQueue.Add(s + "\r\n");
-                            sreturn += s + "\r\n";
-                            cachedQRZ = true;
+                            string sss = s;
+                            if (!validCall && cachedQRZ) // then the bad call is cached
+                            {
+                                sss = s.Replace("DX de", "#* de");
+                            }
+                            else if (!validCall) // then first time QRZ tried it
+                            {
+                                sss = s.Replace("DX de", "## de");
+                            }
+                            else
+                            {
+                                log4omQueue.Add(s + "\r\n");
+                            }
+                            sreturn += sss + "\r\n";
                         }
                         else if (s.Contains(myCallsign))  // allow our own spots through too
                         {
@@ -280,6 +311,7 @@ namespace W3LPL
                             log4omQueue.Add(s + "\r\n");
                             sreturn += s + "\r\n";
                             myCallsignExists = true;
+                            cachedQRZ = false;
                         }
                         else // need to check if QRZ is offline and do something about it
                         {
@@ -290,7 +322,6 @@ namespace W3LPL
                                 // ## -- bad QRZ lookup
                                 // %% -- QRZ cached good call
                                 string tag = "**";
-                                bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                                 if (qrz.isOnline == false)
                                 {
                                     tag = "ZZ"; // show QRZ is sleeping
@@ -298,11 +329,22 @@ namespace W3LPL
                                 }
                                 else if (!validCall)
                                 {
+                                    if (debug)
+                                    {
+                                        File.AppendAllText("C:/Temp/qrzerror.txt", "!valid??: " + qrz.xml + "\n");
+                                    }
                                     if (qrz.xmlError.Contains("Error"))
                                     {
                                         log4omQueue.Add(qrz.xmlError + "\n");
                                     }
-                                    tag = "##";
+                                    if (cachedQRZ)
+                                    {
+                                        tag = "#*";
+                                    }
+                                    else
+                                    {
+                                        tag = "##";
+                                    }
                                 }
                                 else if (filteredOut)
                                 {
@@ -312,6 +354,7 @@ namespace W3LPL
                                 else if (cacheSpottedCalls.ContainsKey(key))
                                 {
                                     tag = "**";
+                                    cachedQRZ = true;
                                 }
                                 sreturn += tag + s.Substring(2) + "\r\n";
                             }
@@ -366,6 +409,7 @@ namespace W3LPL
                 {
                     if (client != null) client.Dispose();
                     if (nStream != null) nStream.Dispose();
+                    if (qrz != null) qrz.Dispose();
                     // TODO: dispose managed state (managed objects).
                 }
 

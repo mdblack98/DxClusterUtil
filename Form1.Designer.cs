@@ -49,8 +49,9 @@
             this.checkBoxFiltered = new System.Windows.Forms.CheckBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.textBoxCacheLocation = new System.Windows.Forms.TextBox();
-            this.labelCache = new System.Windows.Forms.Label();
+            this.labelQRZCache = new System.Windows.Forms.Label();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
+            this.labelW3LPLCache = new System.Windows.Forms.Label();
             this.checkedListBoxReviewedSpotters = new W3LPL.ColorCodedCheckedListBox();
             this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -195,6 +196,7 @@
             this.checkBoxCached.TabIndex = 16;
             this.checkBoxCached.Text = "Cached";
             this.checkBoxCached.UseVisualStyleBackColor = true;
+            this.checkBoxCached.CheckedChanged += new System.EventHandler(this.CheckBoxCached_CheckedChanged);
             // 
             // checkBoxFiltered
             // 
@@ -217,7 +219,7 @@
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.Size = new System.Drawing.Size(578, 117);
             this.richTextBox1.TabIndex = 19;
-            this.richTextBox1.Text = "";
+            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
             this.richTextBox1.WordWrap = false;
             // 
             // textBoxCacheLocation
@@ -225,18 +227,18 @@
             this.textBoxCacheLocation.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "Cache", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxCacheLocation.Location = new System.Drawing.Point(13, 90);
             this.textBoxCacheLocation.Name = "textBoxCacheLocation";
-            this.textBoxCacheLocation.Size = new System.Drawing.Size(240, 20);
+            this.textBoxCacheLocation.Size = new System.Drawing.Size(162, 20);
             this.textBoxCacheLocation.TabIndex = 20;
             this.textBoxCacheLocation.Text = global::W3LPL.Properties.Settings.Default.Cache;
             // 
-            // labelCache
+            // labelQRZCache
             // 
-            this.labelCache.AutoSize = true;
-            this.labelCache.Location = new System.Drawing.Point(262, 93);
-            this.labelCache.Name = "labelCache";
-            this.labelCache.Size = new System.Drawing.Size(35, 13);
-            this.labelCache.TabIndex = 21;
-            this.labelCache.Text = "label3";
+            this.labelQRZCache.AutoSize = true;
+            this.labelQRZCache.Location = new System.Drawing.Point(189, 93);
+            this.labelQRZCache.Name = "labelQRZCache";
+            this.labelQRZCache.Size = new System.Drawing.Size(35, 13);
+            this.labelQRZCache.TabIndex = 21;
+            this.labelQRZCache.Text = "label3";
             // 
             // textBoxPassword
             // 
@@ -248,6 +250,15 @@
             this.textBoxPassword.Size = new System.Drawing.Size(59, 20);
             this.textBoxPassword.TabIndex = 22;
             this.textBoxPassword.Text = global::W3LPL.Properties.Settings.Default.Password;
+            // 
+            // labelW3LPLCache
+            // 
+            this.labelW3LPLCache.AutoSize = true;
+            this.labelW3LPLCache.Location = new System.Drawing.Point(259, 93);
+            this.labelW3LPLCache.Name = "labelW3LPLCache";
+            this.labelW3LPLCache.Size = new System.Drawing.Size(35, 13);
+            this.labelW3LPLCache.TabIndex = 23;
+            this.labelW3LPLCache.Text = "label3";
             // 
             // checkedListBoxReviewedSpotters
             // 
@@ -282,8 +293,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(595, 233);
+            this.Controls.Add(this.labelW3LPLCache);
             this.Controls.Add(this.textBoxPassword);
-            this.Controls.Add(this.labelCache);
+            this.Controls.Add(this.labelQRZCache);
             this.Controls.Add(this.textBoxCacheLocation);
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.checkBoxFiltered);
@@ -304,7 +316,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::W3LPL.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "W3LPL V0.26";
+            this.Text = "W3LPL V1.7";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
@@ -339,8 +351,9 @@
         private System.Windows.Forms.CheckBox checkBoxFiltered;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.TextBox textBoxCacheLocation;
-        private System.Windows.Forms.Label labelCache;
+        private System.Windows.Forms.Label labelQRZCache;
         private System.Windows.Forms.TextBox textBoxPassword;
+        private System.Windows.Forms.Label labelW3LPLCache;
     }
 }
 

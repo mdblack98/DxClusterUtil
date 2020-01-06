@@ -120,6 +120,18 @@
   <metadata name="timer1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="richTextBox1.Text" xml:space="preserve">
+    <value>%% means qrz is cached valid call
+!! means spotter is filtered out
+** means W3LPL is cached
+// ## means bad call 
+// #* means bad call cached
+Green is call sign good and cached
+Orange is call sign good and new QRZ query
+Red is bad call
+Dark Red is bad call cached
+</value>
+  </data>
   <metadata name="form1BindingSource1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>314, 17</value>
   </metadata>

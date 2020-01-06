@@ -23,6 +23,8 @@ namespace W3LPL
         private QRZ qrz;
         private int badCalls;
 
+        public bool Debug { get; private set; }
+
         //BindingList<FilterItem> filterList = new BindingList<FilterItem>();
         //public volatile static int keep;
 
@@ -60,12 +62,16 @@ namespace W3LPL
             tooltip.SetToolTip(buttonBackup, tip);
             tip = "Click to copy, ctrl-click to copy&erase";
             tooltip.SetToolTip(buttonCopy, tip);
-            tip = "Enabled logging of cached spots";
+            tip = "Enabled logging of cached spots, shift-click to toggle debug";
             tooltip.SetToolTip(checkBoxCached, tip);
             tip = "Enabled logging of filtered spots";
             tooltip.SetToolTip(checkBoxFiltered, tip);
             tip = "QRZ password";
             tooltip.SetToolTip(textBoxPassword, tip);
+            tip = "QRZ cached/bad";
+            tooltip.SetToolTip(labelQRZCache, tip);
+            tip = "W3LPL cached";
+            tooltip.SetToolTip(labelW3LPLCache, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
             string[] tokens = reviewedSpotters.Split(';');
             foreach (string arg in tokens)
@@ -148,6 +154,7 @@ namespace W3LPL
             }
             string host = tokens[0];
             int port = Int32.Parse(tokens[1], CultureInfo.InvariantCulture);
+            if (qrz != null) qrz.Dispose();
             qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text, textBoxCacheLocation.Text);
             if (qrz == null || qrz.isOnline == false)
             {
@@ -249,14 +256,24 @@ namespace W3LPL
                         // %% means qrz is cached valid call
                         // !! means spotter is filtered out
                         // ** means W3LPL is cached
+                        // ## means bad call 
+                        // #* means bad call cached
                         string firstFive = ss.Substring(0, 5);
+                        bool qrzError = firstFive.Equals("ZZ de",StringComparison.InvariantCultureIgnoreCase);
                         bool badCall = firstFive.Equals("## de",StringComparison.InvariantCultureIgnoreCase);
+                        bool badCallCached = firstFive.Equals("#* de", StringComparison.InvariantCultureIgnoreCase);
                         bool filtered = firstFive.Equals("!! de",StringComparison.InvariantCultureIgnoreCase);
                         bool w3lplCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
                         bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
+                        if (qrzError)
+                        {
+                            //this.WindowState = FormWindowState.Minimized;
+                            //this.Show();
+                            //this.WindowState = FormWindowState.Normal;
+                        }
                         if (filtered && !checkBoxFiltered.Checked) continue;
                         else if (w3lplCached && !checkBoxCached.Checked) continue;
-                        else if (!filtered && !w3lplCached && !dxline && !badCall)
+                        else if (!filtered && !w3lplCached && !dxline && !badCall && !badCallCached)
                         {
                             RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
                             richTextBox1.SelectionStart = richTextBox1.Text.Length;
@@ -266,9 +283,14 @@ namespace W3LPL
                         }
                         // We should have display all non-spot lines in black above 
                         // So we can set our qrz cache color now for all spots
-                        if (ss.Substring(0,2).Equals("##",StringComparison.InvariantCultureIgnoreCase))
+                        if (badCall)
                         {
                             myColor = Color.Red;
+                            ++badCalls;
+                        }
+                        else if (badCallCached)
+                        {
+                            myColor = Color.IndianRed;
                             ++badCalls;
                         }
                         else if (cachedQRZ)
@@ -278,16 +300,17 @@ namespace W3LPL
                         else if (s.Contains(textBoxCallsign.Text))
                         {
                             myColor = Color.DarkBlue;
+                            if (Debug)
+                            {
+                                File.AppendAllText("C:/Temp/" + textBoxCallsign.Text, qrz.xml);
+                            }
                         }
                         else
                         {
                             myColor = Color.Orange;
                         }
-                        labelCache.Text = "" + qrz.cacheQRZ.Count + "/" + badCalls;
-
-                        char[] delim = { ' ' };
-                        string[] tokens = s.Split(delim, StringSplitOptions.RemoveEmptyEntries);
-                        string justcall = tokens[4];
+                        labelQRZCache.Text = "" + qrz.cacheQRZ.Count + "/" + badCalls;
+                        labelW3LPLCache.Text = "" + w3lpl.cacheSpottedCalls.Count;
                         ss = ss.Replace("\r", "");
                         ss = ss.Replace("\n", "");
                         RichTextBoxExtensions.AppendText(richTextBox1, ss + "\n", myColor);
@@ -359,6 +382,8 @@ namespace W3LPL
             w3lpl = null;
             server.Stop();
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         private void Form1_Activated(object sender, EventArgs e)
         {
             if (textBoxCallsign.Text.Length > 0 && w3lpl == null && textBoxPassword.Text.Length > 0)
@@ -564,6 +589,17 @@ namespace W3LPL
         private void TextBoxClusterServer_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void CheckBoxCached_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ModifierKeys.HasFlag(Keys.Shift))
+            {
+                Debug = !Debug;
+                w3lpl.debug = Debug;
+                qrz.debug = Debug;
+                richTextBox1.AppendText("Debug = " + Debug +"\n");
+            }
         }
     }
     public static class RichTextBoxExtensions
