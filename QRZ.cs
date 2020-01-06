@@ -162,6 +162,8 @@ namespace W3LPL
         {
             return CallQRZ(url,"",out _);
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public bool CallQRZ(string url, string call, out string email)
         {
             ++stackcount;
