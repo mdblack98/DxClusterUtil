@@ -52,10 +52,12 @@
             this.labelQRZCache = new System.Windows.Forms.Label();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.labelW3LPLCache = new System.Windows.Forms.Label();
+            this.numericUpDownRTTYOffset = new System.Windows.Forms.NumericUpDown();
             this.checkedListBoxReviewedSpotters = new W3LPL.ColorCodedCheckedListBox();
             this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource2 = new System.Windows.Forms.BindingSource(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource2)).BeginInit();
@@ -236,9 +238,9 @@
             this.labelQRZCache.AutoSize = true;
             this.labelQRZCache.Location = new System.Drawing.Point(189, 93);
             this.labelQRZCache.Name = "labelQRZCache";
-            this.labelQRZCache.Size = new System.Drawing.Size(35, 13);
+            this.labelQRZCache.Size = new System.Drawing.Size(64, 13);
             this.labelQRZCache.TabIndex = 21;
-            this.labelQRZCache.Text = "label3";
+            this.labelQRZCache.Text = "QRZ Cache";
             // 
             // textBoxPassword
             // 
@@ -256,9 +258,35 @@
             this.labelW3LPLCache.AutoSize = true;
             this.labelW3LPLCache.Location = new System.Drawing.Point(259, 93);
             this.labelW3LPLCache.Name = "labelW3LPLCache";
-            this.labelW3LPLCache.Size = new System.Drawing.Size(35, 13);
+            this.labelW3LPLCache.Size = new System.Drawing.Size(76, 13);
             this.labelW3LPLCache.TabIndex = 23;
-            this.labelW3LPLCache.Text = "label3";
+            this.labelW3LPLCache.Tag = "W3LPL cache";
+            this.labelW3LPLCache.Text = "W3LPL cache";
+            // 
+            // numericUpDownRTTYOffset
+            // 
+            this.numericUpDownRTTYOffset.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::W3LPL.Properties.Settings.Default, "rttyOffset", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.numericUpDownRTTYOffset.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.numericUpDownRTTYOffset.Location = new System.Drawing.Point(285, 41);
+            this.numericUpDownRTTYOffset.Maximum = new decimal(new int[] {
+            2000,
+            0,
+            0,
+            0});
+            this.numericUpDownRTTYOffset.Minimum = new decimal(new int[] {
+            2000,
+            0,
+            0,
+            -2147483648});
+            this.numericUpDownRTTYOffset.Name = "numericUpDownRTTYOffset";
+            this.numericUpDownRTTYOffset.Size = new System.Drawing.Size(48, 20);
+            this.numericUpDownRTTYOffset.TabIndex = 24;
+            this.numericUpDownRTTYOffset.Value = global::W3LPL.Properties.Settings.Default.rttyOffset;
+            this.numericUpDownRTTYOffset.ValueChanged += new System.EventHandler(this.numericUpDownRTTYOffset_ValueChanged);
             // 
             // checkedListBoxReviewedSpotters
             // 
@@ -293,6 +321,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(595, 233);
+            this.Controls.Add(this.numericUpDownRTTYOffset);
             this.Controls.Add(this.labelW3LPLCache);
             this.Controls.Add(this.textBoxPassword);
             this.Controls.Add(this.labelQRZCache);
@@ -316,11 +345,12 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::W3LPL.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "W3LPL V1.7";
+            this.Text = "W3LPL V1.10.0";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
             this.LocationChanged += new System.EventHandler(this.Form1_LocationChanged);
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource2)).EndInit();
@@ -354,6 +384,7 @@
         private System.Windows.Forms.Label labelQRZCache;
         private System.Windows.Forms.TextBox textBoxPassword;
         private System.Windows.Forms.Label labelW3LPLCache;
+        private System.Windows.Forms.NumericUpDown numericUpDownRTTYOffset;
     }
 }
 

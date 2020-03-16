@@ -15,6 +15,7 @@ namespace W3LPL
 {
     public partial class Form1 : Form
     {
+        private static Form1 _instance;
         private W3LPLClient w3lpl = null;
         readonly ConcurrentBag<string> clientQueue = new ConcurrentBag<string>();
         readonly ConcurrentBag<string> w3lplQueue = new ConcurrentBag<string>();
@@ -42,6 +43,7 @@ namespace W3LPL
         public Form1()
         {
             InitializeComponent();
+            _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
             var tip = "Callsign";
@@ -72,6 +74,8 @@ namespace W3LPL
             tooltip.SetToolTip(labelQRZCache, tip);
             tip = "W3LPL cached";
             tooltip.SetToolTip(labelW3LPLCache, tip);
+            tip = "RTTY Offset from spot freq";
+            tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
             string[] tokens = reviewedSpotters.Split(';');
             foreach (string arg in tokens)
@@ -130,6 +134,20 @@ namespace W3LPL
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+
+        public string TextStatus
+        {
+            get { return labelStatusQServer.Text; }
+            set { labelStatusQServer.Text = value; }
+        }
+
+        public Color TextStatusColor
+        {
+            get { return labelStatusQServer.BackColor; }
+            set { labelStatusQServer.BackColor = value;  }
+        }
+        public static Form1 Instance { get { return _instance;} }
+
         public bool Connect()
         {
             buttonStart.Enabled = false;
@@ -140,11 +158,11 @@ namespace W3LPL
                 return false;
             }
             char[] sep = { ':' };
-            if (!textBoxClusterServer.Text.Contains("dxc.w3lpl.net:7373"))
-            {
-                MessageBox.Show("Not dxc.w3lpl.net:7373 in server box?");
-                return false;
-            }
+            //if (!textBoxClusterServer.Text.Contains("dxc.w3lpl.net:7373"))
+            //{
+            //    MessageBox.Show("Not dxc.w3lpl.net:7373 in server box?");
+            //    return false;
+            //}
             var tokens = textBoxClusterServer.Text.Split(sep);
             if (tokens.Length != 2)
             {
@@ -162,6 +180,7 @@ namespace W3LPL
                 return false;
             }
             w3lpl = new W3LPLClient(host, port, w3lplQueue, qrz);
+            w3lpl.rttyOffset = (float)numericUpDownRTTYOffset.Value;
             try
             {
                 richTextBox1.AppendText("Trying to connect\n");
@@ -346,7 +365,6 @@ namespace W3LPL
             {
                 if (server.IsConnected())
                 {
-                    System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
                     labelStatusQServer.BackColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
                     labelStatusQServer.Text = "Client connected";
                 }
@@ -400,7 +418,8 @@ namespace W3LPL
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            qrz.CacheSave(textBoxCacheLocation.Text);
+            //qrz.CacheSave(textBoxCacheLocation.Text);
+            qrz.CacheSave("C:\\Temp\\qrzcache.txt");
             ReviewedSpottersSave(true);
             Properties.Settings.Default.Password = textBoxPassword.Text;
             Properties.Settings.Default.Save();
@@ -600,6 +619,11 @@ namespace W3LPL
                 qrz.debug = Debug;
                 richTextBox1.AppendText("Debug = " + Debug +"\n");
             }
+        }
+
+        private void numericUpDownRTTYOffset_ValueChanged(object sender, EventArgs e)
+        {
+            w3lpl.rttyOffset = (float)numericUpDownRTTYOffset.Value;
         }
     }
     public static class RichTextBoxExtensions

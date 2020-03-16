@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "W3LPL"
-#define MyAppVersion "1.6"
+#define MyAppVersion "1.10.0"
 #define MyAppExeName "W3LPL.exe"
 
 [Setup]

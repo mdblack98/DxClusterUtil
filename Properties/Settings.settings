@@ -26,5 +26,11 @@
     <Setting Name="Password" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="rttyOffset" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">-600</Value>
+    </Setting>
+    <Setting Name="Ignore" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -32,6 +32,7 @@ namespace W3LPL
         public string reviewedSpotters = "";
         private readonly QRZ qrz = null;
         public bool debug = false;
+        public float rttyOffset;
         public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
         {
             this.qrz = qrz;
@@ -69,8 +70,13 @@ namespace W3LPL
         {
             if (!Connect(myCallsign,myDebug,log4omQueue))
             {
+                //w3lplQueue.Add("W3LPL connect error\n");
                 return false;
             }
+            Form1.Instance.TextStatusColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
+            Form1.Instance.TextStatus = "Client connected";
+
+            Form1.Instance.TextStatus = "Connected";
             totalLines = 0;
             totalLinesKept = 0;
             return true;
@@ -82,6 +88,7 @@ namespace W3LPL
             myCallsign = callsign;
             myDebug = debug;
             log4omQueue = clientQueue;
+            File.AppendAllText("C:/Temp/W3LPL_log.txt", "Logging started\r\n");
             try
             {
                 cacheSpottedCalls.Clear();
@@ -112,7 +119,7 @@ namespace W3LPL
                                 var msg = Encoding.ASCII.GetBytes(callsign + "\r\n");
                                 nStream.Write(msg, 0, msg.Length);
                             }
-                            else if (response.Contains(callsign + " de W3LPL"))
+                            else if (response.Contains(callsign + " de "))
                             {
                                 loggedIn = true;
                                 //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
@@ -130,6 +137,7 @@ namespace W3LPL
                         client.Client.Shutdown(SocketShutdown.Receive);
                         client.Close();
                         client = null;
+                        Form1.Instance.TextStatus = "Timeout";
                         return false;
                     }
                     Thread.Sleep(1000);
@@ -142,6 +150,7 @@ namespace W3LPL
                 client.Close();
                 client.Dispose();
                 client = null;
+                Form1.Instance.TextStatus = "Connect error";
                 //MessageBox.Show(ex.Message, "W3LPL");
                 //throw;
                 //return false;
@@ -207,38 +216,54 @@ namespace W3LPL
                 char c;
                 do
                 {
-                    c = (char)nStream.ReadByte();
-                    ss += c;
+                    try
+                    {
+                        c = (char)nStream.ReadByte();
+                        ss += c;
+                    }
+                    catch (IOException)
+                    {
+                        return null;
+                    }
                 } while (c != '\n');
                 if (debug) File.AppendAllText("C:/Temp/w3lpl_log.txt", ss);
                 //Int32 bytesRead = nStream.Read(databuf, 0, databuf.Length);
                 //var responseData = System.Text.Encoding.ASCII.GetString(databuf, 0, bytesRead);
                 char[] sep = { '\n', '\r' };
+                //ss = "DX de W3LPL-3:    3584.3  PJ5/KG9N     RTTY Heard in AZ and MA        1311Z";
                 var tokens = ss.Split(sep);
                 string sreturn = "";
                 if (tokens == null || tokens.Length == 0)
                 {
+                    Disconnect();
+                    Connect();
                     return null;
                 }
                 foreach (string s in tokens)
                 {
-                    //if (!s.Contains("W3LPL")&&!s.Contains("VE6WZ")) continue;
                     if (s.Length == 0) continue;
+                    var swork = s;
                     if (s.ToUpperInvariant().StartsWith("DX DE",StringComparison.InvariantCultureIgnoreCase) && s.Length == 75)
                     {
-                        var freq = s.Substring(17, 9);
+                        var sfreq = s.Substring(17, 7);
+                        var freq = sfreq;
                         var ffreq = float.Parse(freq,CultureInfo.InvariantCulture);
                         freq = Math.Round(ffreq).ToString(CultureInfo.InvariantCulture);
                         if (freq.Length > 4) freq = freq.Substring(0, freq.Length - 2);
                         var spot = s.Substring(26, 9);
-                        var time = s.Substring(70,3); // use 10 minute cache
+                        var comment = s.Substring(38, 20);
+                        var time = s.Substring(70, 3); // use 10 minute cache
+                        var key = freq + "|" + spot + "|" + time;
+                        if (comment.Contains("RTTY"))
+                        {
+                            ffreq += rttyOffset/1000;
+                            swork = s.Replace(sfreq, String.Format(CultureInfo.InvariantCulture,"{0,7:0.0}",ffreq));
+                            key = ffreq + "|" + spot + "|" + time;
+                        }
                         if (!Int32.TryParse(s.Substring(73, 1), out int minute))
                         {
                             continue;
                         }
-                        //if (cache == null) cache = new HashSet<string>();
-                        var key = freq + "|" + spot + "|" + time;
-                        //if (time != lastTime) // when our time rolls over clear the cache
                         if (minute != lastMinute)
                         {
                             int removeMinute = (minute + 1) % 10;
@@ -285,6 +310,19 @@ namespace W3LPL
                             }
                         }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
+                        if (!skimmer && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
+                        {
+                            ++totalLinesKept;
+                            // we may have changed the freq so we add the change to log4omQueue
+                            log4omQueue.Add(swork + "\r\n");
+                            File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
+                            if (!swork.Equals(s)) // then we'll also log the change
+                            {
+                                File.AppendAllText("C:/Temp/W3LPL_log.txt", swork + "\r\n");
+                            }
+                            sreturn += s + "\r\n";
+                            return sreturn;
+                        }
                         bool isW3LPLCached = cacheSpottedCalls.ContainsKey(key);
                         if (!isW3LPLCached && !filteredOut)
                         {
@@ -301,14 +339,24 @@ namespace W3LPL
                             }
                             else
                             {
-                                log4omQueue.Add(s + "\r\n");
+                                log4omQueue.Add(swork + "\r\n");
+                                File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
+                                if (!swork.Equals(s)) // then we'll also log the change
+                                {
+                                    File.AppendAllText("C:/Temp/W3LPL_log.txt", swork + "\r\n");
+                                }
                             }
                             sreturn += sss + "\r\n";
                         }
                         else if (s.Contains(myCallsign))  // allow our own spots through too
                         {
                             ++totalLinesKept;
-                            log4omQueue.Add(s + "\r\n");
+                            log4omQueue.Add(swork + "\r\n");
+                            File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
+                            if (!swork.Equals(s)) // then we'll also log the change
+                            {
+                                File.AppendAllText("C:/Temp/W3LPL_log.txt", swork + "\r\n");
+                            }
                             sreturn += s + "\r\n";
                             myCallsignExists = true;
                             cachedQRZ = false;
@@ -326,6 +374,7 @@ namespace W3LPL
                                 {
                                     tag = "ZZ"; // show QRZ is sleeping
                                     log4omQueue.Add("QRZ not responding?\n");
+                                    File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
                                 }
                                 else if (!validCall)
                                 {
@@ -336,6 +385,7 @@ namespace W3LPL
                                     if (qrz.xmlError.Contains("Error"))
                                     {
                                         log4omQueue.Add(qrz.xmlError + "\n");
+                                        File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
                                     }
                                     if (cachedQRZ)
                                     {
@@ -381,6 +431,7 @@ namespace W3LPL
             catch (Exception)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
+
                 Disconnect();
                 if (!Connect())
                 {

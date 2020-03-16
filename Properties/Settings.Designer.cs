@@ -118,5 +118,29 @@ namespace W3LPL.Properties {
                 this["Password"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-600")]
+        public decimal rttyOffset {
+            get {
+                return ((decimal)(this["rttyOffset"]));
+            }
+            set {
+                this["rttyOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Ignore {
+            get {
+                return ((string)(this["Ignore"]));
+            }
+            set {
+                this["Ignore"] = value;
+            }
+        }
     }
 }
