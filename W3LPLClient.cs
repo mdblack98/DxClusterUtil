@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -31,8 +32,9 @@ namespace W3LPL
         public List<string> callSuffixList = new List<string>();
         public string reviewedSpotters = "";
         private readonly QRZ qrz = null;
-        public bool debug = false;
+        public bool debug = true;
         public float rttyOffset;
+        private readonly string logFile = "C:/Temp/W3LPL_log.txt";
         public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
         {
             this.qrz = qrz;
@@ -40,6 +42,8 @@ namespace W3LPL
             myPort = port;
             w3lplQueue = w3lplQ;
             callSuffixList.Add("4U1UN");
+            long length = new System.IO.FileInfo(logFile).Length;
+            if (length > 10000000) File.Delete(logFile);
         }
 
         ~W3LPLClient()
@@ -88,7 +92,7 @@ namespace W3LPL
             myCallsign = callsign;
             myDebug = debug;
             log4omQueue = clientQueue;
-            File.AppendAllText("C:/Temp/W3LPL_log.txt", "Logging started\r\n");
+            File.AppendAllText(logFile, "Logging started\r\n");
             try
             {
                 cacheSpottedCalls.Clear();
@@ -226,7 +230,7 @@ namespace W3LPL
                         return null;
                     }
                 } while (c != '\n');
-                if (debug) File.AppendAllText("C:/Temp/w3lpl_log.txt", ss);
+                if (debug) File.AppendAllText(logFile, ss);
                 //Int32 bytesRead = nStream.Read(databuf, 0, databuf.Length);
                 //var responseData = System.Text.Encoding.ASCII.GetString(databuf, 0, bytesRead);
                 char[] sep = { '\n', '\r' };
@@ -239,28 +243,30 @@ namespace W3LPL
                     Connect();
                     return null;
                 }
-                foreach (string s in tokens)
+                foreach (string line in tokens)
                 {
-                    if (s.Length == 0) continue;
-                    var swork = s;
-                    if (s.ToUpperInvariant().StartsWith("DX DE",StringComparison.InvariantCultureIgnoreCase) && s.Length == 75)
+                    if (line.Length == 0) continue;
+                    var swork = line;
+                    if (line.ToUpperInvariant().StartsWith("DX DE",StringComparison.InvariantCultureIgnoreCase) && line.Length == 75)
                     {
-                        var sfreq = s.Substring(17, 7);
+                        var sfreq = line.Substring(17, 7);
                         var freq = sfreq;
                         var ffreq = float.Parse(freq,CultureInfo.InvariantCulture);
                         freq = Math.Round(ffreq).ToString(CultureInfo.InvariantCulture);
                         if (freq.Length > 4) freq = freq.Substring(0, freq.Length - 2);
-                        var spot = s.Substring(26, 9);
-                        var comment = s.Substring(38, 20);
-                        var time = s.Substring(70, 3); // use 10 minute cache
+                        var spot = line.Substring(26, 9);
+                        // Remove any suffix from special callsigns
+                        spot = HandleSpecialCalls(spot);
+                        var comment = line.Substring(38, 20);
+                        var time = line.Substring(70, 3); // use 10 minute cache
                         var key = freq + "|" + spot + "|" + time;
                         if (comment.Contains("RTTY"))
                         {
                             ffreq += rttyOffset/1000;
-                            swork = s.Replace(sfreq, String.Format(CultureInfo.InvariantCulture,"{0,7:0.0}",ffreq));
+                            swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture,"{0,7:0.0}",ffreq));
                             key = ffreq + "|" + spot + "|" + time;
                         }
-                        if (!Int32.TryParse(s.Substring(73, 1), out int minute))
+                        if (!Int32.TryParse(line.Substring(73, 1), out int minute))
                         {
                             continue;
                         }
@@ -282,24 +288,37 @@ namespace W3LPL
                         ++totalLines;
                         bool filteredOut = false;
                         char[] delim = { ' ' };
-                        string[] tokens2 = s.Split(delim,StringSplitOptions.RemoveEmptyEntries);
+                        string[] tokens2 = line.Split(delim,StringSplitOptions.RemoveEmptyEntries);
                         string spotterCall = "";
                         string spottedCall = "";
                         // gotta get just the callsign to make Log4OM happy
                         // there's a bug in 1.40.0.0 where a suffix XXXX-2-# does not get processed by Log4OM
                         // So we remove all suffixes to send to Log4OM
-                        if (tokens2[2].Contains("-#")) 
+                        if (Regex.IsMatch(tokens2[2], "-[0-9]-#"))
                         {
-                            spotterCall = tokens2[2].Substring(0, tokens2[2].Length - 3);
+                            spotterCall = Regex.Replace(tokens2[2], "-[0-9]-#:", "");
+                            swork = Regex.Replace(swork, "-[0-9]-#:", "-#:  ");
                         }
                         else
                         {
-                            spotterCall = tokens2[2].Substring(0, tokens2[2].Length - 1);
+                            spotterCall = Regex.Replace(tokens2[2], "-#:", "");
                         }
-                        if (tokens2.Length < 4) return s;
+                        if (tokens2.Length < 4) return line;
                         myCallsignExists = false;
                         spottedCall = tokens2[4];
-                        bool skimmer = s.Contains("WPM CQ") || s.Contains("BPS CQ") || s.Contains("WPM BEACON") || s.Contains("WPM NCDXF");
+                        // Remove any suffix from special callsigns
+                        String specialCall = HandleSpecialCalls(spottedCall);
+#pragma warning disable CA1307 // Specify StringComparison
+                        if (!specialCall.Equals(spottedCall))
+#pragma warning restore CA1307 // Specify StringComparison
+                        {
+#pragma warning disable CA1806 // Do not ignore method results
+                            int n1 = spottedCall.Length;
+                            String spaces = "               ".Substring(0,n1-3);
+                            swork = line.Replace(spottedCall, specialCall+spaces);
+#pragma warning restore CA1806 // Do not ignore method results
+                        }
+                        bool skimmer = swork.Contains("WPM CQ") || swork.Contains("BPS CQ") || swork.Contains("WPM BEACON") || swork.Contains("WPM NCDXF");
                         if (!ReviewedSpottersContains(spotterCall) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)))
                         {
                             filteredOut = true;
@@ -315,12 +334,14 @@ namespace W3LPL
                             ++totalLinesKept;
                             // we may have changed the freq so we add the change to log4omQueue
                             log4omQueue.Add(swork + "\r\n");
-                            File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
-                            if (!swork.Equals(s)) // then we'll also log the change
+                            File.AppendAllText(logFile, swork + "\r\n");
+#pragma warning disable CA1307 // Specify StringComparison
+                            if (!swork.Equals(swork)) // then we'll also log the change
+#pragma warning restore CA1307 // Specify StringComparison
                             {
-                                File.AppendAllText("C:/Temp/W3LPL_log.txt", swork + "\r\n");
+                                File.AppendAllText(logFile, swork + "\r\n");
                             }
-                            sreturn += s + "\r\n";
+                            sreturn += swork + "\r\n";
                             return sreturn;
                         }
                         bool isW3LPLCached = cacheSpottedCalls.ContainsKey(key);
@@ -328,42 +349,46 @@ namespace W3LPL
                         {
                             cacheSpottedCalls[key] = minute;
                             ++totalLinesKept;
-                            string sss = s;
+                            string sss = swork;
                             if (!validCall && cachedQRZ) // then the bad call is cached
                             {
-                                sss = s.Replace("DX de", "#* de");
+                                sss = swork.Replace("DX de", "#* de");
                             }
                             else if (!validCall) // then first time QRZ tried it
                             {
-                                sss = s.Replace("DX de", "## de");
+                                sss = swork.Replace("DX de", "## de");
                             }
                             else
                             {
                                 log4omQueue.Add(swork + "\r\n");
-                                File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
-                                if (!swork.Equals(s)) // then we'll also log the change
+                                File.AppendAllText(logFile, swork + "\r\n");
+#pragma warning disable CA1307 // Specify StringComparison
+                                if (!swork.Equals(swork)) // then we'll also log the change
+#pragma warning restore CA1307 // Specify StringComparison
                                 {
-                                    File.AppendAllText("C:/Temp/W3LPL_log.txt", swork + "\r\n");
+                                    File.AppendAllText(logFile, swork + "\r\n");
                                 }
                             }
                             sreturn += sss + "\r\n";
                         }
-                        else if (s.Contains(myCallsign))  // allow our own spots through too
+                        else if (swork.Contains(myCallsign))  // allow our own spots through too
                         {
                             ++totalLinesKept;
                             log4omQueue.Add(swork + "\r\n");
-                            File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
-                            if (!swork.Equals(s)) // then we'll also log the change
+                            File.AppendAllText(logFile, swork + "\r\n");
+#pragma warning disable CA1307 // Specify StringComparison
+                            if (!swork.Equals(swork)) // then we'll also log the change
+#pragma warning restore CA1307 // Specify StringComparison
                             {
-                                File.AppendAllText("C:/Temp/W3LPL_log.txt", swork + "\r\n");
+                                File.AppendAllText(logFile, swork + "\r\n");
                             }
-                            sreturn += s + "\r\n";
+                            sreturn += swork + "\r\n";
                             myCallsignExists = true;
                             cachedQRZ = false;
                         }
                         else // need to check if QRZ is offline and do something about it
                         {
-                            if (s.Length > 2)
+                            if (swork.Length > 2)
                             {
                                 // ** -- our built-in cache item -- 10 minutes
                                 // !! -- filtered out
@@ -374,7 +399,7 @@ namespace W3LPL
                                 {
                                     tag = "ZZ"; // show QRZ is sleeping
                                     log4omQueue.Add("QRZ not responding?\n");
-                                    File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
+                                    File.AppendAllText(logFile, line + "\r\n");
                                 }
                                 else if (!validCall)
                                 {
@@ -385,7 +410,7 @@ namespace W3LPL
                                     if (qrz.xmlError.Contains("Error"))
                                     {
                                         log4omQueue.Add(qrz.xmlError + "\n");
-                                        File.AppendAllText("C:/Temp/W3LPL_log.txt", s + "\r\n");
+                                        File.AppendAllText(logFile, line + "\r\n");
                                     }
                                     if (cachedQRZ)
                                     {
@@ -406,7 +431,7 @@ namespace W3LPL
                                     tag = "**";
                                     cachedQRZ = true;
                                 }
-                                sreturn += tag + s.Substring(2) + "\r\n";
+                                sreturn += tag + swork.Substring(2) + "\r\n";
                             }
                         }
 
@@ -414,9 +439,9 @@ namespace W3LPL
                     else
                     {
                         // Once in a while the time isn't on the DX message so we just skip it
-                        if (s.Contains("DX de") && s.Length < 74)
-                            MessageBox.Show("Length wrong??\n" + s);
-                        if (s.Length > 1) sreturn += s + "\r\n";
+                        if (line.Contains("DX de") && line.Length < 74)
+                            MessageBox.Show("Length wrong??\n" + line);
+                        if (line.Length > 1) sreturn += line + "\r\n";
                     }
                 }
                 return sreturn;
@@ -441,6 +466,16 @@ namespace W3LPL
             return null;
         }
 
+        static private String HandleSpecialCalls(String callsign)
+        {
+            // strip suffixes from special event callsigns
+            MatchCollection mc = Regex.Matches(callsign, "[WKN][0-9][A-WYZ]/");
+            foreach (Match m in mc)
+            {
+                callsign = m.Value.Substring(0, 3);
+            }
+            return callsign;
+        }
         internal void CacheClear()
         {
             totalLines = 0;

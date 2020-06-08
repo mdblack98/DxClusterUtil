@@ -286,7 +286,7 @@
             this.numericUpDownRTTYOffset.Size = new System.Drawing.Size(48, 20);
             this.numericUpDownRTTYOffset.TabIndex = 24;
             this.numericUpDownRTTYOffset.Value = global::W3LPL.Properties.Settings.Default.rttyOffset;
-            this.numericUpDownRTTYOffset.ValueChanged += new System.EventHandler(this.numericUpDownRTTYOffset_ValueChanged);
+            this.numericUpDownRTTYOffset.ValueChanged += new System.EventHandler(this.NumericUpDownRTTYOffset_ValueChanged);
             // 
             // checkedListBoxReviewedSpotters
             // 
@@ -345,7 +345,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::W3LPL.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "W3LPL V1.10.0";
+            this.Text = "W3LPL V1.12.4";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);

@@ -153,7 +153,9 @@ namespace W3LPL
             buttonStart.Enabled = false;
             if (textBoxCallsign.Text.Length == 0)
             {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 MessageBox.Show("Need callsign!~", "QueueIt");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
                 buttonStart.Enabled = true;
                 return false;
             }
@@ -166,7 +168,9 @@ namespace W3LPL
             var tokens = textBoxClusterServer.Text.Split(sep);
             if (tokens.Length != 2)
             {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 MessageBox.Show("Bad format for cluster server", "W3LPL");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
                 buttonStart.Enabled = true;
                 return false;
             }
@@ -179,24 +183,32 @@ namespace W3LPL
                 if (qrz != null) richTextBox1.AppendText("QRZ: " + qrz.xmlError + "\n");
                 return false;
             }
-            w3lpl = new W3LPLClient(host, port, w3lplQueue, qrz);
-            w3lpl.rttyOffset = (float)numericUpDownRTTYOffset.Value;
+            w3lpl = new W3LPLClient(host, port, w3lplQueue, qrz)
+            {
+                rttyOffset = (float)numericUpDownRTTYOffset.Value
+            };
             try
             {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 richTextBox1.AppendText("Trying to connect\n");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
                 Application.DoEvents();
                 if (w3lpl.Connect(textBoxCallsign.Text, richTextBox1, clientQueue))
                 {
                     //richTextBox1.AppendText("Connected\n");
                     timer1.Start();
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
                     buttonStart.Text = "Disconnect";
-                    //richTextBox1.SelectionStart = richTextBox1.Text.Length;
-                    //richTextBox1.ScrollToCaret();
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                              //richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                              //richTextBox1.ScrollToCaret();
                 }
                 else
                 {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
                     buttonStart.Text = "Start";
                     richTextBox1.AppendText("Connect failed....hmmm...no answer from W3LPL?\n");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
                 }
                 ReviewedSpottersSave(false);
             }
@@ -204,9 +216,11 @@ namespace W3LPL
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                buttonStart.Text = "Connect";
                 buttonStart.Enabled = true;
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                buttonStart.Text = "Connect";
                 MessageBox.Show(ex.Message, "QueueIt");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
             }
 
             // Now start the server for Log4OM to get the spots from the queue
@@ -621,7 +635,7 @@ namespace W3LPL
             }
         }
 
-        private void numericUpDownRTTYOffset_ValueChanged(object sender, EventArgs e)
+        private void NumericUpDownRTTYOffset_ValueChanged(object sender, EventArgs e)
         {
             w3lpl.rttyOffset = (float)numericUpDownRTTYOffset.Value;
         }
