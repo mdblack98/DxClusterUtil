@@ -53,6 +53,8 @@
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.labelW3LPLCache = new System.Windows.Forms.Label();
             this.numericUpDownRTTYOffset = new System.Windows.Forms.NumericUpDown();
+            this.listBoxIgnore = new System.Windows.Forms.ListBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.checkedListBoxReviewedSpotters = new W3LPL.ColorCodedCheckedListBox();
             this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -138,7 +140,7 @@
             this.checkedListBoxNewSpotters.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkedListBoxNewSpotters.CheckOnClick = true;
             this.checkedListBoxNewSpotters.FormattingEnabled = true;
-            this.checkedListBoxNewSpotters.Location = new System.Drawing.Point(339, 17);
+            this.checkedListBoxNewSpotters.Location = new System.Drawing.Point(431, 17);
             this.checkedListBoxNewSpotters.Margin = new System.Windows.Forms.Padding(2);
             this.checkedListBoxNewSpotters.Name = "checkedListBoxNewSpotters";
             this.checkedListBoxNewSpotters.Size = new System.Drawing.Size(104, 94);
@@ -149,7 +151,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(339, 0);
+            this.label1.Location = new System.Drawing.Point(429, 0);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(71, 13);
@@ -160,7 +162,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(463, 0);
+            this.label2.Location = new System.Drawing.Point(549, 0);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(97, 13);
@@ -216,10 +218,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextBox1.Font = new System.Drawing.Font("Lucida Sans Typewriter", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBox1.Location = new System.Drawing.Point(9, 115);
+            this.richTextBox1.Location = new System.Drawing.Point(6, 115);
             this.richTextBox1.Margin = new System.Windows.Forms.Padding(2);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(578, 117);
+            this.richTextBox1.Size = new System.Drawing.Size(642, 116);
             this.richTextBox1.TabIndex = 19;
             this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
             this.richTextBox1.WordWrap = false;
@@ -288,6 +290,27 @@
             this.numericUpDownRTTYOffset.Value = global::W3LPL.Properties.Settings.Default.rttyOffset;
             this.numericUpDownRTTYOffset.ValueChanged += new System.EventHandler(this.NumericUpDownRTTYOffset_ValueChanged);
             // 
+            // listBoxIgnore
+            // 
+            this.listBoxIgnore.FormattingEnabled = true;
+            this.listBoxIgnore.Location = new System.Drawing.Point(341, 17);
+            this.listBoxIgnore.Name = "listBoxIgnore";
+            this.listBoxIgnore.Size = new System.Drawing.Size(80, 95);
+            this.listBoxIgnore.TabIndex = 25;
+            this.listBoxIgnore.Click += new System.EventHandler(this.listBox1_Click);
+            this.listBoxIgnore.SelectedIndexChanged += new System.EventHandler(this.listBoxIgnore_SelectedIndexChanged);
+            // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(341, 0);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(37, 13);
+            this.label3.TabIndex = 26;
+            this.label3.Text = "Ignore";
+            // 
             // checkedListBoxReviewedSpotters
             // 
             this.checkedListBoxReviewedSpotters.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -295,7 +318,7 @@
             this.checkedListBoxReviewedSpotters.CheckOnClick = true;
             this.checkedListBoxReviewedSpotters.FormattingEnabled = true;
             this.checkedListBoxReviewedSpotters.IndeterminateColor = System.Drawing.Color.Orange;
-            this.checkedListBoxReviewedSpotters.Location = new System.Drawing.Point(459, 17);
+            this.checkedListBoxReviewedSpotters.Location = new System.Drawing.Point(545, 17);
             this.checkedListBoxReviewedSpotters.Margin = new System.Windows.Forms.Padding(2);
             this.checkedListBoxReviewedSpotters.Name = "checkedListBoxReviewedSpotters";
             this.checkedListBoxReviewedSpotters.Size = new System.Drawing.Size(104, 94);
@@ -320,7 +343,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(595, 233);
+            this.ClientSize = new System.Drawing.Size(692, 233);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.listBoxIgnore);
             this.Controls.Add(this.numericUpDownRTTYOffset);
             this.Controls.Add(this.labelW3LPLCache);
             this.Controls.Add(this.textBoxPassword);
@@ -345,7 +370,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::W3LPL.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "W3LPL V1.12.4";
+            this.Text = "W3LPL V1.13";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
@@ -385,6 +410,8 @@
         private System.Windows.Forms.TextBox textBoxPassword;
         private System.Windows.Forms.Label labelW3LPLCache;
         private System.Windows.Forms.NumericUpDown numericUpDownRTTYOffset;
+        private System.Windows.Forms.ListBox listBoxIgnore;
+        private System.Windows.Forms.Label label3;
     }
 }
 

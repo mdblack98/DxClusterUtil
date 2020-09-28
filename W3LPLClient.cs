@@ -35,6 +35,7 @@ namespace W3LPL
         public bool debug = true;
         public float rttyOffset;
         private readonly string logFile = "C:/Temp/W3LPL_log.txt";
+        public ListBox listBoxIgnore;
         public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
         {
             this.qrz = qrz;
@@ -89,76 +90,80 @@ namespace W3LPL
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public bool Connect(string callsign, RichTextBox debug, ConcurrentBag<string> clientQueue)
         {
+            int counter = 0;
             myCallsign = callsign;
             myDebug = debug;
             log4omQueue = clientQueue;
             File.AppendAllText(logFile, "Logging started\r\n");
-            try
+            do 
             {
-                cacheSpottedCalls.Clear();
-                client = new TcpClient
+                try
                 {
-                    ReceiveTimeout = 2000
-                };
-                client.Connect(myHost, myPort);
-                client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, 1);
-                nStream = client.GetStream();
-                var buffer = new byte[8192];
-                bool loggedIn = false;
-                int loopcount = 5;
-                while (!loggedIn)
-                {
-                    Application.DoEvents();
-                    int bytesRead = 0;
-                    if (--loopcount > 0 && nStream.DataAvailable )
+                    cacheSpottedCalls.Clear();
+                    client = new TcpClient
                     {
-                        bytesRead = nStream.Read(buffer, 0, buffer.Length);
-                        while (bytesRead > 0)
+                        ReceiveTimeout = 2000
+                    };
+                    client.Connect(myHost, myPort);
+                    client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, 1);
+                    nStream = client.GetStream();
+                    var buffer = new byte[8192];
+                    bool loggedIn = false;
+                    int loopcount = 5;
+                    while (!loggedIn)
+                    {
+                        Application.DoEvents();
+                        int bytesRead = 0;
+                        if (--loopcount > 0 && nStream.DataAvailable)
                         {
-                            var response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                            debug.AppendText(response);
-                            clientQueue.Add(response);
-                            if (response.Contains("call:") || response.Contains("callsign:"))
-                            {
-                                var msg = Encoding.ASCII.GetBytes(callsign + "\r\n");
-                                nStream.Write(msg, 0, msg.Length);
-                            }
-                            else if (response.Contains(callsign + " de "))
-                            {
-                                loggedIn = true;
-                                //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
-                                //var msg = Encoding.ASCII.GetBytes("SET/FILTER K,VE/PASS\n");
-                                //nStream.Write(msg, 0, msg.Length);
-                                return true;
-                            }
                             bytesRead = nStream.Read(buffer, 0, buffer.Length);
-                            Application.DoEvents();
-                            Thread.Sleep(2000);
+                            while (bytesRead > 0)
+                            {
+                                counter = 0;
+                                var response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                                debug.AppendText(response);
+                                clientQueue.Add(response);
+                                if (response.Contains("call:") || response.Contains("callsign:"))
+                                {
+                                    var msg = Encoding.ASCII.GetBytes(callsign + "\r\n");
+                                    nStream.Write(msg, 0, msg.Length);
+                                }
+                                else if (response.Contains(callsign + " de "))
+                                {
+                                    loggedIn = true;
+                                    //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
+                                    //var msg = Encoding.ASCII.GetBytes("SET/FILTER K,VE/PASS\n");
+                                    //nStream.Write(msg, 0, msg.Length);
+                                    return true;
+                                }
+                                bytesRead = nStream.Read(buffer, 0, buffer.Length);
+                                Application.DoEvents();
+                                Thread.Sleep(2000);
+                            }
                         }
+                        if (loopcount < 0)
+                        {
+                            client.Client.Shutdown(SocketShutdown.Receive);
+                            client.Close();
+                            client = null;
+                            return false;
+                        }
+                        Thread.Sleep(1000);
                     }
-                    if (loopcount < 0)
-                    {
-                        client.Client.Shutdown(SocketShutdown.Receive);
-                        client.Close();
-                        client = null;
-                        Form1.Instance.TextStatus = "Timeout";
-                        return false;
-                    }
-                    Thread.Sleep(1000);
                 }
-            }
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception)
+                catch (Exception)
 #pragma warning restore CA1031 // Do not catch general exception types
-            {
-                client.Close();
-                client.Dispose();
-                client = null;
-                Form1.Instance.TextStatus = "Connect error";
-                //MessageBox.Show(ex.Message, "W3LPL");
-                //throw;
-                //return false;
-            }
+                {
+                    client.Close();
+                    client.Dispose();
+                    client = null;
+                    Form1.Instance.TextStatus = "Connect error "+ ++counter;
+                    //MessageBox.Show(ex.Message, "W3LPL");
+                    //throw;
+                    //return false;
+                }
+            } while (client != null);
             return false;
         }
 
@@ -306,6 +311,10 @@ namespace W3LPL
                         if (tokens2.Length < 4) return line;
                         myCallsignExists = false;
                         spottedCall = tokens2[4];
+                        if (listBoxIgnore.Items.Contains(spottedCall))
+                        {
+                            return "Ignoring "+spottedCall +"\n";
+                        }
                         // Remove any suffix from special callsigns
                         String specialCall = HandleSpecialCalls(spottedCall);
 #pragma warning disable CA1307 // Specify StringComparison
@@ -319,9 +328,9 @@ namespace W3LPL
 #pragma warning restore CA1806 // Do not ignore method results
                         }
                         bool skimmer = swork.Contains("WPM CQ") || swork.Contains("BPS CQ") || swork.Contains("WPM BEACON") || swork.Contains("WPM NCDXF");
-                        if (!ReviewedSpottersContains(spotterCall) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)))
+                        if (line.Contains("-#") && !ReviewedSpottersContains(spotterCall) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)))
                         {
-                            filteredOut = true;
+                            filteredOut = true; // we dont' filter here if it's not a skimmer
                             if (!callSuffixList.Contains(tokens2[2]))
                             {
                                 if (skimmer) callSuffixList.Insert(0, spotterCall+":SK");

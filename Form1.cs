@@ -23,7 +23,7 @@ namespace W3LPL
         readonly ToolTip tooltip = new ToolTip();
         private QRZ qrz;
         private int badCalls;
-
+        bool startupConnect = true;
         public bool Debug { get; private set; }
 
         //BindingList<FilterItem> filterList = new BindingList<FilterItem>();
@@ -43,6 +43,7 @@ namespace W3LPL
         public Form1()
         {
             InitializeComponent();
+            Icon = Properties.Resources.tow_truck_hj3_icon;
             _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
@@ -76,6 +77,8 @@ namespace W3LPL
             tooltip.SetToolTip(labelW3LPLCache, tip);
             tip = "RTTY Offset from spot freq";
             tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
+            tip = "Click to add, shift-click to delete";
+            tooltip.SetToolTip(listBoxIgnore, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
             string[] tokens = reviewedSpotters.Split(';');
             foreach (string arg in tokens)
@@ -130,7 +133,14 @@ namespace W3LPL
             //    checkedListBoxReviewedSpotters.Sorted = true;
             //    checkedListBoxReviewedSpotters.Sorted = false;
             //}
-
+            var ignore = Properties.Settings.Default.Ignore;
+            foreach (string token in ignore.Split('|'))
+            {
+                if (token.Length > 0)
+                {
+                    listBoxIgnore.Items.Add(token);
+                }
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
@@ -191,6 +201,8 @@ namespace W3LPL
             {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                 richTextBox1.AppendText("Trying to connect\n");
+                richTextBox1.SelectionStart = richTextBox1.TextLength;
+                richTextBox1.ScrollToCaret();
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 Application.DoEvents();
                 if (w3lpl.Connect(textBoxCallsign.Text, richTextBox1, clientQueue))
@@ -211,6 +223,7 @@ namespace W3LPL
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 }
                 ReviewedSpottersSave(false);
+                w3lpl.listBoxIgnore = listBoxIgnore;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -418,7 +431,7 @@ namespace W3LPL
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         private void Form1_Activated(object sender, EventArgs e)
         {
-            if (textBoxCallsign.Text.Length > 0 && w3lpl == null && textBoxPassword.Text.Length > 0)
+            if (startupConnect && textBoxCallsign.Text.Length > 0 && w3lpl == null && textBoxPassword.Text.Length > 0)
             {
                 bool result = Connect();
                 if (result == false)
@@ -427,14 +440,21 @@ namespace W3LPL
                     buttonStart.Text = "Start";
                     richTextBox1.AppendText("Disconnected due to error\n");
                 }
+                startupConnect = false; // don't do it again
             }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             //qrz.CacheSave(textBoxCacheLocation.Text);
-            qrz.CacheSave("C:\\Temp\\qrzcache.txt");
+            if (qrz != null) qrz.CacheSave("C:\\Temp\\qrzcache.txt");
             ReviewedSpottersSave(true);
+            string group = "";
+            foreach (string token in listBoxIgnore.Items)
+            {
+                group += token + "|";
+            }
+            Properties.Settings.Default.Ignore = group;
             Properties.Settings.Default.Password = textBoxPassword.Text;
             Properties.Settings.Default.Save();
         }
@@ -639,6 +659,74 @@ namespace W3LPL
         {
             w3lpl.rttyOffset = (float)numericUpDownRTTYOffset.Value;
         }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+        }
+        public static DialogResult InputBox(string title, string promptText, ref string value)
+        {
+            Form form = new Form();
+            Label label = new Label();
+            TextBox textBox = new TextBox();
+            Button buttonOk = new Button();
+            Button buttonCancel = new Button();
+
+            form.Text = title;
+            label.Text = promptText;
+            textBox.Text = value;
+
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+            buttonOk.Text = "OK";
+            buttonCancel.Text = "Cancel";
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+            buttonOk.DialogResult = DialogResult.OK;
+            buttonCancel.DialogResult = DialogResult.Cancel;
+
+            label.SetBounds(9, 20, 372, 13);
+            textBox.SetBounds(12, 36, 372, 20);
+            buttonOk.SetBounds(228, 72, 75, 23);
+            buttonCancel.SetBounds(309, 72, 75, 23);
+
+            label.AutoSize = true;
+            textBox.Anchor = textBox.Anchor | AnchorStyles.Right;
+            buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+            form.ClientSize = new Size(396, 107);
+            form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
+            form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
+            form.FormBorderStyle = FormBorderStyle.FixedDialog;
+            form.StartPosition = FormStartPosition.CenterScreen;
+            form.MinimizeBox = false;
+            form.MaximizeBox = false;
+            form.AcceptButton = buttonOk;
+            form.CancelButton = buttonCancel;
+
+            DialogResult dialogResult = form.ShowDialog();
+            value = textBox.Text;
+            form.Dispose();
+            return dialogResult;
+        }
+
+        private void listBox1_Click(object sender, EventArgs e)
+        {
+            bool shiftKey = ModifierKeys.HasFlag(Keys.Shift);
+            if (shiftKey)
+            {
+                listBoxIgnore.Items.Remove(listBoxIgnore.SelectedItem);
+                return;
+            }
+            String value = "";
+            if (InputBox("Add Ignore Callsign", "Prompt", ref value) == DialogResult.OK)
+            {
+                _ = listBoxIgnore.Items.Add(value.ToUpper(new CultureInfo("en-US", false)));
+            }
+        }
+
+        private void listBoxIgnore_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
     public static class RichTextBoxExtensions
     {
@@ -652,5 +740,6 @@ namespace W3LPL
             box.AppendText(text);
             box.SelectionColor = box.ForeColor;
         }
+
     }
 }

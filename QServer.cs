@@ -52,7 +52,20 @@ namespace W3LPL
             while (true && !stop)
             {
                 running = true;
-                TcpClient client = listener.AcceptTcpClient();
+                TcpClient client;
+                try
+                {
+                    client = listener.AcceptTcpClient();
+                }
+                //catch (Exception ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch 
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    running = false;
+                    //MessageBox.Show("W3LPL client socket error\n" + ex.Message);
+                    return;
+                }
                 client.ReceiveTimeout = 1000;
                 client.SendTimeout = 1000;
                 NetworkStream stream = client.GetStream();

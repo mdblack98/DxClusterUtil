@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "W3LPL"
-#define MyAppVersion "1.12.4"
+#define MyAppVersion "1.13"
 #define MyAppExeName "W3LPL.exe"
 
 [Setup]
@@ -18,7 +18,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputBaseFilename=W3LPL{#MyAppVersion}
 OutputDir=C:\Users\mdbla\Dropbox\Projects\W3LPL
-SetupIconFile=C:\Users\mdbla\OneDrive\Pictures\icons8-tow-truck-30 Icons\ICO files\icons8-tow-truck-30_xp.ico
+SetupIconFile=C:\Users\mdbla\OneDrive\Pictures\icons8-tow-truck-30 Icons\ICO files\icons-tow-truck256x256.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

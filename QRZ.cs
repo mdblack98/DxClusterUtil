@@ -279,7 +279,7 @@ namespace W3LPL
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 throw;
             }
-            isOnline = (xmlSession.Length > 0) ? true : false;
+            isOnline = (xmlSession.Length > 0);
             --stackcount;
             return true;
         }
