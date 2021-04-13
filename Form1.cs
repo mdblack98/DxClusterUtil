@@ -19,13 +19,17 @@ namespace W3LPL
         private W3LPLClient w3lpl = null;
         readonly ConcurrentBag<string> clientQueue = new ConcurrentBag<string>();
         readonly ConcurrentBag<string> w3lplQueue = new ConcurrentBag<string>();
-        private QServer server;
+        QServer server;
         readonly ToolTip tooltip = new ToolTip();
         private QRZ qrz;
         private int badCalls;
         bool startupConnect = true;
         public bool Debug { get; private set; }
-
+        public int timeForDump
+        {
+            get { return server.timeForDump; }
+            set { server.timeForDump = value; }
+        }
         //BindingList<FilterItem> filterList = new BindingList<FilterItem>();
         //public volatile static int keep;
 
@@ -51,9 +55,11 @@ namespace W3LPL
             tooltip.SetToolTip(textBoxCallsign, tip);
             tip = "Local port";
             tooltip.SetToolTip(textBoxPortLocal, tip);
+            tip = "Seconds after top of minute to dump spots";
+            tooltip.SetToolTip(comboBoxTimeForDump, tip);
             tip = "Cluster server";
             tooltip.SetToolTip(textBoxClusterServer, tip);
-            tip = "Messages in Q";
+            tip = "Messages in Q(#) UTC Time(Local Offset)";
             tooltip.SetToolTip(labelQDepth, tip);
             tip = "Client status";
             tooltip.SetToolTip(labelStatusQServer, tip);
@@ -278,6 +284,7 @@ namespace W3LPL
             timer1.Stop();
             if (w3lpl == null) return;
             string msg;
+            timeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
             while ((msg = w3lpl.Get(out bool cachedQRZ)) != null)
             {
                 char[] delims = { '\n' };
@@ -369,7 +376,7 @@ namespace W3LPL
             TimeSpan tzone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
             string myTime = DateTime.UtcNow.ToString("HH:mm:ss");
 
-            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + tzone.Hours.ToString("+00;-00;+00");
+            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + "(" + tzone.Hours.ToString("+00;-00;+00") + ")";
 
 
             // See if our filter list needs updating
@@ -724,6 +731,17 @@ namespace W3LPL
         }
 
         private void listBoxIgnore_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBoxTimeForDump_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox box = (ComboBox)sender;
+            timeForDump = Convert.ToInt32(box.SelectedText);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
         {
 
         }

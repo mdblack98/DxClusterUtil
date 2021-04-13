@@ -28,10 +28,13 @@ namespace W3LPL
         public ConcurrentDictionary<string, string> cacheQRZ = new ConcurrentDictionary<string, string>();
         public ConcurrentDictionary<string, string> cacheQRZBad = new ConcurrentDictionary<string, string>();
         private readonly ConcurrentBag<string> aliasNeeded = new ConcurrentBag<string>();
-        int stackcount = 0;
+        Mutex mutexQRZ = new Mutex();
+
         public QRZ(string username, string password, string cacheFileName)
         {
-            StreamReader aliasFile = new StreamReader("C:/Temp/qrzalias.txt");
+            string fileName = "C:/Temp/qrzalias.txt";
+            if (!File.Exists(fileName)) File.Create(fileName);
+            StreamReader aliasFile = new StreamReader(fileName);
             string s;
             while((s = aliasFile.ReadLine())!=null)
             {
@@ -166,11 +169,7 @@ namespace W3LPL
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public bool CallQRZ(string url, string call, out string email)
         {
-            ++stackcount;
-            if (stackcount > 1)
-            {
-                MessageBox.Show("CallQRZ is recursing...should not see this!!!");
-            }
+            mutexQRZ.WaitOne();
             email = "none";
             Stream qrzstrm = null;
             try
@@ -196,7 +195,7 @@ namespace W3LPL
                         xml = QRZData.GetXml();
                         qrzstrm.Close();
                     }
-                    else { --stackcount;  return false;  }
+                    else { mutexQRZ.ReleaseMutex();  return false;  }
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
@@ -209,7 +208,7 @@ namespace W3LPL
                         qrzstrm.Close();
                         qrzstrm.Dispose();
                     }
-                    --stackcount;
+                    mutexQRZ.ReleaseMutex();
                     return false;
                 }
                 //xMLReader.Dispose();
@@ -217,7 +216,7 @@ namespace W3LPL
                 {
                     //MessageBox.Show("Error: failed to receive QRZDatabase object", "XML Server Error");
                     isOnline = false;
-                    --stackcount;
+                    mutexQRZ.ReleaseMutex();
                     return false;
                 }
                 DataRow dr = QRZData.Tables["QRZDatabase"].Rows[0];
@@ -248,14 +247,14 @@ namespace W3LPL
                         StreamWriter badFile = new StreamWriter("C:/Temp/w3lpl_bad.txt",true);
                         badFile.WriteLine(call);
                         badFile.Close();
-                        --stackcount;
+                        mutexQRZ.ReleaseMutex();
                         return false;
                     }
                     else if (xmlError.Contains("password") || xmlError.Contains("Timeout"))
                     {
                         isOnline = false;
                         //Connect(urlConnect);
-                        --stackcount;
+                        mutexQRZ.ReleaseMutex();
                         return isOnline;
                     }
                     else if (xmlError.Length > 0)
@@ -275,12 +274,13 @@ namespace W3LPL
             catch (Exception err)
             {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
+                mutexQRZ.ReleaseMutex();
                 _ = MessageBox.Show(err.Message, "XML Error"+err.StackTrace);
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 throw;
             }
             isOnline = (xmlSession.Length > 0);
-            --stackcount;
+            mutexQRZ.ReleaseMutex();
             return true;
         }
         private void CacheLoad(string filename)

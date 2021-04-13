@@ -19,6 +19,7 @@ namespace W3LPL
         bool stop = false;
         bool connected;
         readonly TcpListener listener;
+        public int timeForDump { get; set; }
 
         public QServer(int port, ConcurrentBag<string> clientQ, ConcurrentBag<string> w3lplQ)
         {
@@ -76,7 +77,7 @@ namespace W3LPL
                     try
                     {
                         var myTime = DateTime.Now;
-                        if (myTime.Second == 0)
+                        if (myTime.Second == timeForDump)
                         {
                             // Let the clock get past the zero second mark
                             while(clientQueue.TryTake(out msg))

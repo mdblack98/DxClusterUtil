@@ -55,6 +55,7 @@
             this.numericUpDownRTTYOffset = new System.Windows.Forms.NumericUpDown();
             this.listBoxIgnore = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.comboBoxTimeForDump = new System.Windows.Forms.ComboBox();
             this.checkedListBoxReviewedSpotters = new W3LPL.ColorCodedCheckedListBox();
             this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -83,7 +84,7 @@
             // labelQDepth
             // 
             this.labelQDepth.AutoSize = true;
-            this.labelQDepth.Location = new System.Drawing.Point(188, 44);
+            this.labelQDepth.Location = new System.Drawing.Point(173, 44);
             this.labelQDepth.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelQDepth.Name = "labelQDepth";
             this.labelQDepth.Size = new System.Drawing.Size(13, 13);
@@ -194,7 +195,7 @@
             // checkBoxCached
             // 
             this.checkBoxCached.AutoSize = true;
-            this.checkBoxCached.Location = new System.Drawing.Point(190, 70);
+            this.checkBoxCached.Location = new System.Drawing.Point(180, 70);
             this.checkBoxCached.Name = "checkBoxCached";
             this.checkBoxCached.Size = new System.Drawing.Size(63, 17);
             this.checkBoxCached.TabIndex = 16;
@@ -205,7 +206,7 @@
             // checkBoxFiltered
             // 
             this.checkBoxFiltered.AutoSize = true;
-            this.checkBoxFiltered.Location = new System.Drawing.Point(262, 70);
+            this.checkBoxFiltered.Location = new System.Drawing.Point(243, 70);
             this.checkBoxFiltered.Name = "checkBoxFiltered";
             this.checkBoxFiltered.Size = new System.Drawing.Size(60, 17);
             this.checkBoxFiltered.TabIndex = 17;
@@ -311,6 +312,28 @@
             this.label3.TabIndex = 26;
             this.label3.Text = "Ignore";
             // 
+            // comboBoxTimeForDump
+            // 
+            this.comboBoxTimeForDump.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "TimeForDump", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.comboBoxTimeForDump.FormattingEnabled = true;
+            this.comboBoxTimeForDump.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"});
+            this.comboBoxTimeForDump.Location = new System.Drawing.Point(302, 67);
+            this.comboBoxTimeForDump.Name = "comboBoxTimeForDump";
+            this.comboBoxTimeForDump.Size = new System.Drawing.Size(32, 21);
+            this.comboBoxTimeForDump.TabIndex = 27;
+            this.comboBoxTimeForDump.Text = global::W3LPL.Properties.Settings.Default.TimeForDump;
+            this.comboBoxTimeForDump.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimeForDump_SelectedIndexChanged);
+            // 
             // checkedListBoxReviewedSpotters
             // 
             this.checkedListBoxReviewedSpotters.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -344,6 +367,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(692, 233);
+            this.Controls.Add(this.comboBoxTimeForDump);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.listBoxIgnore);
             this.Controls.Add(this.numericUpDownRTTYOffset);
@@ -370,9 +394,10 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::W3LPL.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "W3LPL V1.13";
+            this.Text = "W3LPL V1.15 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
             this.LocationChanged += new System.EventHandler(this.Form1_LocationChanged);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).EndInit();
@@ -412,6 +437,7 @@
         private System.Windows.Forms.NumericUpDown numericUpDownRTTYOffset;
         private System.Windows.Forms.ListBox listBoxIgnore;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox comboBoxTimeForDump;
     }
 }
 

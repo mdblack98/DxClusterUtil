@@ -43,6 +43,7 @@ namespace W3LPL
             myPort = port;
             w3lplQueue = w3lplQ;
             callSuffixList.Add("4U1UN");
+            if (!File.Exists(logFile)) File.Create(logFile);
             long length = new System.IO.FileInfo(logFile).Length;
             if (length > 10000000) File.Delete(logFile);
         }
