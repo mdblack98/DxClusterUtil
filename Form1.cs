@@ -11,24 +11,25 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
-namespace W3LPL
+namespace DXClusterUtil
 {
     public partial class Form1 : Form
     {
         private static Form1 _instance;
-        private W3LPLClient w3lpl = null;
+        private ClusterClient clusterClient = null;
         readonly ConcurrentBag<string> clientQueue = new ConcurrentBag<string>();
-        readonly ConcurrentBag<string> w3lplQueue = new ConcurrentBag<string>();
+        readonly ConcurrentBag<string> spotQueue = new ConcurrentBag<string>();
         QServer server;
         readonly ToolTip tooltip = new ToolTip();
         private QRZ qrz;
+        private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzache.txt");
         private int badCalls;
         bool startupConnect = true;
         public bool Debug { get; private set; }
-        public int timeForDump
+        public int TimeForDump
         {
-            get { return server.timeForDump; }
-            set { server.timeForDump = value; }
+            get { return server.TimeForDump; }
+            set { server.TimeForDump = value; }
         }
         //BindingList<FilterItem> filterList = new BindingList<FilterItem>();
         //public volatile static int keep;
@@ -47,17 +48,19 @@ namespace W3LPL
         public Form1()
         {
             InitializeComponent();
-            Icon = Properties.Resources.tow_truck_hj3_icon;
+            Icon = Properties.Resources.filter3;
             _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
-            var tip = "Callsign";
+            var tip = "Callsign for QRZ login";
             tooltip.SetToolTip(textBoxCallsign, tip);
-            tip = "Local port";
+            tip = "QRZ password";
+            tooltip.SetToolTip(textBoxPassword, tip);
+            tip = "Local port for client to connect to";
             tooltip.SetToolTip(textBoxPortLocal, tip);
             tip = "Seconds after top of minute to dump spots";
             tooltip.SetToolTip(comboBoxTimeForDump, tip);
-            tip = "Cluster server";
+            tip = "Cluster server host:port";
             tooltip.SetToolTip(textBoxClusterServer, tip);
             tip = "Messages in Q(#) UTC Time(Local Offset)";
             tooltip.SetToolTip(labelQDepth, tip);
@@ -75,17 +78,16 @@ namespace W3LPL
             tooltip.SetToolTip(checkBoxCached, tip);
             tip = "Enabled logging of filtered spots";
             tooltip.SetToolTip(checkBoxFiltered, tip);
-            tip = "QRZ password";
-            tooltip.SetToolTip(textBoxPassword, tip);
             tip = "QRZ cached/bad";
             tooltip.SetToolTip(labelQRZCache, tip);
-            tip = "W3LPL cached";
-            tooltip.SetToolTip(labelW3LPLCache, tip);
+            tip = "Cluster cached";
+            tooltip.SetToolTip(labelClusterCache, tip);
             tip = "RTTY Offset from spot freq";
             tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
             tip = "Click to add, shift-click to delete";
             tooltip.SetToolTip(listBoxIgnore, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
+
             string[] tokens = reviewedSpotters.Split(';');
             foreach (string arg in tokens)
             {
@@ -149,7 +151,7 @@ namespace W3LPL
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
 
         public string TextStatus
         {
@@ -176,16 +178,11 @@ namespace W3LPL
                 return false;
             }
             char[] sep = { ':' };
-            //if (!textBoxClusterServer.Text.Contains("dxc.w3lpl.net:7373"))
-            //{
-            //    MessageBox.Show("Not dxc.w3lpl.net:7373 in server box?");
-            //    return false;
-            //}
             var tokens = textBoxClusterServer.Text.Split(sep);
-            if (tokens.Length != 2)
+            if (tokens.Length > 0 && tokens.Length != 2)
             {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
-                MessageBox.Show("Bad format for cluster server", "W3LPL");
+                MessageBox.Show("Bad format for cluster server", "ClusterServer");
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 buttonStart.Enabled = true;
                 return false;
@@ -193,13 +190,13 @@ namespace W3LPL
             string host = tokens[0];
             int port = Int32.Parse(tokens[1], CultureInfo.InvariantCulture);
             if (qrz != null) qrz.Dispose();
-            qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text, textBoxCacheLocation.Text);
+            qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text);
             if (qrz == null || qrz.isOnline == false)
             {
                 if (qrz != null) richTextBox1.AppendText("QRZ: " + qrz.xmlError + "\n");
                 return false;
             }
-            w3lpl = new W3LPLClient(host, port, w3lplQueue, qrz)
+            clusterClient = new ClusterClient(host, port, spotQueue, qrz)
             {
                 rttyOffset = (float)numericUpDownRTTYOffset.Value
             };
@@ -211,7 +208,7 @@ namespace W3LPL
                 richTextBox1.ScrollToCaret();
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 Application.DoEvents();
-                if (w3lpl.Connect(textBoxCallsign.Text, richTextBox1, clientQueue))
+                if (clusterClient.Connect(textBoxCallsign.Text, richTextBox1, clientQueue))
                 {
                     //richTextBox1.AppendText("Connected\n");
                     timer1.Start();
@@ -225,11 +222,11 @@ namespace W3LPL
                 {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                     buttonStart.Text = "Start";
-                    richTextBox1.AppendText("Connect failed....hmmm...no answer from W3LPL?\n");
+                    richTextBox1.AppendText("Connect failed....hmmm...no answer from cluster server?\n");
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 }
                 ReviewedSpottersSave(false);
-                w3lpl.listBoxIgnore = listBoxIgnore;
+                clusterClient.listBoxIgnore = listBoxIgnore;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -247,7 +244,7 @@ namespace W3LPL
             {
                 if (server == null)
                 {
-                    server = new QServer(qport, clientQueue, w3lplQueue);
+                    server = new QServer(qport, clientQueue, spotQueue);
                     _ = Task.Run(() => server.Start());
                 }
             }
@@ -282,10 +279,10 @@ namespace W3LPL
         private void Timer1_Tick(object sender, EventArgs e)
         {
             timer1.Stop();
-            if (w3lpl == null) return;
+            if (clusterClient == null) return;
             string msg;
-            timeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
-            while ((msg = w3lpl.Get(out bool cachedQRZ)) != null)
+            TimeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
+            while ((msg = clusterClient.Get(out bool cachedQRZ)) != null)
             {
                 char[] delims = { '\n' };
                 string[] lines = msg.Split(delims);
@@ -308,7 +305,7 @@ namespace W3LPL
                         if (s.Length < 3) continue;
                         // %% means qrz is cached valid call
                         // !! means spotter is filtered out
-                        // ** means W3LPL is cached
+                        // ** means cluster spot is cached
                         // ## means bad call 
                         // #* means bad call cached
                         string firstFive = ss.Substring(0, 5);
@@ -316,7 +313,7 @@ namespace W3LPL
                         bool badCall = firstFive.Equals("## de",StringComparison.InvariantCultureIgnoreCase);
                         bool badCallCached = firstFive.Equals("#* de", StringComparison.InvariantCultureIgnoreCase);
                         bool filtered = firstFive.Equals("!! de",StringComparison.InvariantCultureIgnoreCase);
-                        bool w3lplCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
+                        bool clusterCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
                         bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
                         if (qrzError)
                         {
@@ -325,8 +322,8 @@ namespace W3LPL
                             //this.WindowState = FormWindowState.Normal;
                         }
                         if (filtered && !checkBoxFiltered.Checked) continue;
-                        else if (w3lplCached && !checkBoxCached.Checked) continue;
-                        else if (!filtered && !w3lplCached && !dxline && !badCall && !badCallCached)
+                        else if (clusterCached && !checkBoxCached.Checked) continue;
+                        else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached)
                         {
                             RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
                             richTextBox1.SelectionStart = richTextBox1.Text.Length;
@@ -355,7 +352,6 @@ namespace W3LPL
                             myColor = Color.DarkBlue;
                             if (Debug)
                             {
-                                File.AppendAllText("C:/Temp/" + textBoxCallsign.Text, qrz.xml);
                             }
                         }
                         else
@@ -363,7 +359,7 @@ namespace W3LPL
                             myColor = Color.Orange;
                         }
                         labelQRZCache.Text = "" + qrz.cacheQRZ.Count + "/" + badCalls;
-                        labelW3LPLCache.Text = "" + w3lpl.cacheSpottedCalls.Count;
+                        labelClusterCache.Text = "" + clusterClient.cacheSpottedCalls.Count;
                         ss = ss.Replace("\r", "");
                         ss = ss.Replace("\n", "");
                         RichTextBoxExtensions.AppendText(richTextBox1, ss + "\n", myColor);
@@ -380,7 +376,7 @@ namespace W3LPL
 
 
             // See if our filter list needs updating
-            foreach (var s in w3lpl.callSuffixList)
+            foreach (var s in clusterClient.callSuffixList)
             {
 
                 string[] tokens = s.Split(':');
@@ -411,7 +407,7 @@ namespace W3LPL
                         WindowState = FormWindowState.Minimized;
                         WindowState = FormWindowState.Normal;
                     }
-                    else if (labelStatusQServer.Text.Equals("W3LPL", StringComparison.InvariantCultureIgnoreCase))
+                    else if (labelStatusQServer.Text.Equals("Client", StringComparison.InvariantCultureIgnoreCase))
                     {
                         labelStatusQServer.BackColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
                         labelStatusQServer.Text = "Ready for client";
@@ -430,15 +426,15 @@ namespace W3LPL
         {
             timer1.Stop();
             Thread.Sleep(500);
-            w3lpl.Disconnect();
-            w3lpl = null;
+            clusterClient.Disconnect();
+            clusterClient = null;
             server.Stop();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         private void Form1_Activated(object sender, EventArgs e)
         {
-            if (startupConnect && textBoxCallsign.Text.Length > 0 && w3lpl == null && textBoxPassword.Text.Length > 0)
+            if (startupConnect && textBoxCallsign.Text.Length > 0 && clusterClient == null && textBoxPassword.Text.Length > 0)
             {
                 bool result = Connect();
                 if (result == false)
@@ -454,7 +450,7 @@ namespace W3LPL
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             //qrz.CacheSave(textBoxCacheLocation.Text);
-            if (qrz != null) qrz.CacheSave("C:\\Temp\\qrzcache.txt");
+            if (qrz != null) qrz.CacheSave(pathQRZCache);
             ReviewedSpottersSave(true);
             string group = "";
             foreach (string token in listBoxIgnore.Items)
@@ -463,6 +459,8 @@ namespace W3LPL
             }
             Properties.Settings.Default.Ignore = group;
             Properties.Settings.Default.Password = textBoxPassword.Text;
+            Properties.Settings.Default.Location = this.Location;
+            Properties.Settings.Default.Size = this.Size;
             Properties.Settings.Default.Save();
         }
 
@@ -471,9 +469,9 @@ namespace W3LPL
         {
             char[] sep = { ':' };
             var tokens = textBoxClusterServer.Text.Split(sep);
-            if (tokens.Length != 2)
+            if (tokens.Length > 0 && tokens.Length != 2)
             {
-                MessageBox.Show("Bad web link for cluster server\nExpected server:port\ne.g. 'dxc.w3lpl.net:7373", "W3LPL");
+                MessageBox.Show("Bad web link for cluster server\nExpected server:port","DxClusterUtil");
                 return;
             }
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
@@ -490,24 +488,12 @@ namespace W3LPL
             Properties.Settings.Default.Save();
         }
 
-        private void Form1_LocationChanged(object sender, EventArgs e)
-        {
-            if (Location.X > 0 && Location.Y > 0)
-            {
-                Properties.Settings.Default.Location = Location;
-                Properties.Settings.Default.Save();
-            }
-            else if (WindowState != FormWindowState.Minimized)
-            {
-                SetDesktopLocation(0, 0);
-            }
-        }
 
         private void LabelQDepth_Click(object sender, EventArgs e)
         {
-            w3lpl.CacheClear();
-            w3lpl.totalLines = 0;
-            w3lpl.totalLinesKept = 0;
+            clusterClient.CacheClear();
+            clusterClient.totalLines = 0;
+            clusterClient.totalLinesKept = 0;
         }
 
         private void CheckedListBoxReviewedSpotters_SelectedIndexChanged(object sender, EventArgs e)
@@ -521,7 +507,7 @@ namespace W3LPL
             {
                 checkedListBoxReviewedSpotters.Items.Clear();
                 checkedListBoxReviewedSpotters.Items.Add("4U1UN", true);
-                w3lpl.callSuffixList.Clear();
+                clusterClient.callSuffixList.Clear();
             }
             if (ctrlKey && shiftKey && !altKey)
             {
@@ -563,7 +549,7 @@ namespace W3LPL
                 Properties.Settings.Default.ReviewedSpotters = reviewedSpotters;
                 Properties.Settings.Default.Save();
             }
-            if (w3lpl != null) w3lpl.reviewedSpotters = reviewedSpotters;
+            if (clusterClient != null) clusterClient.reviewedSpotters = reviewedSpotters;
         }
         private void CheckedListBoxNewSpotters_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -575,7 +561,7 @@ namespace W3LPL
             if (ctrlKey && shiftKey)
             {
                 checkedListBoxNewSpotters.Items.Clear();
-                w3lpl.callSuffixList.Clear();
+                clusterClient.callSuffixList.Clear();
             }
             else if (ctrlKey) // move to reviewed spotters
             {
@@ -656,7 +642,7 @@ namespace W3LPL
             if (ModifierKeys.HasFlag(Keys.Shift))
             {
                 Debug = !Debug;
-                w3lpl.debug = Debug;
+                clusterClient.debug = Debug;
                 qrz.debug = Debug;
                 richTextBox1.AppendText("Debug = " + Debug +"\n");
             }
@@ -664,10 +650,10 @@ namespace W3LPL
 
         private void NumericUpDownRTTYOffset_ValueChanged(object sender, EventArgs e)
         {
-            w3lpl.rttyOffset = (float)numericUpDownRTTYOffset.Value;
+            clusterClient.rttyOffset = (float)numericUpDownRTTYOffset.Value;
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void ListBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
         }
         public static DialogResult InputBox(string title, string promptText, ref string value)
@@ -695,7 +681,7 @@ namespace W3LPL
             buttonCancel.SetBounds(309, 72, 75, 23);
 
             label.AutoSize = true;
-            textBox.Anchor = textBox.Anchor | AnchorStyles.Right;
+            textBox.Anchor |= AnchorStyles.Right;
             buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
@@ -715,7 +701,7 @@ namespace W3LPL
             return dialogResult;
         }
 
-        private void listBox1_Click(object sender, EventArgs e)
+        private void ListBox1_Click(object sender, EventArgs e)
         {
             bool shiftKey = ModifierKeys.HasFlag(Keys.Shift);
             if (shiftKey)
@@ -730,20 +716,23 @@ namespace W3LPL
             }
         }
 
-        private void listBoxIgnore_SelectedIndexChanged(object sender, EventArgs e)
+        private void ListBoxIgnore_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
-        private void comboBoxTimeForDump_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBoxTimeForDump_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox box = (ComboBox)sender;
-            timeForDump = Convert.ToInt32(box.SelectedText);
+#pragma warning disable CA1305 // Specify IFormatProvider
+            TimeForDump = Convert.ToInt32(box.SelectedText);
+#pragma warning restore CA1305 // Specify IFormatProvider
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            this.Location = Properties.Settings.Default.Location;
+            this.Size = Properties.Settings.Default.Size;
         }
     }
     public static class RichTextBoxExtensions

@@ -1,4 +1,4 @@
-﻿namespace W3LPL
+﻿namespace DXClusterUtil
 {
     partial class Form1
     {
@@ -15,7 +15,7 @@
         {
             if (disposing && (components != null))
             {
-                if (w3lpl != null) w3lpl.Dispose();
+                if (clusterClient != null) clusterClient.Dispose();
                 if (tooltip != null) tooltip.Dispose();
                 if (qrz != null) qrz.Dispose();
                 components.Dispose();
@@ -48,15 +48,14 @@
             this.checkBoxCached = new System.Windows.Forms.CheckBox();
             this.checkBoxFiltered = new System.Windows.Forms.CheckBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.textBoxCacheLocation = new System.Windows.Forms.TextBox();
             this.labelQRZCache = new System.Windows.Forms.Label();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
-            this.labelW3LPLCache = new System.Windows.Forms.Label();
+            this.labelClusterCache = new System.Windows.Forms.Label();
             this.numericUpDownRTTYOffset = new System.Windows.Forms.NumericUpDown();
             this.listBoxIgnore = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxTimeForDump = new System.Windows.Forms.ComboBox();
-            this.checkedListBoxReviewedSpotters = new W3LPL.ColorCodedCheckedListBox();
+            this.checkedListBoxReviewedSpotters = new DXClusterUtil.ColorCodedCheckedListBox();
             this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource2 = new System.Windows.Forms.BindingSource(this.components);
@@ -87,33 +86,32 @@
             this.labelQDepth.Location = new System.Drawing.Point(173, 44);
             this.labelQDepth.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelQDepth.Name = "labelQDepth";
-            this.labelQDepth.Size = new System.Drawing.Size(13, 13);
+            this.labelQDepth.Size = new System.Drawing.Size(0, 13);
             this.labelQDepth.TabIndex = 6;
-            this.labelQDepth.Text = "0";
             this.labelQDepth.Click += new System.EventHandler(this.LabelQDepth_Click);
             // 
             // textBoxClusterServer
             // 
-            this.textBoxClusterServer.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "ClusterServer", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBoxClusterServer.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "ClusterServer", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxClusterServer.Location = new System.Drawing.Point(226, 15);
             this.textBoxClusterServer.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxClusterServer.Name = "textBoxClusterServer";
             this.textBoxClusterServer.Size = new System.Drawing.Size(108, 20);
-            this.textBoxClusterServer.TabIndex = 7;
-            this.textBoxClusterServer.Text = global::W3LPL.Properties.Settings.Default.ClusterServer;
+            this.textBoxClusterServer.TabIndex = 3;
+            this.textBoxClusterServer.Text = global::DXClusterUtil.Properties.Settings.Default.ClusterServer;
             this.textBoxClusterServer.TextChanged += new System.EventHandler(this.TextBoxClusterServer_TextChanged);
             this.textBoxClusterServer.Leave += new System.EventHandler(this.TextBoxCluster_Leave);
             // 
             // textBoxCallsign
             // 
             this.textBoxCallsign.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBoxCallsign.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "Callsign", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBoxCallsign.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "Callsign", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxCallsign.Location = new System.Drawing.Point(100, 15);
             this.textBoxCallsign.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxCallsign.Name = "textBoxCallsign";
             this.textBoxCallsign.Size = new System.Drawing.Size(59, 20);
-            this.textBoxCallsign.TabIndex = 4;
-            this.textBoxCallsign.Text = global::W3LPL.Properties.Settings.Default.Callsign;
+            this.textBoxCallsign.TabIndex = 1;
+            this.textBoxCallsign.Text = global::DXClusterUtil.Properties.Settings.Default.Callsign;
             // 
             // labelStatusQServer
             // 
@@ -121,38 +119,37 @@
             this.labelStatusQServer.Location = new System.Drawing.Point(77, 44);
             this.labelStatusQServer.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelStatusQServer.Name = "labelStatusQServer";
-            this.labelStatusQServer.Size = new System.Drawing.Size(43, 13);
+            this.labelStatusQServer.Size = new System.Drawing.Size(33, 13);
             this.labelStatusQServer.TabIndex = 8;
-            this.labelStatusQServer.Text = "W3LPL";
+            this.labelStatusQServer.Text = "Client";
             // 
             // textBoxPortLocal
             // 
             this.textBoxPortLocal.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBoxPortLocal.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "PortLocal", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBoxPortLocal.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "PortLocal", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxPortLocal.Location = new System.Drawing.Point(13, 41);
             this.textBoxPortLocal.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxPortLocal.Name = "textBoxPortLocal";
             this.textBoxPortLocal.Size = new System.Drawing.Size(54, 20);
-            this.textBoxPortLocal.TabIndex = 9;
-            this.textBoxPortLocal.Text = global::W3LPL.Properties.Settings.Default.PortLocal;
+            this.textBoxPortLocal.TabIndex = 4;
+            this.textBoxPortLocal.Text = global::DXClusterUtil.Properties.Settings.Default.PortLocal;
             // 
             // checkedListBoxNewSpotters
             // 
-            this.checkedListBoxNewSpotters.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkedListBoxNewSpotters.CheckOnClick = true;
             this.checkedListBoxNewSpotters.FormattingEnabled = true;
             this.checkedListBoxNewSpotters.Location = new System.Drawing.Point(431, 17);
             this.checkedListBoxNewSpotters.Margin = new System.Windows.Forms.Padding(2);
             this.checkedListBoxNewSpotters.Name = "checkedListBoxNewSpotters";
             this.checkedListBoxNewSpotters.Size = new System.Drawing.Size(104, 94);
-            this.checkedListBoxNewSpotters.TabIndex = 11;
+            this.checkedListBoxNewSpotters.TabIndex = 12;
             this.checkedListBoxNewSpotters.SelectedIndexChanged += new System.EventHandler(this.CheckedListBoxNewSpotters_SelectedIndexChanged);
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(429, 0);
+            this.label1.Location = new System.Drawing.Point(447, 0);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(71, 13);
@@ -176,7 +173,7 @@
             this.buttonBackup.Margin = new System.Windows.Forms.Padding(2);
             this.buttonBackup.Name = "buttonBackup";
             this.buttonBackup.Size = new System.Drawing.Size(75, 23);
-            this.buttonBackup.TabIndex = 14;
+            this.buttonBackup.TabIndex = 6;
             this.buttonBackup.Text = "Backup";
             this.buttonBackup.UseVisualStyleBackColor = true;
             this.buttonBackup.Click += new System.EventHandler(this.ButtonBackup_Click);
@@ -187,7 +184,7 @@
             this.buttonCopy.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCopy.Name = "buttonCopy";
             this.buttonCopy.Size = new System.Drawing.Size(75, 23);
-            this.buttonCopy.TabIndex = 15;
+            this.buttonCopy.TabIndex = 7;
             this.buttonCopy.Text = "Copy Log";
             this.buttonCopy.UseVisualStyleBackColor = true;
             this.buttonCopy.Click += new System.EventHandler(this.Button1_Click);
@@ -195,10 +192,10 @@
             // checkBoxCached
             // 
             this.checkBoxCached.AutoSize = true;
-            this.checkBoxCached.Location = new System.Drawing.Point(180, 70);
+            this.checkBoxCached.Location = new System.Drawing.Point(192, 70);
             this.checkBoxCached.Name = "checkBoxCached";
             this.checkBoxCached.Size = new System.Drawing.Size(63, 17);
-            this.checkBoxCached.TabIndex = 16;
+            this.checkBoxCached.TabIndex = 8;
             this.checkBoxCached.Text = "Cached";
             this.checkBoxCached.UseVisualStyleBackColor = true;
             this.checkBoxCached.CheckedChanged += new System.EventHandler(this.CheckBoxCached_CheckedChanged);
@@ -206,10 +203,10 @@
             // checkBoxFiltered
             // 
             this.checkBoxFiltered.AutoSize = true;
-            this.checkBoxFiltered.Location = new System.Drawing.Point(243, 70);
+            this.checkBoxFiltered.Location = new System.Drawing.Point(262, 70);
             this.checkBoxFiltered.Name = "checkBoxFiltered";
             this.checkBoxFiltered.Size = new System.Drawing.Size(60, 17);
-            this.checkBoxFiltered.TabIndex = 17;
+            this.checkBoxFiltered.TabIndex = 9;
             this.checkBoxFiltered.Text = "Filtered";
             this.checkBoxFiltered.UseVisualStyleBackColor = true;
             // 
@@ -222,19 +219,10 @@
             this.richTextBox1.Location = new System.Drawing.Point(6, 115);
             this.richTextBox1.Margin = new System.Windows.Forms.Padding(2);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(642, 116);
-            this.richTextBox1.TabIndex = 19;
+            this.richTextBox1.Size = new System.Drawing.Size(643, 116);
+            this.richTextBox1.TabIndex = 14;
             this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
             this.richTextBox1.WordWrap = false;
-            // 
-            // textBoxCacheLocation
-            // 
-            this.textBoxCacheLocation.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "Cache", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBoxCacheLocation.Location = new System.Drawing.Point(13, 90);
-            this.textBoxCacheLocation.Name = "textBoxCacheLocation";
-            this.textBoxCacheLocation.Size = new System.Drawing.Size(162, 20);
-            this.textBoxCacheLocation.TabIndex = 20;
-            this.textBoxCacheLocation.Text = global::W3LPL.Properties.Settings.Default.Cache;
             // 
             // labelQRZCache
             // 
@@ -247,28 +235,28 @@
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "Password", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBoxPassword.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "Password", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxPassword.Location = new System.Drawing.Point(163, 15);
             this.textBoxPassword.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxPassword.Name = "textBoxPassword";
             this.textBoxPassword.PasswordChar = '*';
             this.textBoxPassword.Size = new System.Drawing.Size(59, 20);
-            this.textBoxPassword.TabIndex = 22;
-            this.textBoxPassword.Text = global::W3LPL.Properties.Settings.Default.Password;
+            this.textBoxPassword.TabIndex = 2;
+            this.textBoxPassword.Text = global::DXClusterUtil.Properties.Settings.Default.Password;
             // 
-            // labelW3LPLCache
+            // labelClusterCache
             // 
-            this.labelW3LPLCache.AutoSize = true;
-            this.labelW3LPLCache.Location = new System.Drawing.Point(259, 93);
-            this.labelW3LPLCache.Name = "labelW3LPLCache";
-            this.labelW3LPLCache.Size = new System.Drawing.Size(76, 13);
-            this.labelW3LPLCache.TabIndex = 23;
-            this.labelW3LPLCache.Tag = "W3LPL cache";
-            this.labelW3LPLCache.Text = "W3LPL cache";
+            this.labelClusterCache.AutoSize = true;
+            this.labelClusterCache.Location = new System.Drawing.Point(259, 93);
+            this.labelClusterCache.Name = "labelClusterCache";
+            this.labelClusterCache.Size = new System.Drawing.Size(72, 13);
+            this.labelClusterCache.TabIndex = 23;
+            this.labelClusterCache.Tag = "Cluster cache";
+            this.labelClusterCache.Text = "Cluster cache";
             // 
             // numericUpDownRTTYOffset
             // 
-            this.numericUpDownRTTYOffset.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::W3LPL.Properties.Settings.Default, "rttyOffset", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.numericUpDownRTTYOffset.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::DXClusterUtil.Properties.Settings.Default, "rttyOffset", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.numericUpDownRTTYOffset.Increment = new decimal(new int[] {
             100,
             0,
@@ -287,8 +275,8 @@
             -2147483648});
             this.numericUpDownRTTYOffset.Name = "numericUpDownRTTYOffset";
             this.numericUpDownRTTYOffset.Size = new System.Drawing.Size(48, 20);
-            this.numericUpDownRTTYOffset.TabIndex = 24;
-            this.numericUpDownRTTYOffset.Value = global::W3LPL.Properties.Settings.Default.rttyOffset;
+            this.numericUpDownRTTYOffset.TabIndex = 5;
+            this.numericUpDownRTTYOffset.Value = global::DXClusterUtil.Properties.Settings.Default.rttyOffset;
             this.numericUpDownRTTYOffset.ValueChanged += new System.EventHandler(this.NumericUpDownRTTYOffset_ValueChanged);
             // 
             // listBoxIgnore
@@ -297,15 +285,15 @@
             this.listBoxIgnore.Location = new System.Drawing.Point(341, 17);
             this.listBoxIgnore.Name = "listBoxIgnore";
             this.listBoxIgnore.Size = new System.Drawing.Size(80, 95);
-            this.listBoxIgnore.TabIndex = 25;
-            this.listBoxIgnore.Click += new System.EventHandler(this.listBox1_Click);
-            this.listBoxIgnore.SelectedIndexChanged += new System.EventHandler(this.listBoxIgnore_SelectedIndexChanged);
+            this.listBoxIgnore.TabIndex = 11;
+            this.listBoxIgnore.Click += new System.EventHandler(this.ListBox1_Click);
+            this.listBoxIgnore.SelectedIndexChanged += new System.EventHandler(this.ListBoxIgnore_SelectedIndexChanged);
             // 
             // label3
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(341, 0);
+            this.label3.Location = new System.Drawing.Point(360, 0);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(37, 13);
@@ -314,7 +302,7 @@
             // 
             // comboBoxTimeForDump
             // 
-            this.comboBoxTimeForDump.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::W3LPL.Properties.Settings.Default, "TimeForDump", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.comboBoxTimeForDump.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "TimeForDump", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.comboBoxTimeForDump.FormattingEnabled = true;
             this.comboBoxTimeForDump.Items.AddRange(new object[] {
             "1",
@@ -327,16 +315,15 @@
             "8",
             "9",
             "10"});
-            this.comboBoxTimeForDump.Location = new System.Drawing.Point(302, 67);
+            this.comboBoxTimeForDump.Location = new System.Drawing.Point(13, 89);
             this.comboBoxTimeForDump.Name = "comboBoxTimeForDump";
             this.comboBoxTimeForDump.Size = new System.Drawing.Size(32, 21);
-            this.comboBoxTimeForDump.TabIndex = 27;
-            this.comboBoxTimeForDump.Text = global::W3LPL.Properties.Settings.Default.TimeForDump;
-            this.comboBoxTimeForDump.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimeForDump_SelectedIndexChanged);
+            this.comboBoxTimeForDump.TabIndex = 10;
+            this.comboBoxTimeForDump.Text = global::DXClusterUtil.Properties.Settings.Default.TimeForDump;
+            this.comboBoxTimeForDump.SelectedIndexChanged += new System.EventHandler(this.ComboBoxTimeForDump_SelectedIndexChanged);
             // 
             // checkedListBoxReviewedSpotters
             // 
-            this.checkedListBoxReviewedSpotters.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkedListBoxReviewedSpotters.CheckedColor = System.Drawing.Color.Green;
             this.checkedListBoxReviewedSpotters.CheckOnClick = true;
             this.checkedListBoxReviewedSpotters.FormattingEnabled = true;
@@ -345,36 +332,35 @@
             this.checkedListBoxReviewedSpotters.Margin = new System.Windows.Forms.Padding(2);
             this.checkedListBoxReviewedSpotters.Name = "checkedListBoxReviewedSpotters";
             this.checkedListBoxReviewedSpotters.Size = new System.Drawing.Size(104, 94);
-            this.checkedListBoxReviewedSpotters.TabIndex = 10;
+            this.checkedListBoxReviewedSpotters.TabIndex = 13;
             this.checkedListBoxReviewedSpotters.UncheckedColor = System.Drawing.Color.Red;
             this.checkedListBoxReviewedSpotters.SelectedIndexChanged += new System.EventHandler(this.CheckedListBoxReviewedSpotters_SelectedIndexChanged);
             this.checkedListBoxReviewedSpotters.MouseUp += new System.Windows.Forms.MouseEventHandler(this.CheckedListBoxReviewedSpotters_MouseUp);
             // 
             // form1BindingSource1
             // 
-            this.form1BindingSource1.DataSource = typeof(W3LPL.Form1);
+            this.form1BindingSource1.DataSource = typeof(DXClusterUtil.Form1);
             // 
             // form1BindingSource
             // 
-            this.form1BindingSource.DataSource = typeof(W3LPL.Form1);
+            this.form1BindingSource.DataSource = typeof(DXClusterUtil.Form1);
             // 
             // form1BindingSource2
             // 
-            this.form1BindingSource2.DataSource = typeof(W3LPL.Form1);
+            this.form1BindingSource2.DataSource = typeof(DXClusterUtil.Form1);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(692, 233);
+            this.ClientSize = new System.Drawing.Size(660, 233);
             this.Controls.Add(this.comboBoxTimeForDump);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.listBoxIgnore);
             this.Controls.Add(this.numericUpDownRTTYOffset);
-            this.Controls.Add(this.labelW3LPLCache);
+            this.Controls.Add(this.labelClusterCache);
             this.Controls.Add(this.textBoxPassword);
             this.Controls.Add(this.labelQRZCache);
-            this.Controls.Add(this.textBoxCacheLocation);
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.checkBoxFiltered);
             this.Controls.Add(this.checkBoxCached);
@@ -390,16 +376,15 @@
             this.Controls.Add(this.labelQDepth);
             this.Controls.Add(this.textBoxCallsign);
             this.Controls.Add(this.buttonStart);
-            this.DataBindings.Add(new System.Windows.Forms.Binding("Location", global::W3LPL.Properties.Settings.Default, "Location", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.DataBindings.Add(new System.Windows.Forms.Binding("Location", global::DXClusterUtil.Properties.Settings.Default, "Location", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Location = global::W3LPL.Properties.Settings.Default.Location;
+            this.Location = global::DXClusterUtil.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "W3LPL V1.15 by W9MDB";
+            this.Text = "DXClusterUtil V1.16 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
-            this.LocationChanged += new System.EventHandler(this.Form1_LocationChanged);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).EndInit();
@@ -430,10 +415,9 @@
         private System.Windows.Forms.CheckBox checkBoxCached;
         private System.Windows.Forms.CheckBox checkBoxFiltered;
         private System.Windows.Forms.RichTextBox richTextBox1;
-        private System.Windows.Forms.TextBox textBoxCacheLocation;
         private System.Windows.Forms.Label labelQRZCache;
         private System.Windows.Forms.TextBox textBoxPassword;
-        private System.Windows.Forms.Label labelW3LPLCache;
+        private System.Windows.Forms.Label labelClusterCache;
         private System.Windows.Forms.NumericUpDown numericUpDownRTTYOffset;
         private System.Windows.Forms.ListBox listBoxIgnore;
         private System.Windows.Forms.Label label3;

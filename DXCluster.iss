@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "W3LPL"
-#define MyAppVersion "1.14"
+#define MyAppVersion "1.15"
 #define MyAppExeName "W3LPL.exe"
 
 [Setup]
@@ -31,8 +31,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "C:\Users\mdbla\Dropbox\Projects\W3LPL\bin\Release\W3LPL.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\W3LPL\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: "C:\Users\mdbla\Dropbox\Projects\W3LPcny shared system files
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

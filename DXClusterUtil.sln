@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "W3LPL", "W3LPL.csproj", "{57AEEA7E-128D-4BA6-AE64-40272402399A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DXClusterUtil", "DXClusterUtil.csproj", "{57AEEA7E-128D-4BA6-AE64-40272402399A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -2,16 +2,19 @@
 <configuration>
     <configSections>
         <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
-            <section name="DXClusterUtil.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+            <section name="W3LPL.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
         </sectionGroup>
     </configSections>
+    <startup> 
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
+    </startup>
     <userSettings>
-        <DXClusterUtil.Properties.Settings>
+        <W3LPL.Properties.Settings>
             <setting name="Callsign" serializeAs="String">
                 <value />
             </setting>
             <setting name="ClusterServer" serializeAs="String">
-                <value />
+                <value>dxc.w3lpl.net:7373</value>
             </setting>
             <setting name="Location" serializeAs="String">
                 <value>0, 19</value>
@@ -25,6 +28,9 @@
             <setting name="ReviewedSpotters" serializeAs="String">
                 <value>4U1UN,2;</value>
             </setting>
+            <setting name="Cache" serializeAs="String">
+                <value>C:/Temp/qrzcache.txt</value>
+            </setting>
             <setting name="Password" serializeAs="String">
                 <value />
             </setting>
@@ -37,6 +43,6 @@
             <setting name="TimeForDump" serializeAs="String">
                 <value>6</value>
             </setting>
-        </DXClusterUtil.Properties.Settings>
+        </W3LPL.Properties.Settings>
     </userSettings>
 </configuration>

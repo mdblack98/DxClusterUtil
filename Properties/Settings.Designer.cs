@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace W3LPL.Properties {
+namespace DXClusterUtil.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -37,7 +37,7 @@ namespace W3LPL.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("dxc.w3lpl.net:7373")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ClusterServer {
             get {
                 return ((string)(this["ClusterServer"]));
@@ -92,18 +92,6 @@ namespace W3LPL.Properties {
             }
             set {
                 this["ReviewedSpotters"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:/Temp/qrzcache.txt")]
-        public string Cache {
-            get {
-                return ((string)(this["Cache"]));
-            }
-            set {
-                this["Cache"] = value;
             }
         }
         

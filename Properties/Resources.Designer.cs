@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace W3LPL.Properties {
+namespace DXClusterUtil.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace W3LPL.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("W3LPL.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DXClusterUtil.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -63,9 +63,9 @@ namespace W3LPL.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon tow_truck_hj3_icon {
+        internal static System.Drawing.Icon filter3 {
             get {
-                object obj = ResourceManager.GetObject("tow_truck_hj3_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("filter3", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

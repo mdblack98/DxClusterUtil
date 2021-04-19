@@ -12,14 +12,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace W3LPL
+namespace DXClusterUtil
 {
-    class W3LPLClient: IDisposable
+    class ClusterClient: IDisposable
     {
         public TcpClient client = null;
         private NetworkStream nStream = null;
         ConcurrentBag<string> log4omQueue = null;
-        readonly ConcurrentBag<string> w3lplQueue = null;
+        readonly ConcurrentBag<string> clusterQueue = null;
         public readonly Dictionary<string, int> cacheSpottedCalls = new Dictionary<string, int>();
         readonly string myHost;
         readonly int myPort;
@@ -34,21 +34,28 @@ namespace W3LPL
         private readonly QRZ qrz = null;
         public bool debug = true;
         public float rttyOffset;
-        private readonly string logFile = "C:/Temp/W3LPL_log.txt";
         public ListBox listBoxIgnore;
-        public W3LPLClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
+        private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\W3LPL_Log.txt");
+
+        private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzerror.txt");
+
+        public ClusterClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
         {
             this.qrz = qrz;
             myHost = host;
             myPort = port;
-            w3lplQueue = w3lplQ;
+            clusterQueue = w3lplQ;
             callSuffixList.Add("4U1UN");
-            if (!File.Exists(logFile)) File.Create(logFile);
+            if (!File.Exists(logFile))
+            {
+                var stream = File.Create(logFile);
+                stream.Dispose();
+            }
             long length = new System.IO.FileInfo(logFile).Length;
             if (length > 10000000) File.Delete(logFile);
         }
 
-        ~W3LPLClient()
+        ~ClusterClient()
         {
             Cleanup();
         }
@@ -88,7 +95,7 @@ namespace W3LPL
             return true;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public bool Connect(string callsign, RichTextBox debug, ConcurrentBag<string> clientQueue)
         {
             int counter = 0;
@@ -207,7 +214,7 @@ namespace W3LPL
                     s2 = "OK";
                 MessageBox.Show("client == null =" + s1 + " or qrz == null = " + s2);
             }
-            if (w3lplQueue.TryTake(out string result))
+            if (clusterQueue.TryTake(out string result))
             {
                 var outmsg = Encoding.ASCII.GetBytes(result);
                 nStream.Write(outmsg, 0, outmsg.Length);
@@ -217,7 +224,7 @@ namespace W3LPL
             }
             if (client.Connected && nStream != null && nStream.DataAvailable)
             {
-                while (w3lplQueue.TryTake(out string command))
+                while (clusterQueue.TryTake(out string command))
                 {
                     var outmsg = Encoding.ASCII.GetBytes(command);
                     nStream.Write(outmsg, 0, outmsg.Length);
@@ -322,11 +329,11 @@ namespace W3LPL
                         if (!specialCall.Equals(spottedCall))
 #pragma warning restore CA1307 // Specify StringComparison
                         {
-#pragma warning disable CA1806 // Do not ignore method results
+//#pragma warning disable CA1806 // Do not ignore method results
                             int n1 = spottedCall.Length;
                             String spaces = "               ".Substring(0,n1-3);
                             swork = line.Replace(spottedCall, specialCall+spaces);
-#pragma warning restore CA1806 // Do not ignore method results
+//#pragma warning restore CA1806 // Do not ignore method results
                         }
                         bool skimmer = swork.Contains("WPM CQ") || swork.Contains("BPS CQ") || swork.Contains("WPM BEACON") || swork.Contains("WPM NCDXF");
                         if (line.Contains("-#") && !ReviewedSpottersContains(spotterCall) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)))
@@ -415,7 +422,7 @@ namespace W3LPL
                                 {
                                     if (debug)
                                     {
-                                        File.AppendAllText("C:/Temp/qrzerror.txt", "!valid??: " + qrz.xml + "\n");
+                                        File.AppendAllText(pathQRZError, "!valid??: " + qrz.xml + "\n");
                                     }
                                     if (qrz.xmlError.Contains("Error"))
                                     {

@@ -12,7 +12,7 @@ using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using System.Xml;
 
-namespace W3LPL
+namespace DXClusterUtil
 {
     class QRZ : IDisposable
     {
@@ -28,25 +28,34 @@ namespace W3LPL
         public ConcurrentDictionary<string, string> cacheQRZ = new ConcurrentDictionary<string, string>();
         public ConcurrentDictionary<string, string> cacheQRZBad = new ConcurrentDictionary<string, string>();
         private readonly ConcurrentBag<string> aliasNeeded = new ConcurrentBag<string>();
-        Mutex mutexQRZ = new Mutex();
+        readonly Mutex mutexQRZ = new Mutex();
+        readonly private string pathQRZAlias = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzalias.txt");
+        readonly private string pathQRZLog = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzlog.txt");
+        readonly private string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzerror.txt");
+        readonly private string pathQRZBad = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzbad.txt");
+        readonly private string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
 
-        public QRZ(string username, string password, string cacheFileName)
+        public QRZ(string username, string password)
         {
-            string fileName = "C:/Temp/qrzalias.txt";
-            if (!File.Exists(fileName)) File.Create(fileName);
-            StreamReader aliasFile = new StreamReader(fileName);
+            if (!File.Exists(pathQRZAlias))
+            {
+                var stream = File.Create(pathQRZAlias);
+                stream.Dispose();
+
+            }
+            StreamReader aliasFile = new StreamReader(pathQRZAlias);
             string s;
-            while((s = aliasFile.ReadLine())!=null)
+            while ((s = aliasFile.ReadLine())!=null)
             {
                 string[] tokens = s.Split(',');
                 aliasNeeded.Add(tokens[0]);
             }
             aliasFile.Close();
             aliasFile.Dispose();
-            if (debug) File.AppendAllText("C:/Temp/qrzerror.txt", "New QRZ instance\n");
+            if (debug) File.AppendAllText(pathQRZAlias, "New QRZ instance\n");
             if (cacheQRZ.Count == 0)
             {
-                CacheLoad(cacheFileName);
+                CacheLoad(pathQRZCache);
             }
             urlConnect = server + "?username=" + username + ";password=" + password;
             bool result = Connect(urlConnect);
@@ -82,7 +91,7 @@ namespace W3LPL
             if (callSign.Length < 3)
             {
                 cached = false;
-                if (debug) File.AppendAllText("C:/Temp/qrzerror.txt", "Callsign length < 3\n");
+                if (debug) File.AppendAllText(pathQRZError, "Callsign length < 3\n");
                 xml = "callSign Length < 3 =" + callSign + "\n";
                 return false; // no 2-char callsigns
             }
@@ -96,14 +105,14 @@ namespace W3LPL
                 else callSignSplit = tokens[0];
             }
             string myurl = server + "?s=" + xmlSession;
-            if (debug) File.AppendAllText("C:/Temp/qrzlog.txt", DateTime.Now.ToShortTimeString()+ " "+myurl+"\n");
+            if (debug) File.AppendAllText(pathQRZLog, DateTime.Now.ToShortTimeString()+ " "+myurl+"\n");
             if (cacheQRZ.TryGetValue(callSign,out string validCall))
             { // it's in the cache so check our previous result for BAD
-                if (debug) File.AppendAllText("C:/Temp/qrzlog.txt", callSignSplit +" in qrz cache validCall="+validCall+"\n");
+                if (debug) File.AppendAllText(pathQRZLog, callSignSplit +" in qrz cache validCall="+validCall+"\n");
                 cached = true;
                 if (validCall.Equals("BAD", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (debug) File.AppendAllText("C:/Temp/qrzerror.txt", "In cache as bad call for callsign="+callSignSplit+"\n");
+                    if (debug) File.AppendAllText(pathQRZError, "In cache as bad call for callsign="+callSignSplit+"\n");
                     xml = "Bad call cached="+callSignSplit+"\n";
                     return false;
                 }
@@ -114,7 +123,7 @@ namespace W3LPL
                 cached = true;
                 return false;
             }
-            if (debug) File.AppendAllText("C:/Temp/qrzlog.txt", callSignSplit + " not cached callsign=" + callSignSplit + "\n");
+            if (debug) File.AppendAllText(pathQRZLog, callSignSplit + " not cached callsign=" + callSignSplit + "\n");
             cached = false;
             // Not in cache so have to look it up.
             bool valid;
@@ -128,14 +137,14 @@ namespace W3LPL
                 {
                     Thread.Sleep(5000);
                     ++n;
-                    if (debug) File.AppendAllText("C:/Temp/qrzlog.txt","QRZ not online...retrying " + n + "\n");
+                    if (debug) File.AppendAllText(pathQRZLog,"QRZ not online...retrying " + n + "\n");
                     Connect(urlConnect);
                 }
                 if (!validfull && valid)
                 {
                     if (!aliasNeeded.Contains(callSign))
                     {
-                        File.AppendAllText("C:/Temp/qrzalias.txt", callSign + "," + email2 + "\n");
+                        File.AppendAllText(pathQRZAlias, callSign + "," + email2 + "\n");
                         aliasNeeded.Add(callSign);
                     }
                 }
@@ -152,11 +161,11 @@ namespace W3LPL
             }
             if (!valid)
             {
-                if (debug) File.AppendAllText("C:/Temp/qrzerror.txt", "Not valid after CallQRZ xml="+xmlError+"\n");
+                if (debug) File.AppendAllText(pathQRZError, "Not valid after CallQRZ xml="+xmlError+"\n");
             }
             if (!isOnline)
             {
-                if (debug) File.AppendAllText("C:/Temp/qrzerror.txt", "Not online??\n");
+                if (debug) File.AppendAllText(pathQRZError, "Not online??\n");
             }
             return valid;
         }
@@ -166,7 +175,7 @@ namespace W3LPL
             return CallQRZ(url,"",out _);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public bool CallQRZ(string url, string call, out string email)
         {
             mutexQRZ.WaitOne();
@@ -243,8 +252,9 @@ namespace W3LPL
                     xmlSession = QRZField(sr, "Key");
                     if (xmlError.Contains("Not found"))
                     {
-                        File.AppendAllText("c:/Temp/w3lpl_bad.txt",call+"\n");
-                        StreamWriter badFile = new StreamWriter("C:/Temp/w3lpl_bad.txt",true);
+
+                        File.AppendAllText(pathQRZBad,call+"\n");
+                        StreamWriter badFile = new StreamWriter(pathQRZBad,true);
                         badFile.WriteLine(call);
                         badFile.Close();
                         mutexQRZ.ReleaseMutex();
@@ -259,7 +269,7 @@ namespace W3LPL
                     }
                     else if (xmlError.Length > 0)
                     {
-                        if (debug) File.AppendAllText("C:/Temp/qrzerror.txt", xml);
+                        if (debug) File.AppendAllText(pathQRZError, xml);
                     }
                     DataTable callTable = QRZData.Tables["Callsign"];
                     if (callTable.Rows.Count == 0) return false;
@@ -273,10 +283,8 @@ namespace W3LPL
             }
             catch (Exception err)
             {
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 mutexQRZ.ReleaseMutex();
                 _ = MessageBox.Show(err.Message, "XML Error"+err.StackTrace);
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
                 throw;
             }
             isOnline = (xmlSession.Length > 0);

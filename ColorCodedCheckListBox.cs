@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace W3LPL
+namespace DXClusterUtil
 {
     class ColorCodedCheckedListBox : CheckedListBox
     {

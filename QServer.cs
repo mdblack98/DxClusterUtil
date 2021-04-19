@@ -9,22 +9,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace W3LPL
+namespace DXClusterUtil
 {
     class QServer
     {
         readonly ConcurrentBag<string> clientQueue;
-        readonly ConcurrentBag<string> w3lplQueue;
+        readonly ConcurrentBag<string> spotQueue;
         bool running = false;
         bool stop = false;
         bool connected;
         readonly TcpListener listener;
-        public int timeForDump { get; set; }
+        public int TimeForDump { get; set; }
 
-        public QServer(int port, ConcurrentBag<string> clientQ, ConcurrentBag<string> w3lplQ)
+        public QServer(int port, ConcurrentBag<string> clientQ, ConcurrentBag<string> spotQ)
         {
             clientQueue = clientQ;
-            w3lplQueue = w3lplQ;
+            spotQueue = spotQ;
             if (listener == null)
             {
                 listener = new TcpListener(IPAddress.Any, port);
@@ -58,13 +58,11 @@ namespace W3LPL
                 {
                     client = listener.AcceptTcpClient();
                 }
-                //catch (Exception ex)
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch 
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
                     running = false;
-                    //MessageBox.Show("W3LPL client socket error\n" + ex.Message);
                     return;
                 }
                 client.ReceiveTimeout = 1000;
@@ -77,7 +75,7 @@ namespace W3LPL
                     try
                     {
                         var myTime = DateTime.Now;
-                        if (myTime.Second == timeForDump)
+                        if (myTime.Second == TimeForDump)
                         {
                             // Let the clock get past the zero second mark
                             while(clientQueue.TryTake(out msg))
@@ -118,7 +116,7 @@ namespace W3LPL
                         {
                             bytes = new byte[8192];
                             int bytesRead = stream.Read(bytes, 0, bytes.Length);
-                            w3lplQueue.Add(Encoding.ASCII.GetString(bytes, 0, bytesRead));
+                            spotQueue.Add(Encoding.ASCII.GetString(bytes, 0, bytesRead));
                         }
                         msg = "";
                         bytes = Encoding.ASCII.GetBytes(msg);
@@ -131,7 +129,7 @@ namespace W3LPL
                     {
                         //if (!WSAGetLastError() == 10053)
                         //{
-                        //    MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "W3LPL");
+                        //    MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "DxClusterUtil");
                         //}
                         running = false;
                     }

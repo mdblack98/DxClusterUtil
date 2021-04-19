@@ -1,12 +1,12 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="W3LPL.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DXClusterUtil.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="Callsign" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ClusterServer" Type="System.String" Scope="User">
-      <Value Profile="(Default)">dxc.w3lpl.net:7373</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Location" Type="System.Drawing.Point" Scope="User">
       <Value Profile="(Default)">0, 19</Value>
@@ -19,9 +19,6 @@
     </Setting>
     <Setting Name="ReviewedSpotters" Type="System.String" Scope="User">
       <Value Profile="(Default)">4U1UN,2;</Value>
-    </Setting>
-    <Setting Name="Cache" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:/Temp/qrzcache.txt</Value>
     </Setting>
     <Setting Name="Password" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
