@@ -380,7 +380,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::DXClusterUtil.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "DXClusterUtil V1.16 by W9MDB";
+            this.Text = "DxClusterUtil V1.16 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);

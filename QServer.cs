@@ -116,7 +116,11 @@ namespace DXClusterUtil
                         {
                             bytes = new byte[8192];
                             int bytesRead = stream.Read(bytes, 0, bytes.Length);
-                            spotQueue.Add(Encoding.ASCII.GetString(bytes, 0, bytesRead));
+                            string cmd = Encoding.ASCII.GetString(bytes, 0, bytesRead);
+                            if (!cmd.Contains("bye"))
+                            {
+                                spotQueue.Add(cmd);
+                            }
                         }
                         msg = "";
                         bytes = Encoding.ASCII.GetBytes(msg);

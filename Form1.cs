@@ -52,7 +52,9 @@ namespace DXClusterUtil
             _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
-            var tip = "Callsign for QRZ login";
+            var tip = "!! means spotter is filtered out\n * *means W3LPL is cached\n## means bad call\n#* means bad call cached\nGreen is call sign good and cached\nOrange is call sign good and new QRZ query\nRed is bad call\nDark Red is bad call cached";
+            tooltip.SetToolTip(richTextBox1, tip);
+            tip = "Callsign for QRZ login";
             tooltip.SetToolTip(textBoxCallsign, tip);
             tip = "QRZ password";
             tooltip.SetToolTip(textBoxPassword, tip);
