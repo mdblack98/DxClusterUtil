@@ -1,4 +1,6 @@
-﻿namespace DXClusterUtil.Properties {
+﻿using System.Windows.Forms;
+
+namespace DXClusterUtil.Properties {
     
     
     // This class allows you to handle specific events on the settings class:
@@ -16,7 +18,9 @@
             // this.SettingsSaving += this.SettingsSavingEventHandler;
             //
         }
-        
+
+        public FormWindowState WindowState { get; internal set; }
+
         private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
             // Add code to handle the SettingChangingEvent event here.
         }

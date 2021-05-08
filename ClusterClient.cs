@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -31,21 +32,23 @@ namespace DXClusterUtil
         public bool filterOn = true;
         public List<string> callSuffixList = new List<string>();
         public string reviewedSpotters = "";
+        public string ignoredSpottersAndSpots = "";
         private readonly QRZ qrz = null;
         public bool debug = true;
         public float rttyOffset;
         public ListBox listBoxIgnore;
-        private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\W3LPL_Log.txt");
+        private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_Log.txt");
 
-        private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzerror.txt");
+        private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_qrzerror.txt");
 
-        public ClusterClient(string host, int port, ConcurrentBag<string> w3lplQ, QRZ qrz)
+        public ClusterClient(string host, int port, ConcurrentBag<string> ClusterServerQ, QRZ qrz)
         {
+            File.Delete(logFile);
+            File.Delete(pathQRZError);
             this.qrz = qrz;
             myHost = host;
             myPort = port;
-            clusterQueue = w3lplQ;
-            callSuffixList.Add("4U1UN");
+            clusterQueue = ClusterServerQ;
             if (!File.Exists(logFile))
             {
                 var stream = File.Create(logFile);
@@ -83,7 +86,6 @@ namespace DXClusterUtil
         {
             if (!Connect(myCallsign,myDebug,log4omQueue))
             {
-                //w3lplQueue.Add("W3LPL connect error\n");
                 return false;
             }
             Form1.Instance.TextStatusColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
@@ -102,7 +104,13 @@ namespace DXClusterUtil
             myCallsign = callsign;
             myDebug = debug;
             log4omQueue = clientQueue;
-            File.AppendAllText(logFile, "Logging started\r\n");
+            try
+            {
+                File.AppendAllText(logFile, "Logging started\r\n");
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
             do 
             {
                 try
@@ -167,9 +175,6 @@ namespace DXClusterUtil
                     client.Dispose();
                     client = null;
                     Form1.Instance.TextStatus = "Connect error "+ ++counter;
-                    //MessageBox.Show(ex.Message, "W3LPL");
-                    //throw;
-                    //return false;
                 }
             } while (client != null);
             return false;
@@ -185,6 +190,7 @@ namespace DXClusterUtil
         {
             string check = s + ",";
             bool gotem = reviewedSpotters.Contains(check);
+            if (!gotem && newSpotters != null) gotem = newSpotters.Contains(check);
             return gotem;
         }
         public bool ReviewedSpottersIsNotChecked(string s)
@@ -194,7 +200,11 @@ namespace DXClusterUtil
             return gotem;
         }
 
-
+        public bool IgnoredSpottersContains(string s)
+        {
+            bool gotem = ignoredSpottersAndSpots.Contains(s);
+            return gotem;
+        }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public string Get(out bool cachedQRZ)
         {
@@ -243,7 +253,37 @@ namespace DXClusterUtil
                         return null;
                     }
                 } while (c != '\n');
-                if (debug) File.AppendAllText(logFile, ss);
+                bool worked = false;
+                do
+                {
+                    try
+                    {
+                        try
+                        {
+                            if (debug) File.AppendAllText(logFile, ss);
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                        worked = true;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        var result1 = MessageBox.Show("File excpetion in " + logFile+"\n"+ex.Message, "DXClusterUtil Error", MessageBoxButtons.RetryCancel);
+                        if (result1 == DialogResult.Retry)
+                        {
+                            try
+                            {
+                                File.AppendAllText(logFile, ss);
+                            }
+#pragma warning disable CA1031 // Do not catch general exception types
+                            catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                        }
+                    }
+                } while (worked == false);
                 //Int32 bytesRead = nStream.Read(databuf, 0, databuf.Length);
                 //var responseData = System.Text.Encoding.ASCII.GetString(databuf, 0, bytesRead);
                 char[] sep = { '\n', '\r' };
@@ -336,7 +376,7 @@ namespace DXClusterUtil
 //#pragma warning restore CA1806 // Do not ignore method results
                         }
                         bool skimmer = swork.Contains("WPM CQ") || swork.Contains("BPS CQ") || swork.Contains("WPM BEACON") || swork.Contains("WPM NCDXF");
-                        if (line.Contains("-#") && !ReviewedSpottersContains(spotterCall) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)))
+                        if ((line.Contains("-#") && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
                         {
                             filteredOut = true; // we dont' filter here if it's not a skimmer
                             if (!callSuffixList.Contains(tokens2[2]))
@@ -351,18 +391,30 @@ namespace DXClusterUtil
                             ++totalLinesKept;
                             // we may have changed the freq so we add the change to log4omQueue
                             log4omQueue.Add(swork + "\r\n");
-                            File.AppendAllText(logFile, swork + "\r\n");
+                            try
+                            {
+                                File.AppendAllText(logFile, swork + "\r\n");
+                            }
+#pragma warning disable CA1031 // Do not catch general exception types
+                            catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
 #pragma warning disable CA1307 // Specify StringComparison
                             if (!swork.Equals(swork)) // then we'll also log the change
 #pragma warning restore CA1307 // Specify StringComparison
                             {
-                                File.AppendAllText(logFile, swork + "\r\n");
+                                try
+                                {
+                                    File.AppendAllText(logFile, swork + "\r\n");
+                                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                                catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                             }
                             sreturn += swork + "\r\n";
                             return sreturn;
                         }
-                        bool isW3LPLCached = cacheSpottedCalls.ContainsKey(key);
-                        if (!isW3LPLCached && !filteredOut)
+                        bool isClusterServerCached = cacheSpottedCalls.ContainsKey(key);
+                        if (!isClusterServerCached && !filteredOut)
                         {
                             cacheSpottedCalls[key] = minute;
                             ++totalLinesKept;
@@ -378,12 +430,24 @@ namespace DXClusterUtil
                             else
                             {
                                 log4omQueue.Add(swork + "\r\n");
-                                File.AppendAllText(logFile, swork + "\r\n");
+                                try
+                                {
+                                    File.AppendAllText(logFile, swork + "\r\n");
+                                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                                catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
 #pragma warning disable CA1307 // Specify StringComparison
                                 if (!swork.Equals(swork)) // then we'll also log the change
 #pragma warning restore CA1307 // Specify StringComparison
                                 {
-                                    File.AppendAllText(logFile, swork + "\r\n");
+                                    try
+                                    {
+                                        File.AppendAllText(logFile, swork + "\r\n");
+                                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                                    catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                                 }
                             }
                             sreturn += sss + "\r\n";
@@ -392,12 +456,24 @@ namespace DXClusterUtil
                         {
                             ++totalLinesKept;
                             log4omQueue.Add(swork + "\r\n");
-                            File.AppendAllText(logFile, swork + "\r\n");
+                            try
+                            {
+                                File.AppendAllText(logFile, swork + "\r\n");
+                            }
+#pragma warning disable CA1031 // Do not catch general exception types
+                            catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
 #pragma warning disable CA1307 // Specify StringComparison
                             if (!swork.Equals(swork)) // then we'll also log the change
 #pragma warning restore CA1307 // Specify StringComparison
                             {
-                                File.AppendAllText(logFile, swork + "\r\n");
+                                try
+                                {
+                                    File.AppendAllText(logFile, swork + "\r\n");
+                                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                                catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                             }
                             sreturn += swork + "\r\n";
                             myCallsignExists = true;
@@ -416,18 +492,36 @@ namespace DXClusterUtil
                                 {
                                     tag = "ZZ"; // show QRZ is sleeping
                                     log4omQueue.Add("QRZ not responding?\n");
-                                    File.AppendAllText(logFile, line + "\r\n");
+                                    try
+                                    {
+                                        File.AppendAllText(logFile, line + "\r\n");
+                                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                                    catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                                 }
                                 else if (!validCall)
                                 {
                                     if (debug)
                                     {
-                                        File.AppendAllText(pathQRZError, "!valid??: " + qrz.xml + "\n");
+                                        try
+                                        {
+                                            File.AppendAllText(pathQRZError, "!valid??: " + qrz.xml + "\n");
+                                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                                        catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                                     }
                                     if (qrz.xmlError.Contains("Error"))
                                     {
                                         log4omQueue.Add(qrz.xmlError + "\n");
-                                        File.AppendAllText(logFile, line + "\r\n");
+                                        try
+                                        {
+                                            File.AppendAllText(logFile, line + "\r\n");
+                                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                                        catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                                     }
                                     if (cachedQRZ)
                                     {
@@ -477,7 +571,7 @@ namespace DXClusterUtil
                 Disconnect();
                 if (!Connect())
                 {
-                    MessageBox.Show("Error connecting to W3LPL", "W3LPL");
+                    MessageBox.Show("Error connecting to cluster server", "DXClusterUtil");
                 }
             }
             return null;
@@ -503,6 +597,7 @@ namespace DXClusterUtil
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
         public bool myCallsignExists;
+        internal string newSpotters;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -524,7 +619,7 @@ namespace DXClusterUtil
         }
 
         // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~W3LPLClient()
+        // ~DxClusterClient()
         // {
         //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
         //   Dispose(false);

@@ -52,9 +52,10 @@
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.labelClusterCache = new System.Windows.Forms.Label();
             this.numericUpDownRTTYOffset = new System.Windows.Forms.NumericUpDown();
-            this.listBoxIgnore = new System.Windows.Forms.ListBox();
+            this.listBoxIgnoredSpotters = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.comboBoxTimeForDump = new System.Windows.Forms.ComboBox();
+            this.comboBoxTimeIntervalAfter = new System.Windows.Forms.ComboBox();
+            this.comboBoxTimeInterval = new System.Windows.Forms.ComboBox();
             this.checkedListBoxReviewedSpotters = new DXClusterUtil.ColorCodedCheckedListBox();
             this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -219,7 +220,8 @@
             this.richTextBox1.Location = new System.Drawing.Point(6, 115);
             this.richTextBox1.Margin = new System.Windows.Forms.Padding(2);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(643, 116);
+            this.richTextBox1.ReadOnly = true;
+            this.richTextBox1.Size = new System.Drawing.Size(643, 121);
             this.richTextBox1.TabIndex = 14;
             this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
             this.richTextBox1.WordWrap = false;
@@ -279,15 +281,15 @@
             this.numericUpDownRTTYOffset.Value = global::DXClusterUtil.Properties.Settings.Default.rttyOffset;
             this.numericUpDownRTTYOffset.ValueChanged += new System.EventHandler(this.NumericUpDownRTTYOffset_ValueChanged);
             // 
-            // listBoxIgnore
+            // listBoxIgnoredSpotters
             // 
-            this.listBoxIgnore.FormattingEnabled = true;
-            this.listBoxIgnore.Location = new System.Drawing.Point(341, 17);
-            this.listBoxIgnore.Name = "listBoxIgnore";
-            this.listBoxIgnore.Size = new System.Drawing.Size(80, 95);
-            this.listBoxIgnore.TabIndex = 11;
-            this.listBoxIgnore.Click += new System.EventHandler(this.ListBox1_Click);
-            this.listBoxIgnore.SelectedIndexChanged += new System.EventHandler(this.ListBoxIgnore_SelectedIndexChanged);
+            this.listBoxIgnoredSpotters.FormattingEnabled = true;
+            this.listBoxIgnoredSpotters.Location = new System.Drawing.Point(341, 17);
+            this.listBoxIgnoredSpotters.Name = "listBoxIgnoredSpotters";
+            this.listBoxIgnoredSpotters.Size = new System.Drawing.Size(80, 95);
+            this.listBoxIgnoredSpotters.TabIndex = 11;
+            this.listBoxIgnoredSpotters.Click += new System.EventHandler(this.ListBox1_Click);
+            this.listBoxIgnoredSpotters.SelectedIndexChanged += new System.EventHandler(this.ListBoxIgnore_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -300,11 +302,11 @@
             this.label3.TabIndex = 26;
             this.label3.Text = "Ignore";
             // 
-            // comboBoxTimeForDump
+            // comboBoxTimeIntervalAfter
             // 
-            this.comboBoxTimeForDump.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "TimeForDump", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.comboBoxTimeForDump.FormattingEnabled = true;
-            this.comboBoxTimeForDump.Items.AddRange(new object[] {
+            this.comboBoxTimeIntervalAfter.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "TimeIntervalAfter", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.comboBoxTimeIntervalAfter.FormattingEnabled = true;
+            this.comboBoxTimeIntervalAfter.Items.AddRange(new object[] {
             "1",
             "2",
             "3",
@@ -315,12 +317,28 @@
             "8",
             "9",
             "10"});
-            this.comboBoxTimeForDump.Location = new System.Drawing.Point(13, 89);
-            this.comboBoxTimeForDump.Name = "comboBoxTimeForDump";
-            this.comboBoxTimeForDump.Size = new System.Drawing.Size(32, 21);
-            this.comboBoxTimeForDump.TabIndex = 10;
-            this.comboBoxTimeForDump.Text = global::DXClusterUtil.Properties.Settings.Default.TimeForDump;
-            this.comboBoxTimeForDump.SelectedIndexChanged += new System.EventHandler(this.ComboBoxTimeForDump_SelectedIndexChanged);
+            this.comboBoxTimeIntervalAfter.Location = new System.Drawing.Point(60, 90);
+            this.comboBoxTimeIntervalAfter.Name = "comboBoxTimeIntervalAfter";
+            this.comboBoxTimeIntervalAfter.Size = new System.Drawing.Size(38, 21);
+            this.comboBoxTimeIntervalAfter.TabIndex = 10;
+            this.comboBoxTimeIntervalAfter.Text = global::DXClusterUtil.Properties.Settings.Default.TimeInterval;
+            this.comboBoxTimeIntervalAfter.SelectedIndexChanged += new System.EventHandler(this.ComboBoxTimeForDump_SelectedIndexChanged);
+            // 
+            // comboBoxTimeInterval
+            // 
+            this.comboBoxTimeInterval.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::DXClusterUtil.Properties.Settings.Default, "TimeInterval", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.comboBoxTimeInterval.FormattingEnabled = true;
+            this.comboBoxTimeInterval.Items.AddRange(new object[] {
+            "1",
+            "15",
+            "30",
+            "60"});
+            this.comboBoxTimeInterval.Location = new System.Drawing.Point(14, 90);
+            this.comboBoxTimeInterval.Name = "comboBoxTimeInterval";
+            this.comboBoxTimeInterval.Size = new System.Drawing.Size(40, 21);
+            this.comboBoxTimeInterval.TabIndex = 27;
+            this.comboBoxTimeInterval.Text = global::DXClusterUtil.Properties.Settings.Default.TimeInterval;
+            this.comboBoxTimeInterval.SelectedIndexChanged += new System.EventHandler(this.ComboBoxInterval_SelectedIndexChanged);
             // 
             // checkedListBoxReviewedSpotters
             // 
@@ -353,10 +371,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(660, 233);
-            this.Controls.Add(this.comboBoxTimeForDump);
+            this.ClientSize = new System.Drawing.Size(660, 238);
+            this.Controls.Add(this.comboBoxTimeInterval);
+            this.Controls.Add(this.comboBoxTimeIntervalAfter);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.listBoxIgnore);
+            this.Controls.Add(this.listBoxIgnoredSpotters);
             this.Controls.Add(this.numericUpDownRTTYOffset);
             this.Controls.Add(this.labelClusterCache);
             this.Controls.Add(this.textBoxPassword);
@@ -380,7 +399,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::DXClusterUtil.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "DxClusterUtil V1.16 by W9MDB";
+            this.Text = "DxClusterUtil V1.18 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -419,9 +438,10 @@
         private System.Windows.Forms.TextBox textBoxPassword;
         private System.Windows.Forms.Label labelClusterCache;
         private System.Windows.Forms.NumericUpDown numericUpDownRTTYOffset;
-        private System.Windows.Forms.ListBox listBoxIgnore;
+        private System.Windows.Forms.ListBox listBoxIgnoredSpotters;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ComboBox comboBoxTimeForDump;
+        private System.Windows.Forms.ComboBox comboBoxTimeIntervalAfter;
+        private System.Windows.Forms.ComboBox comboBoxTimeInterval;
     }
 }
 

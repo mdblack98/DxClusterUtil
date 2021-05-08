@@ -19,7 +19,8 @@ namespace DXClusterUtil
         bool stop = false;
         bool connected;
         readonly TcpListener listener;
-        public int TimeForDump { get; set; }
+        public int TimeIntervalAfter { get; set; } // in seconds
+        public int TimeInterval { get; set; } // Expecting 1, 15, 30, 60 
 
         public QServer(int port, ConcurrentBag<string> clientQ, ConcurrentBag<string> spotQ)
         {
@@ -27,8 +28,20 @@ namespace DXClusterUtil
             spotQueue = spotQ;
             if (listener == null)
             {
-                listener = new TcpListener(IPAddress.Any, port);
-                listener.Start();
+                try
+                {
+                    listener = new TcpListener(IPAddress.Any, port);
+                    listener.Start();
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                    _ = MessageBox.Show("Error starting DXClusterUtil server...another copy running?  Exiting DXClusterUtil", "DXClusterUtil", MessageBoxButtons.OK);
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                    return;
+                }
             }
         }
 
@@ -74,8 +87,11 @@ namespace DXClusterUtil
                 {
                     try
                     {
-                        var myTime = DateTime.Now;
-                        if (myTime.Second == TimeForDump)
+                        var seconds = DateTime.Now.Second % TimeInterval;
+                        var secondsChk = TimeInterval;
+                        if (TimeInterval > 1) secondsChk += TimeIntervalAfter;
+                        secondsChk %= TimeInterval;
+                        if (seconds == secondsChk)
                         {
                             // Let the clock get past the zero second mark
                             while(clientQueue.TryTake(out msg))

@@ -22,14 +22,20 @@ namespace DXClusterUtil
         QServer server;
         readonly ToolTip tooltip = new ToolTip();
         private QRZ qrz;
-        private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzache.txt");
+        private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
         private int badCalls;
         bool startupConnect = true;
+
         public bool Debug { get; private set; }
-        public int TimeForDump
+        public int TimeIntervalAfter
         {
-            get { return server.TimeForDump; }
-            set { server.TimeForDump = value; }
+            get { return server.TimeIntervalAfter; }
+            set { if (server != null) server.TimeIntervalAfter = value; }
+        }
+        public int TimeIntervalForDump
+        {
+            get { return server.TimeInterval; }
+            set { if (server != null) server.TimeInterval = value; }
         }
         //BindingList<FilterItem> filterList = new BindingList<FilterItem>();
         //public volatile static int keep;
@@ -48,30 +54,41 @@ namespace DXClusterUtil
         public Form1()
         {
             InitializeComponent();
+            //var userConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
             Icon = Properties.Resources.filter3;
             _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
-            var tip = "!! means spotter is filtered out\n * *means W3LPL is cached\n## means bad call\n#* means bad call cached\nGreen is call sign good and cached\nOrange is call sign good and new QRZ query\nRed is bad call\nDark Red is bad call cached";
+            var tip = "!! means spotter is filtered out\n * *means spot is cached\n## means bad call\n#* means bad call cached\nGreen is call sign good and cached\nOrange is call sign good and new QRZ query\nRed is bad call\nDark Red is bad call cached\nBlue is your own spot";
+            tooltip.AutoPopDelay = 36000;
+            tooltip.InitialDelay = 1000;
+            tooltip.AutoPopDelay = 10000;
+            tooltip.ReshowDelay = 2000;
+            tooltip.ShowAlways = true;
             tooltip.SetToolTip(richTextBox1, tip);
+     
             tip = "Callsign for QRZ login";
             tooltip.SetToolTip(textBoxCallsign, tip);
             tip = "QRZ password";
             tooltip.SetToolTip(textBoxPassword, tip);
             tip = "Local port for client to connect to";
             tooltip.SetToolTip(textBoxPortLocal, tip);
-            tip = "Seconds after top of minute to dump spots";
-            tooltip.SetToolTip(comboBoxTimeForDump, tip);
+            tip = "Intrval to dump spots every X seconds";
+            tooltip.SetToolTip(comboBoxTimeInterval, tip);
+            tip = "Seconds after interval to dump spots";
+            tooltip.SetToolTip(comboBoxTimeIntervalAfter, tip);
             tip = "Cluster server host:port";
             tooltip.SetToolTip(textBoxClusterServer, tip);
             tip = "Messages in Q(#) UTC Time(Local Offset)";
             tooltip.SetToolTip(labelQDepth, tip);
             tip = "Client status";
             tooltip.SetToolTip(labelStatusQServer, tip);
-            tip = "Click to enable, ctrl-click to disable, ctrl-shift-click to delete, ctrl-shift-alt-click to delete all";
+            tip = "Click to enable/disable\nShift-click for QRZ\nAlt-click to sort\nAlt-click to move to Ignore list\nCtrl-shift-click to delete\nCtrl-shift-alt-click to delete all";
             tooltip.SetToolTip(checkedListBoxReviewedSpotters, tip);
-            tip = "Click to see QRZ page, ctrl-click to transfer to Reviewed, ctrl-shift-click to clear all";
+            tip = "New Spotters needing review\nClick to enable/disable\nShift-click for QRZ\nAlt-click to sort\nCtrl-Alt-click to move to Ignore list\nCtrl-shift-click to delete\nCtrl-click to transfer to Reviewed\nCtrl-shift-alt-click to delete all";
             tooltip.SetToolTip(checkedListBoxNewSpotters, tip);
+            tip = "Will ignore spotters or spots\nClick to add\nShift-click for QRZ\nAlt-click to sort\nCtrl-shift-click to delete\nCtrl-shift-alt-click to delete all";
+            tooltip.SetToolTip(listBoxIgnoredSpotters, tip);
             tip = "Backup user.config";
             tooltip.SetToolTip(buttonBackup, tip);
             tip = "Click to copy, ctrl-click to copy&erase";
@@ -86,8 +103,6 @@ namespace DXClusterUtil
             tooltip.SetToolTip(labelClusterCache, tip);
             tip = "RTTY Offset from spot freq";
             tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
-            tip = "Click to add, shift-click to delete";
-            tooltip.SetToolTip(listBoxIgnore, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
 
             string[] tokens = reviewedSpotters.Split(';');
@@ -148,7 +163,7 @@ namespace DXClusterUtil
             {
                 if (token.Length > 0)
                 {
-                    listBoxIgnore.Items.Add(token);
+                    listBoxIgnoredSpotters.Items.Add(token);
                 }
             }
         }
@@ -228,7 +243,7 @@ namespace DXClusterUtil
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 }
                 ReviewedSpottersSave(false);
-                clusterClient.listBoxIgnore = listBoxIgnore;
+                clusterClient.listBoxIgnore = listBoxIgnoredSpotters;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -248,6 +263,10 @@ namespace DXClusterUtil
                 {
                     server = new QServer(qport, clientQueue, spotQueue);
                     _ = Task.Run(() => server.Start());
+#pragma warning disable CA1305 // Specify IFormatProvider
+                    TimeIntervalForDump = Convert.ToInt32(comboBoxTimeInterval.SelectedItem);
+                    TimeIntervalAfter = Convert.ToInt32(comboBoxTimeIntervalAfter.SelectedItem);
+#pragma warning restore CA1305 // Specify IFormatProvider
                 }
             }
             buttonStart.Enabled = true;
@@ -283,7 +302,7 @@ namespace DXClusterUtil
             timer1.Stop();
             if (clusterClient == null) return;
             string msg;
-            TimeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
+            //TimeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
             while ((msg = clusterClient.Get(out bool cachedQRZ)) != null)
             {
                 char[] delims = { '\n' };
@@ -295,10 +314,13 @@ namespace DXClusterUtil
                     Color myColor = Color.Black;
                     while (richTextBox1.Lines.Length > 1000)
                     {
+                        richTextBox1.ReadOnly = false;
                         richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(100));
-                        //richTextBox1.Cut();
+                        richTextBox1.Cut();
                         richTextBox1.SelectedText = "";
+                        Application.DoEvents();
                     }
+                    richTextBox1.ReadOnly = true;
                     System.Drawing.Point p = richTextBox1.PointToClient(Control.MousePosition);
                     System.Drawing.Rectangle client = richTextBox1.ClientRectangle;
                     client.Width += 30;
@@ -388,14 +410,15 @@ namespace DXClusterUtil
                     //if (tokens[1].Equals("SK",StringComparison.InvariantCultureIgnoreCase))
                     //{
                     //}
-                    checkedListBoxNewSpotters.Items.Add(justcall, true);
+                    checkedListBoxNewSpotters.Items.Add(justcall, false);
+                    NewSpottersSave();
                 }
             }
             timer1.Interval = 1000;
             timer1.Start();
             try
             {
-                if (server.IsConnected())
+                if (server != null && server.IsConnected())
                 {
                     labelStatusQServer.BackColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
                     labelStatusQServer.Text = "Client connected";
@@ -455,14 +478,13 @@ namespace DXClusterUtil
             if (qrz != null) qrz.CacheSave(pathQRZCache);
             ReviewedSpottersSave(true);
             string group = "";
-            foreach (string token in listBoxIgnore.Items)
+            foreach (string token in listBoxIgnoredSpotters.Items)
             {
                 group += token + "|";
             }
             Properties.Settings.Default.Ignore = group;
             Properties.Settings.Default.Password = textBoxPassword.Text;
-            Properties.Settings.Default.Location = this.Location;
-            Properties.Settings.Default.Size = this.Size;
+            SaveWindowPosition();
             Properties.Settings.Default.Save();
         }
 
@@ -500,27 +522,72 @@ namespace DXClusterUtil
 
         private void CheckedListBoxReviewedSpotters_SelectedIndexChanged(object sender, EventArgs e)
         {
+            var box = checkedListBoxReviewedSpotters;
             bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
             bool shiftKey = ModifierKeys.HasFlag(Keys.Shift);
             bool altKey = ModifierKeys.HasFlag(Keys.Alt);
-            int selectedIndex = checkedListBoxReviewedSpotters.SelectedIndex;
+            int selectedIndex = box.SelectedIndex;
             if (selectedIndex == -1) return;
-            if (ctrlKey && shiftKey && altKey)
+            if (ctrlKey && shiftKey && altKey) // delete all
             {
-                checkedListBoxReviewedSpotters.Items.Clear();
-                checkedListBoxReviewedSpotters.Items.Add("4U1UN", true);
+                box.Items.Clear();
                 clusterClient.callSuffixList.Clear();
             }
-            if (ctrlKey && shiftKey && !altKey)
+            if (ctrlKey && shiftKey && !altKey) //delete one
             {
-                checkedListBoxReviewedSpotters.Items.RemoveAt(selectedIndex);
+                box.Items.RemoveAt(selectedIndex);
             }
-            else if (ctrlKey && !shiftKey && !altKey)
+            else if (ctrlKey && !shiftKey && !altKey) // no action on this box
             {
-                checkedListBoxReviewedSpotters.SetItemCheckState(selectedIndex, CheckState.Indeterminate);
+                // box.SetItemCheckState(selectedIndex, CheckState.Indeterminate);
+            }
+            else if (altKey && !shiftKey && !ctrlKey) // sort list
+            {
+                box.Sorted = false;
+                box.Sorted = true;
+                box.Sorted = false;
+            }
+
+            else if (shiftKey && !ctrlKey && !altKey) // let's look at the QRZ page
+            {
+                int selected = box.SelectedIndex;
+                if (selected == -1) return;
+                string callsign = box.Items[selected].ToString();
+                box.SetItemChecked(selected, false);
+                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens[0];
+                System.Diagnostics.Process.Start(url);
+                return;
+            }
+            else if (ctrlKey && altKey && !shiftKey)
+            {
+                string curItem = box.SelectedItem.ToString();
+                int index = box.FindString(curItem);
+                if (!listBoxIgnoredSpotters.Items.Contains(curItem))
+                {
+                    listBoxIgnoredSpotters.Items.Insert(0, curItem);
+                    listBoxIgnoredSpotters.TopIndex = 0;
+                    box.Items.RemoveAt(index);
+                }
+                ReviewedSpottersSave(true);
             }
         }
 
+        //  save the checked ones to a string for ClusterClient
+        private void NewSpottersSave()
+        {
+            string newSpotters = "";
+            for (int i = 0; i < checkedListBoxNewSpotters.Items.Count; ++i)
+            {
+                if (checkedListBoxNewSpotters.GetItemChecked(i))
+                {
+                    newSpotters += checkedListBoxNewSpotters.Items[i].ToString() + ",1;";
+                }
+            }
+            if (clusterClient != null) 
+                clusterClient.newSpotters = newSpotters;
+
+        }
         private void ReviewedSpottersSave(bool save)
         {
             var spottersChecked = checkedListBoxReviewedSpotters.CheckedItems;
@@ -551,21 +618,24 @@ namespace DXClusterUtil
                 Properties.Settings.Default.ReviewedSpotters = reviewedSpotters;
                 Properties.Settings.Default.Save();
             }
-            if (clusterClient != null) clusterClient.reviewedSpotters = reviewedSpotters;
+            if (clusterClient != null)
+            {
+                clusterClient.ignoredSpottersAndSpots = listBoxIgnoredSpotters.Items.ToString();
+                clusterClient.reviewedSpotters = reviewedSpotters;  // reviewSpotter also contains checked newSpotters
+            }
         }
         private void CheckedListBoxNewSpotters_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-            if (checkedListBoxNewSpotters.SelectedItem == null)
+            var box = checkedListBoxNewSpotters;
+            if (box.SelectedItem == null)
                 return;
+            int selectedIndex = box.SelectedIndex;
+            if (selectedIndex == -1) return;
             bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
             bool shiftKey = ModifierKeys.HasFlag(Keys.Shift);
-            if (ctrlKey && shiftKey)
-            {
-                checkedListBoxNewSpotters.Items.Clear();
-                clusterClient.callSuffixList.Clear();
-            }
-            else if (ctrlKey) // move to reviewed spotters
+            bool altKey = ModifierKeys.HasFlag(Keys.Alt);
+            if (ctrlKey && !shiftKey && !altKey) // move to reviewed spotters
             {
                 string curItem = checkedListBoxNewSpotters.SelectedItem.ToString();
                 int index = checkedListBoxNewSpotters.FindString(curItem);
@@ -577,17 +647,50 @@ namespace DXClusterUtil
                 }
                 ReviewedSpottersSave(true);
             }
-            else // let's look at the QRZ page
+            if (ctrlKey && shiftKey && altKey) // delete all
             {
-                int selected = checkedListBoxNewSpotters.SelectedIndex;
+                box.Items.Clear();
+                clusterClient.callSuffixList.Clear();
+            }
+            if (ctrlKey && shiftKey && !altKey) //delete one
+            {
+                box.Items.RemoveAt(selectedIndex);
+            }
+            else if (ctrlKey && !shiftKey && !altKey) // no action on this box
+            {
+                // box.SetItemCheckState(selectedIndex, CheckState.Indeterminate);
+            }
+            else if (altKey && !shiftKey && !ctrlKey) // sort list
+            {
+                box.Sorted = false;
+                box.Sorted = true;
+                box.Sorted = false;
+            }
+
+            else if (shiftKey && !ctrlKey && !altKey) // let's look at the QRZ page
+            {
+                int selected = box.SelectedIndex;
                 if (selected == -1) return;
-                string callsign = checkedListBoxNewSpotters.Items[selected].ToString();
-                checkedListBoxNewSpotters.SetItemChecked(selected, false);
+                string callsign = box.Items[selected].ToString();
+                box.SetItemChecked(selected, false);
                 string[] tokens = callsign.Split('-');  // have to remove any suffix like this
                 string url = "https://qrz.com/db/" + tokens[0];
                 System.Diagnostics.Process.Start(url);
                 return;
             }
+            else if (ctrlKey && altKey && !shiftKey)
+            {
+                string curItem = box.SelectedItem.ToString();
+                int index = box.FindString(curItem);
+                if (!listBoxIgnoredSpotters.Items.Contains(curItem))
+                {
+                    listBoxIgnoredSpotters.Items.Insert(0, curItem);
+                    listBoxIgnoredSpotters.TopIndex = 0;
+                    box.Items.RemoveAt(index);
+                }
+                //ReviewedSpottersSave(true);
+            }
+            NewSpottersSave();
         }
 
         private void ButtonBackup_Click(object sender, EventArgs e)
@@ -705,37 +808,142 @@ namespace DXClusterUtil
 
         private void ListBox1_Click(object sender, EventArgs e)
         {
+            var box = (ListBox)sender;
             bool shiftKey = ModifierKeys.HasFlag(Keys.Shift);
-            if (shiftKey)
+            bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
+            bool altKey = ModifierKeys.HasFlag(Keys.Alt);
+            if (shiftKey && ctrlKey && !altKey)
             {
-                listBoxIgnore.Items.Remove(listBoxIgnore.SelectedItem);
+                listBoxIgnoredSpotters.Items.Remove(listBoxIgnoredSpotters.SelectedItem);
                 return;
             }
-            String value = "";
-            if (InputBox("Add Ignore Callsign", "Prompt", ref value) == DialogResult.OK)
+            if (!shiftKey && !ctrlKey && altKey)
             {
-                _ = listBoxIgnore.Items.Add(value.ToUpper(new CultureInfo("en-US", false)));
+                listBoxIgnoredSpotters.Sorted = true;
+                Application.DoEvents();
+                listBoxIgnoredSpotters.Sorted = false;
+            }
+            else if (shiftKey && ctrlKey && altKey)
+            {
+                listBoxIgnoredSpotters.Items.Clear();
+            }
+            else if (shiftKey && !ctrlKey && !altKey) // let's look at the QRZ page
+            {
+                int selected = box.SelectedIndex;
+                if (selected == -1) return;
+                string callsign = box.Items[selected].ToString();
+                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens[0];
+                System.Diagnostics.Process.Start(url);
+                return;
+            }
+            else
+            {
+                String value = "";
+                if (InputBox("Add Ignore Callsign", "Prompt", ref value) == DialogResult.OK)
+                {
+                    _ = listBoxIgnoredSpotters.Items.Add(value.ToUpper(new CultureInfo("en-US", false)));
+                }
             }
         }
 
         private void ListBoxIgnore_SelectedIndexChanged(object sender, EventArgs e)
         {
+            var box = checkedListBoxNewSpotters;
+            if (box.SelectedItem == null)
+                return;
+            int selectedIndex = box.SelectedIndex;
+            if (selectedIndex == -1) return;
+            bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
+            bool shiftKey = ModifierKeys.HasFlag(Keys.Shift);
+            bool altKey = ModifierKeys.HasFlag(Keys.Alt);
+            if (ctrlKey && shiftKey && altKey) // delete all
+            {
+                box.Items.Clear();
+                clusterClient.callSuffixList.Clear();
+            }
+            if (ctrlKey && shiftKey && !altKey) //delete one
+            {
+                box.Items.RemoveAt(selectedIndex);
+            }
+            else if (ctrlKey && !shiftKey && !altKey) // no action on this box
+            {
+                // box.SetItemCheckState(selectedIndex, CheckState.Indeterminate);
+            }
+            else if (altKey && !shiftKey && !ctrlKey) // sort list
+            {
+                box.Sorted = false;
+                box.Sorted = true;
+                box.Sorted = false;
+            }
 
+            else if (shiftKey && !ctrlKey && !altKey) // let's look at the QRZ page
+            {
+                int selected = box.SelectedIndex;
+                if (selected == -1) return;
+                string callsign = box.Items[selected].ToString();
+                box.SetItemChecked(selected, false);
+                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens[0];
+                System.Diagnostics.Process.Start(url);
+                return;
+            }
+
+        }
+        private void ComboBoxInterval_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox box = (ComboBox)sender;
+#pragma warning disable CA1305 // Specify IFormatProvider
+            TimeIntervalForDump = Convert.ToInt32(box.SelectedItem);
+#pragma warning restore CA1305 // Specify IFormatProvider
         }
 
         private void ComboBoxTimeForDump_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox box = (ComboBox)sender;
 #pragma warning disable CA1305 // Specify IFormatProvider
-            TimeForDump = Convert.ToInt32(box.SelectedText);
+            TimeIntervalAfter = Convert.ToInt32(box.SelectedItem);
 #pragma warning restore CA1305 // Specify IFormatProvider
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.Location = Properties.Settings.Default.Location;
-            this.Size = Properties.Settings.Default.Size;
+            RestoreWindowPosition();
+            if (this.Size.Width < 100 || this.Size.Height < 100)
+            {
+                this.Size = new Size(676, 277);
+            }
         }
+        private void RestoreWindowPosition()
+        {
+            if (Properties.Settings.Default.HasSetDefaults)
+            {
+                this.WindowState = Properties.Settings.Default.WindowState;
+                this.Location = Properties.Settings.Default.Location;
+                this.Size = Properties.Settings.Default.Size;
+            }
+        }
+
+        private void SaveWindowPosition()
+        {
+            Properties.Settings.Default.WindowState = this.WindowState;
+
+            if (this.WindowState == FormWindowState.Normal)
+            {
+                Properties.Settings.Default.Location = this.Location;
+                Properties.Settings.Default.Size = this.Size;
+            }
+            else
+            {
+                Properties.Settings.Default.Location = this.RestoreBounds.Location;
+                Properties.Settings.Default.Size = this.RestoreBounds.Size;
+            }
+
+            Properties.Settings.Default.HasSetDefaults = true;
+
+            //Properties.Settings.Default.Save();
+        }
+
     }
     public static class RichTextBoxExtensions
     {

@@ -18,7 +18,7 @@
       <Value Profile="(Default)">705, 263</Value>
     </Setting>
     <Setting Name="ReviewedSpotters" Type="System.String" Scope="User">
-      <Value Profile="(Default)">4U1UN,2;</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Password" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -29,7 +29,13 @@
     <Setting Name="Ignore" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TimeForDump" Type="System.String" Scope="User">
+    <Setting Name="TimeInterval" Type="System.String" Scope="User">
+      <Value Profile="(Default)">60</Value>
+    </Setting>
+    <Setting Name="HasSetDefaults" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="TimeIntervalAfter" Type="System.String" Scope="User">
       <Value Profile="(Default)">6</Value>
     </Setting>
   </Settings>

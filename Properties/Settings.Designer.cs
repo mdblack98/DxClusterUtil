@@ -85,7 +85,7 @@ namespace DXClusterUtil.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("4U1UN,2;")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ReviewedSpotters {
             get {
                 return ((string)(this["ReviewedSpotters"]));
@@ -133,13 +133,37 @@ namespace DXClusterUtil.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("6")]
-        public string TimeForDump {
+        [global::System.Configuration.DefaultSettingValueAttribute("60")]
+        public string TimeInterval {
             get {
-                return ((string)(this["TimeForDump"]));
+                return ((string)(this["TimeInterval"]));
             }
             set {
-                this["TimeForDump"] = value;
+                this["TimeInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HasSetDefaults {
+            get {
+                return ((bool)(this["HasSetDefaults"]));
+            }
+            set {
+                this["HasSetDefaults"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("6")]
+        public string TimeIntervalAfter {
+            get {
+                return ((string)(this["TimeIntervalAfter"]));
+            }
+            set {
+                this["TimeIntervalAfter"] = value;
             }
         }
     }

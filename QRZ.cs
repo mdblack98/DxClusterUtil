@@ -31,12 +31,15 @@ namespace DXClusterUtil
         readonly Mutex mutexQRZ = new Mutex();
         readonly private string pathQRZAlias = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzalias.txt");
         readonly private string pathQRZLog = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzlog.txt");
-        readonly private string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzerror.txt");
+        //readonly private string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzerror.txt");
         readonly private string pathQRZBad = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzbad.txt");
         readonly private string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
 
         public QRZ(string username, string password)
         {
+            File.Delete(pathQRZLog);
+            //File.Delete(pathQRZError);
+            File.Delete(pathQRZBad);
             if (!File.Exists(pathQRZAlias))
             {
                 var stream = File.Create(pathQRZAlias);
@@ -52,7 +55,16 @@ namespace DXClusterUtil
             }
             aliasFile.Close();
             aliasFile.Dispose();
-            if (debug) File.AppendAllText(pathQRZAlias, "New QRZ instance\n");
+            if (debug)
+            {
+                try
+                {
+                    File.AppendAllText(pathQRZAlias, "New QRZ instance\n");
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+            }
             if (cacheQRZ.Count == 0)
             {
                 CacheLoad(pathQRZCache);
@@ -91,7 +103,16 @@ namespace DXClusterUtil
             if (callSign.Length < 3)
             {
                 cached = false;
-                if (debug) File.AppendAllText(pathQRZError, "Callsign length < 3\n");
+                if (debug)
+                {
+                    try
+                    {
+                        File.AppendAllText(pathQRZLog, "Callsign length < 3\n");
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                }
                 xml = "callSign Length < 3 =" + callSign + "\n";
                 return false; // no 2-char callsigns
             }
@@ -105,14 +126,41 @@ namespace DXClusterUtil
                 else callSignSplit = tokens[0];
             }
             string myurl = server + "?s=" + xmlSession;
-            if (debug) File.AppendAllText(pathQRZLog, DateTime.Now.ToShortTimeString()+ " "+myurl+"\n");
+            if (debug)
+            {
+                try
+                {
+                    File.AppendAllText(pathQRZLog, DateTime.Now.ToShortTimeString() + " " + myurl + "\n");
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+            }
             if (cacheQRZ.TryGetValue(callSign,out string validCall))
             { // it's in the cache so check our previous result for BAD
-                if (debug) File.AppendAllText(pathQRZLog, callSignSplit +" in qrz cache validCall="+validCall+"\n");
+                if (debug)
+                {
+                    try
+                    {
+                        File.AppendAllText(pathQRZLog, callSignSplit + " in qrz cache validCall=" + validCall + "\n");
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                }
                 cached = true;
                 if (validCall.Equals("BAD", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (debug) File.AppendAllText(pathQRZError, "In cache as bad call for callsign="+callSignSplit+"\n");
+                    if (debug)
+                    {
+                        try
+                        {
+                            File.AppendAllText(pathQRZLog, "In cache as bad call for callsign=" + callSignSplit + "\n");
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                    }
                     xml = "Bad call cached="+callSignSplit+"\n";
                     return false;
                 }
@@ -123,7 +171,16 @@ namespace DXClusterUtil
                 cached = true;
                 return false;
             }
-            if (debug) File.AppendAllText(pathQRZLog, callSignSplit + " not cached callsign=" + callSignSplit + "\n");
+            if (debug)
+            {
+                try
+                {
+                    File.AppendAllText(pathQRZLog, callSignSplit + " not cached callsign=" + callSignSplit + "\n");
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+            }
             cached = false;
             // Not in cache so have to look it up.
             bool valid;
@@ -137,14 +194,29 @@ namespace DXClusterUtil
                 {
                     Thread.Sleep(5000);
                     ++n;
-                    if (debug) File.AppendAllText(pathQRZLog,"QRZ not online...retrying " + n + "\n");
+                    if (debug)
+                    {
+                        try
+                        {
+                            File.AppendAllText(pathQRZLog, "QRZ not online...retrying " + n + "\n");
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                    }
                     Connect(urlConnect);
                 }
                 if (!validfull && valid)
                 {
                     if (!aliasNeeded.Contains(callSign))
                     {
-                        File.AppendAllText(pathQRZAlias, callSign + "," + email2 + "\n");
+                        try
+                        {
+                            File.AppendAllText(pathQRZAlias, callSign + "," + email2 + "\n");
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                         aliasNeeded.Add(callSign);
                     }
                 }
@@ -161,11 +233,29 @@ namespace DXClusterUtil
             }
             if (!valid)
             {
-                if (debug) File.AppendAllText(pathQRZError, "Not valid after CallQRZ xml="+xmlError+"\n");
+                if (debug)
+                {
+                    try
+                    {
+                        File.AppendAllText(pathQRZLog, "Not valid after CallQRZ xml=" + xmlError + "\n");
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                }
             }
             if (!isOnline)
             {
-                if (debug) File.AppendAllText(pathQRZError, "Not online??\n");
+                if (debug)
+                {
+                    try
+                    {
+                        File.AppendAllText(pathQRZLog, "Not online??\n");
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                }
             }
             return valid;
         }
@@ -253,10 +343,16 @@ namespace DXClusterUtil
                     if (xmlError.Contains("Not found"))
                     {
 
-                        File.AppendAllText(pathQRZBad,call+"\n");
-                        StreamWriter badFile = new StreamWriter(pathQRZBad,true);
-                        badFile.WriteLine(call);
-                        badFile.Close();
+                        try
+                        {
+                            File.AppendAllText(pathQRZBad, call + "\n");
+                            StreamWriter badFile = new StreamWriter(pathQRZBad, true);
+                            badFile.WriteLine(call);
+                            badFile.Close();
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                         mutexQRZ.ReleaseMutex();
                         return false;
                     }
@@ -269,7 +365,16 @@ namespace DXClusterUtil
                     }
                     else if (xmlError.Length > 0)
                     {
-                        if (debug) File.AppendAllText(pathQRZError, xml);
+                        if (debug)
+                        {
+                            try
+                            {
+                                File.AppendAllText(pathQRZLog, xml);
+                            }
+#pragma warning disable CA1031 // Do not catch general exception types
+                            catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+                        }
                     }
                     DataTable callTable = QRZData.Tables["Callsign"];
                     if (callTable.Rows.Count == 0) return false;
