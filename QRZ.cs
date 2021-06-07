@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nancy.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +9,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -185,10 +185,10 @@ namespace DXClusterUtil
             // Not in cache so have to look it up.
             bool valid;
             bool validfull;
-            validfull = valid = CallQRZ(myurl, callSign, out _);
+            validfull = valid = CallQRZ(myurl, callSign, out _, out int dxcc);
             if (!validfull) // if whole callsign isn't valid we'll try the split callsign
             {
-                valid = CallQRZ(myurl, callSignSplit, out string email2);
+                valid = CallQRZ(myurl, callSignSplit, out string email2, out int qrzdxcc);
                 int n = 0;
                 while (!isOnline)
                 {
@@ -262,12 +262,13 @@ namespace DXClusterUtil
         //
         public bool Connect(string url) // CallQRZ for getting sessionid
         {
-            return CallQRZ(url,"",out _);
+            return CallQRZ(url,"",out _, out int qrzdxcc);
         }
 
         //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
-        public bool CallQRZ(string url, string call, out string email)
+        public bool CallQRZ(string url, string call, out string email,out int qrzdxcc)
         {
+            qrzdxcc = 0;
             mutexQRZ.WaitOne();
             email = "none";
             Stream qrzstrm = null;
@@ -294,7 +295,7 @@ namespace DXClusterUtil
                         xml = QRZData.GetXml();
                         qrzstrm.Close();
                     }
-                    else { mutexQRZ.ReleaseMutex();  return false;  }
+                    else { mutexQRZ.ReleaseMutex(); return false;  }
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
@@ -383,6 +384,9 @@ namespace DXClusterUtil
                     string fname = QRZField(dr, "fname");
                     if (email.Length == 0) email = "none" + "," + fname;
                     else email = email + "," + fname;
+#pragma warning disable CA1305 // Specify IFormatProvider
+                    qrzdxcc = Convert.ToInt32(QRZField(dr, "dxcc"));
+#pragma warning restore CA1305 // Specify IFormatProvider
                 }
 
             }

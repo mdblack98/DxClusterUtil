@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
 namespace DXClusterUtil
@@ -103,6 +102,8 @@ namespace DXClusterUtil
             tooltip.SetToolTip(labelClusterCache, tip);
             tip = "RTTY Offset from spot freq";
             tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
+            tip = "Enable to filter out USA spots";
+            tooltip.SetToolTip(checkBoxUSA, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
 
             string[] tokens = reviewedSpotters.Split(';');
@@ -756,7 +757,10 @@ namespace DXClusterUtil
 
         private void NumericUpDownRTTYOffset_ValueChanged(object sender, EventArgs e)
         {
-            clusterClient.rttyOffset = (float)numericUpDownRTTYOffset.Value;
+            if (clusterClient != null)
+            {
+                clusterClient.rttyOffset = (float)numericUpDownRTTYOffset.Value;
+            }
         }
 
         private void ListBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -945,6 +949,10 @@ namespace DXClusterUtil
             //Properties.Settings.Default.Save();
         }
 
+        private void checkBoxUSA_CheckedChanged(object sender, EventArgs e)
+        {
+            clusterClient.filterUSA = checkBoxUSA.Checked;
+        }
     }
     public static class RichTextBoxExtensions
     {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.ComponentModel.Com2Interop;
 
 namespace DXClusterUtil
 {
@@ -63,6 +64,7 @@ namespace DXClusterUtil
                     this.BackColor);
 
                 base.OnDrawItem(e2);
+                e2.Dispose();
             }
         }
     }

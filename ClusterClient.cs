@@ -30,6 +30,7 @@ namespace DXClusterUtil
         public UInt64 totalLinesKept;
         private int lastMinute = 1; // for cache usage
         public bool filterOn = true;
+        public bool filterUSA = false;
         public List<string> callSuffixList = new List<string>();
         public string reviewedSpotters = "";
         public string ignoredSpottersAndSpots = "";
@@ -304,11 +305,11 @@ namespace DXClusterUtil
                 {
                     if (line.Length == 0) continue;
                     var swork = line;
-                    if (line.ToUpperInvariant().StartsWith("DX DE",StringComparison.InvariantCultureIgnoreCase) && line.Length == 75)
+                    if (line.ToUpperInvariant().StartsWith("DX DE", StringComparison.InvariantCultureIgnoreCase) && line.Length == 75)
                     {
                         var sfreq = line.Substring(17, 7);
                         var freq = sfreq;
-                        var ffreq = float.Parse(freq,CultureInfo.InvariantCulture);
+                        var ffreq = float.Parse(freq, CultureInfo.InvariantCulture);
                         freq = Math.Round(ffreq).ToString(CultureInfo.InvariantCulture);
                         if (freq.Length > 4) freq = freq.Substring(0, freq.Length - 2);
                         var spot = line.Substring(26, 9);
@@ -319,8 +320,8 @@ namespace DXClusterUtil
                         var key = freq + "|" + spot + "|" + time;
                         if (comment.Contains("RTTY"))
                         {
-                            ffreq += rttyOffset/1000;
-                            swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture,"{0,7:0.0}",ffreq));
+                            ffreq += rttyOffset / 1000;
+                            swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture, "{0,7:0.0}", ffreq));
                             key = ffreq + "|" + spot + "|" + time;
                         }
                         if (!Int32.TryParse(line.Substring(73, 1), out int minute))
@@ -345,7 +346,7 @@ namespace DXClusterUtil
                         ++totalLines;
                         bool filteredOut = false;
                         char[] delim = { ' ' };
-                        string[] tokens2 = line.Split(delim,StringSplitOptions.RemoveEmptyEntries);
+                        string[] tokens2 = line.Split(delim, StringSplitOptions.RemoveEmptyEntries);
                         string spotterCall = "";
                         string spottedCall = "";
                         // gotta get just the callsign to make Log4OM happy
@@ -365,7 +366,7 @@ namespace DXClusterUtil
                         spottedCall = tokens2[4];
                         if (listBoxIgnore.Items.Contains(spottedCall))
                         {
-                            return "Ignoring "+spottedCall +"\r\n";
+                            return "Ignoring " + spottedCall + "\r\n";
                         }
                         // Remove any suffix from special callsigns
                         String specialCall = HandleSpecialCalls(spottedCall);
@@ -373,11 +374,11 @@ namespace DXClusterUtil
                         if (!specialCall.Equals(spottedCall))
 #pragma warning restore CA1307 // Specify StringComparison
                         {
-//#pragma warning disable CA1806 // Do not ignore method results
+                            //#pragma warning disable CA1806 // Do not ignore method results
                             int n1 = spottedCall.Length;
-                            String spaces = "               ".Substring(0,n1-3);
-                            swork = line.Replace(spottedCall, specialCall+spaces);
-//#pragma warning restore CA1806 // Do not ignore method results
+                            String spaces = "               ".Substring(0, n1 - 3);
+                            swork = line.Replace(spottedCall, specialCall + spaces);
+                            //#pragma warning restore CA1806 // Do not ignore method results
                         }
                         bool skimmer = swork.Contains("WPM CQ") || swork.Contains("BPS CQ") || swork.Contains("WPM BEACON") || swork.Contains("WPM NCDXF");
                         if ((line.Contains("-") && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
@@ -385,15 +386,18 @@ namespace DXClusterUtil
                             filteredOut = true; // we dont' filter here if it's not a skimmer
                             if (!callSuffixList.Contains(tokens2[2]))
                             {
-                                if (skimmer) callSuffixList.Insert(0, spotterCall+":SK");
-                                else callSuffixList.Insert(0, spotterCall+":OK");
+                                if (skimmer) callSuffixList.Insert(0, spotterCall + ":SK");
+                                else callSuffixList.Insert(0, spotterCall + ":OK");
                             }
                         }
-                        // don't spot USA callsigns
-                        var firstChar = spottedCall.Substring(0, 1);
-                        if ((firstChar == "A" && spottedCall[1] <= 'L') || firstChar == "K" || firstChar == "N" || firstChar == "W")
+                        if (filterUSA)
                         {
-                            filteredOut = true;
+                            // don't spot USA callsigns
+                            var firstChar = spottedCall.Substring(0, 1);
+                            if ((firstChar == "A" && spottedCall[1] <= 'L') || firstChar == "K" || firstChar == "N" || firstChar == "W")
+                            {
+                                filteredOut = true;
+                            }
                         }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                         if (!skimmer && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
