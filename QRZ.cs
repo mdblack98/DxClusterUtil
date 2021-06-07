@@ -16,7 +16,7 @@ namespace DXClusterUtil
 {
     class QRZ : IDisposable
     {
-        const string server = "http://www.qrz.com/xml";
+        const string server = "http://xmldata.qrz.com/xml/current";
         private readonly DataSet QRZData = new DataSet("QData");
         private readonly WebClient wc = new WebClientWithTimeout();
         public bool isOnline = false;

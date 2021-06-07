@@ -139,7 +139,7 @@
             // 
             this.checkedListBoxNewSpotters.CheckOnClick = true;
             this.checkedListBoxNewSpotters.FormattingEnabled = true;
-            this.checkedListBoxNewSpotters.Location = new System.Drawing.Point(431, 17);
+            this.checkedListBoxNewSpotters.Location = new System.Drawing.Point(342, 18);
             this.checkedListBoxNewSpotters.Margin = new System.Windows.Forms.Padding(2);
             this.checkedListBoxNewSpotters.Name = "checkedListBoxNewSpotters";
             this.checkedListBoxNewSpotters.Size = new System.Drawing.Size(104, 94);
@@ -150,7 +150,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(447, 0);
+            this.label1.Location = new System.Drawing.Point(356, 3);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(71, 13);
@@ -161,7 +161,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(549, 0);
+            this.label2.Location = new System.Drawing.Point(462, 3);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(97, 13);
@@ -195,9 +195,9 @@
             this.checkBoxCached.AutoSize = true;
             this.checkBoxCached.Location = new System.Drawing.Point(192, 70);
             this.checkBoxCached.Name = "checkBoxCached";
-            this.checkBoxCached.Size = new System.Drawing.Size(63, 17);
+            this.checkBoxCached.Size = new System.Drawing.Size(51, 17);
             this.checkBoxCached.TabIndex = 8;
-            this.checkBoxCached.Text = "Cached";
+            this.checkBoxCached.Text = "Dups";
             this.checkBoxCached.UseVisualStyleBackColor = true;
             this.checkBoxCached.CheckedChanged += new System.EventHandler(this.CheckBoxCached_CheckedChanged);
             // 
@@ -284,7 +284,7 @@
             // listBoxIgnoredSpotters
             // 
             this.listBoxIgnoredSpotters.FormattingEnabled = true;
-            this.listBoxIgnoredSpotters.Location = new System.Drawing.Point(341, 17);
+            this.listBoxIgnoredSpotters.Location = new System.Drawing.Point(567, 17);
             this.listBoxIgnoredSpotters.Name = "listBoxIgnoredSpotters";
             this.listBoxIgnoredSpotters.Size = new System.Drawing.Size(80, 95);
             this.listBoxIgnoredSpotters.TabIndex = 11;
@@ -295,12 +295,12 @@
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(360, 0);
+            this.label3.Location = new System.Drawing.Point(583, 3);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(37, 13);
+            this.label3.Size = new System.Drawing.Size(43, 13);
             this.label3.TabIndex = 26;
-            this.label3.Text = "Ignore";
+            this.label3.Text = "Ignored";
             // 
             // comboBoxTimeIntervalAfter
             // 
@@ -346,7 +346,7 @@
             this.checkedListBoxReviewedSpotters.CheckOnClick = true;
             this.checkedListBoxReviewedSpotters.FormattingEnabled = true;
             this.checkedListBoxReviewedSpotters.IndeterminateColor = System.Drawing.Color.Orange;
-            this.checkedListBoxReviewedSpotters.Location = new System.Drawing.Point(545, 17);
+            this.checkedListBoxReviewedSpotters.Location = new System.Drawing.Point(455, 18);
             this.checkedListBoxReviewedSpotters.Margin = new System.Windows.Forms.Padding(2);
             this.checkedListBoxReviewedSpotters.Name = "checkedListBoxReviewedSpotters";
             this.checkedListBoxReviewedSpotters.Size = new System.Drawing.Size(104, 94);
@@ -399,7 +399,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = global::DXClusterUtil.Properties.Settings.Default.Location;
             this.Name = "Form1";
-            this.Text = "DxClusterUtil V1.18 by W9MDB";
+            this.Text = "DxClusterUtil V1.19 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);

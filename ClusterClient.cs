@@ -138,13 +138,17 @@ namespace DXClusterUtil
                                 counter = 0;
                                 var response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                                 debug.AppendText(response);
+                                Application.DoEvents();
                                 clientQueue.Add(response);
-                                if (response.Contains("call:") || response.Contains("callsign:"))
+                                if (response.Contains("call:") || response.Contains("callsign."))
                                 {
-                                    var msg = Encoding.ASCII.GetBytes(callsign + "\r\n");
+                                    var msg = Encoding.ASCII.GetBytes("\n"+callsign + "\n");
+                                    Thread.Sleep(1000);
                                     nStream.Write(msg, 0, msg.Length);
+                                    //nStream.Write(msg, 0, msg.Length);
+                                    //return true;
                                 }
-                                else if (response.Contains(callsign + " de "))
+                                else if (response.Contains(callsign + " de ") || response.Contains("Hello") || response.Contains("Welcome"))
                                 {
                                     loggedIn = true;
                                     //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
@@ -154,7 +158,7 @@ namespace DXClusterUtil
                                 }
                                 bytesRead = nStream.Read(buffer, 0, buffer.Length);
                                 Application.DoEvents();
-                                Thread.Sleep(2000);
+                                //Thread.Sleep(2000);
                             }
                         }
                         if (loopcount < 0)
@@ -361,7 +365,7 @@ namespace DXClusterUtil
                         spottedCall = tokens2[4];
                         if (listBoxIgnore.Items.Contains(spottedCall))
                         {
-                            return "Ignoring "+spottedCall +"\n";
+                            return "Ignoring "+spottedCall +"\r\n";
                         }
                         // Remove any suffix from special callsigns
                         String specialCall = HandleSpecialCalls(spottedCall);
@@ -376,7 +380,7 @@ namespace DXClusterUtil
 //#pragma warning restore CA1806 // Do not ignore method results
                         }
                         bool skimmer = swork.Contains("WPM CQ") || swork.Contains("BPS CQ") || swork.Contains("WPM BEACON") || swork.Contains("WPM NCDXF");
-                        if ((line.Contains("-#") && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
+                        if ((line.Contains("-") && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
                         {
                             filteredOut = true; // we dont' filter here if it's not a skimmer
                             if (!callSuffixList.Contains(tokens2[2]))
@@ -384,6 +388,12 @@ namespace DXClusterUtil
                                 if (skimmer) callSuffixList.Insert(0, spotterCall+":SK");
                                 else callSuffixList.Insert(0, spotterCall+":OK");
                             }
+                        }
+                        // don't spot USA callsigns
+                        var firstChar = spottedCall.Substring(0, 1);
+                        if ((firstChar == "A" && spottedCall[1] <= 'L') || firstChar == "K" || firstChar == "N" || firstChar == "W")
+                        {
+                            filteredOut = true;
                         }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                         if (!skimmer && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded

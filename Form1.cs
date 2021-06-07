@@ -59,7 +59,7 @@ namespace DXClusterUtil
             _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
-            var tip = "!! means spotter is filtered out\n * *means spot is cached\n## means bad call\n#* means bad call cached\nGreen is call sign good and cached\nOrange is call sign good and new QRZ query\nRed is bad call\nDark Red is bad call cached\nBlue is your own spot";
+            var tip = "!! means spotter is filtered out\n * *means spot is duplicate\n## means bad call\n#* means bad call cached\nGreen is call sign good and QRZ is cached\nOrange is call sign good and new QRZ query\nRed is bad call\nDark Red is bad call cached\nBlue is your own spot";
             tooltip.AutoPopDelay = 36000;
             tooltip.InitialDelay = 1000;
             tooltip.AutoPopDelay = 10000;
@@ -73,7 +73,7 @@ namespace DXClusterUtil
             tooltip.SetToolTip(textBoxPassword, tip);
             tip = "Local port for client to connect to";
             tooltip.SetToolTip(textBoxPortLocal, tip);
-            tip = "Intrval to dump spots every X seconds";
+            tip = "Interval to dump spots every X seconds";
             tooltip.SetToolTip(comboBoxTimeInterval, tip);
             tip = "Seconds after interval to dump spots";
             tooltip.SetToolTip(comboBoxTimeIntervalAfter, tip);
@@ -83,7 +83,7 @@ namespace DXClusterUtil
             tooltip.SetToolTip(labelQDepth, tip);
             tip = "Client status";
             tooltip.SetToolTip(labelStatusQServer, tip);
-            tip = "Click to enable/disable\nShift-click for QRZ\nAlt-click to sort\nAlt-click to move to Ignore list\nCtrl-shift-click to delete\nCtrl-shift-alt-click to delete all";
+            tip = "Click to enable/disable\nShift-click for QRZ\nAlt-click to sort\nCtrl-alt-click to move to Ignore list\nCtrl-shift-click to delete\nCtrl-shift-alt-click to delete all";
             tooltip.SetToolTip(checkedListBoxReviewedSpotters, tip);
             tip = "New Spotters needing review\nClick to enable/disable\nShift-click for QRZ\nAlt-click to sort\nCtrl-Alt-click to move to Ignore list\nCtrl-shift-click to delete\nCtrl-click to transfer to Reviewed\nCtrl-shift-alt-click to delete all";
             tooltip.SetToolTip(checkedListBoxNewSpotters, tip);
@@ -93,13 +93,13 @@ namespace DXClusterUtil
             tooltip.SetToolTip(buttonBackup, tip);
             tip = "Click to copy, ctrl-click to copy&erase";
             tooltip.SetToolTip(buttonCopy, tip);
-            tip = "Enabled logging of cached spots, shift-click to toggle debug";
+            tip = "Enable to see duplicate spots below, shift-click to toggle debug";
             tooltip.SetToolTip(checkBoxCached, tip);
-            tip = "Enabled logging of filtered spots";
+            tip = "Enable to see filtered spots";
             tooltip.SetToolTip(checkBoxFiltered, tip);
             tip = "QRZ cached/bad";
             tooltip.SetToolTip(labelQRZCache, tip);
-            tip = "Cluster cached";
+            tip = "Dups cached";
             tooltip.SetToolTip(labelClusterCache, tip);
             tip = "RTTY Offset from spot freq";
             tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
@@ -339,13 +339,14 @@ namespace DXClusterUtil
                         bool filtered = firstFive.Equals("!! de",StringComparison.InvariantCultureIgnoreCase);
                         bool clusterCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
                         bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
+                        bool ignored = ss.Contains("Ignoring");
                         if (qrzError)
                         {
                             //this.WindowState = FormWindowState.Minimized;
                             //this.Show();
                             //this.WindowState = FormWindowState.Normal;
                         }
-                        if (filtered && !checkBoxFiltered.Checked) continue;
+                        if ((filtered||ignored) && !checkBoxFiltered.Checked) continue;
                         else if (clusterCached && !checkBoxCached.Checked) continue;
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached)
                         {
@@ -405,7 +406,7 @@ namespace DXClusterUtil
 
                 string[] tokens = s.Split(':');
                 string justcall = tokens[0];
-                if (!checkedListBoxReviewedSpotters.Items.Contains(justcall) && !checkedListBoxNewSpotters.Items.Contains(justcall))
+                if (!checkedListBoxReviewedSpotters.Items.Contains(justcall) && !checkedListBoxNewSpotters.Items.Contains(justcall) && !listBoxIgnoredSpotters.Items.Contains(justcall))
                 {
                     //if (tokens[1].Equals("SK",StringComparison.InvariantCultureIgnoreCase))
                     //{
