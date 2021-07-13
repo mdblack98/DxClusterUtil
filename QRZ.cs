@@ -65,7 +65,7 @@ namespace DXClusterUtil
                 catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
-            if (cacheQRZ.Count == 0)
+            if (cacheQRZ.IsEmpty)
             {
                 CacheLoad(pathQRZCache);
             }
@@ -418,6 +418,7 @@ namespace DXClusterUtil
         public void Dispose()
         {
             QRZData.Dispose();
+            mutexQRZ.Dispose();
             wc.Dispose();
         }
         public class WebClientWithTimeout : WebClient

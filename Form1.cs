@@ -1,21 +1,25 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Xamarin.Essentials;
 
 namespace DXClusterUtil
 {
     public partial class Form1 : Form
     {
         private static Form1 _instance;
-        private ClusterClient clusterClient = null;
+        private ClusterClient clusterClient;
         readonly ConcurrentBag<string> clientQueue = new ConcurrentBag<string>();
         readonly ConcurrentBag<string> spotQueue = new ConcurrentBag<string>();
         QServer server;
@@ -29,12 +33,18 @@ namespace DXClusterUtil
         public int TimeIntervalAfter
         {
             get { return server.TimeIntervalAfter; }
-            set { if (server != null) server.TimeIntervalAfter = value; }
+            set { if (server != null) server.TimeIntervalAfter = value; Properties.Settings.Default.TimeIntervalAfter = value; }
         }
         public int TimeIntervalForDump
         {
             get { return server.TimeInterval; }
-            set { if (server != null) server.TimeInterval = value; }
+            set { if (server != null) server.TimeInterval = value; Properties.Settings.Default.TimeIntervalForDump = value;  }
+        }
+
+        public bool USA
+        {
+            get { return checkBoxUSA.Checked; }
+            set { checkBoxUSA.Checked = value; Properties.Settings.Default.USA = value; }
         }
         //BindingList<FilterItem> filterList = new BindingList<FilterItem>();
         //public volatile static int keep;
@@ -73,7 +83,7 @@ namespace DXClusterUtil
             tip = "Local port for client to connect to";
             tooltip.SetToolTip(textBoxPortLocal, tip);
             tip = "Interval to dump spots every X seconds";
-            tooltip.SetToolTip(comboBoxTimeInterval, tip);
+            tooltip.SetToolTip(comboBoxTimeIntervalForDump, tip);
             tip = "Seconds after interval to dump spots";
             tooltip.SetToolTip(comboBoxTimeIntervalAfter, tip);
             tip = "Cluster server host:port";
@@ -169,7 +179,7 @@ namespace DXClusterUtil
             }
         }
 
-        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+        //[System.Diagnostics.C(odeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
 
         public string TextStatus
         {
@@ -228,6 +238,7 @@ namespace DXClusterUtil
                 Application.DoEvents();
                 if (clusterClient.Connect(textBoxCallsign.Text, richTextBox1, clientQueue))
                 {
+                    clusterClient.filterUSA = checkBoxUSA.Checked;
                     //richTextBox1.AppendText("Connected\n");
                     timer1.Start();
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
@@ -265,7 +276,7 @@ namespace DXClusterUtil
                     server = new QServer(qport, clientQueue, spotQueue);
                     _ = Task.Run(() => server.Start());
 #pragma warning disable CA1305 // Specify IFormatProvider
-                    TimeIntervalForDump = Convert.ToInt32(comboBoxTimeInterval.SelectedItem);
+                    TimeIntervalForDump = Convert.ToInt32(comboBoxTimeIntervalForDump.SelectedItem);
                     TimeIntervalAfter = Convert.ToInt32(comboBoxTimeIntervalAfter.SelectedItem);
 #pragma warning restore CA1305 // Specify IFormatProvider
                 }
@@ -476,18 +487,40 @@ namespace DXClusterUtil
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //qrz.CacheSave(textBoxCacheLocation.Text);
-            if (qrz != null) qrz.CacheSave(pathQRZCache);
-            ReviewedSpottersSave(true);
-            string group = "";
-            foreach (string token in listBoxIgnoredSpotters.Items)
-            {
-                group += token + "|";
+            try
+            {             //qrz.CacheSave(textBoxCacheLocation.Text);
+
+                if (qrz != null) qrz.CacheSave(pathQRZCache);
+                ReviewedSpottersSave(true);
+                string group = "";
+                foreach (string token in listBoxIgnoredSpotters.Items)
+                {
+                    group += token + "|";
+                }
+                Properties.Settings.Default.Ignore = group;
+
+                // All the form settings
+                Properties.Settings.Default.Callsign = textBoxCallsign.Text;
+                Properties.Settings.Default.Password = textBoxPassword.Text;
+                Properties.Settings.Default.ClusterServer = textBoxClusterServer.Text;
+                Properties.Settings.Default.PortLocal = textBoxPortLocal.Text;
+                Properties.Settings.Default.rttyOffset = numericUpDownRTTYOffset.Value;
+                Properties.Settings.Default.Cached = checkBoxCached.Checked;
+                Properties.Settings.Default.Filtered = checkBoxFiltered.Checked;
+                Properties.Settings.Default.USA = checkBoxUSA.Checked;
+                Properties.Settings.Default.TimeIntervalForDump = comboBoxTimeIntervalForDump.SelectedIndex;
+                Properties.Settings.Default.TimeIntervalAfter = comboBoxTimeIntervalAfter.SelectedIndex;
+                SaveWindowPosition();
+                Properties.Settings.Default.Save();
             }
-            Properties.Settings.Default.Ignore = group;
-            Properties.Settings.Default.Password = textBoxPassword.Text;
-            SaveWindowPosition();
-            Properties.Settings.Default.Save();
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                _ = MessageBox.Show("Error closing form!!!", ex.Message + "\n" + ex.StackTrace);
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
@@ -677,7 +710,16 @@ namespace DXClusterUtil
                 box.SetItemChecked(selected, false);
                 string[] tokens = callsign.Split('-');  // have to remove any suffix like this
                 string url = "https://qrz.com/db/" + tokens[0];
-                System.Diagnostics.Process.Start(url);
+                //var uri = new Uri(url);
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "cmd",
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    Arguments = $"/c start {url}"
+                };
+                Process.Start(psi);                
                 return;
             }
             else if (ctrlKey && altKey && !shiftKey)
@@ -700,7 +742,7 @@ namespace DXClusterUtil
             //System.Configuration.ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel level)
             var userConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
             string fileName = "user.config_" + DateTime.Now.ToString("yyyy-MM-ddTHHmmss", CultureInfo.InvariantCulture); // almost ISO 8601 format but have to remove colons
-            SaveFileDialog myDialog = new SaveFileDialog
+            System.Windows.Forms.SaveFileDialog myDialog = new System.Windows.Forms.SaveFileDialog
             {
                 FileName = fileName,
                 CheckPathExists = true,
@@ -725,7 +767,7 @@ namespace DXClusterUtil
             bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
             if (richTextBox1.Text.Length > 0)
             {
-                Clipboard.SetText(richTextBox1.Text);
+                System.Windows.Clipboard.SetText(richTextBox1.Text);
                 if (ctrlKey)
                 {
                     richTextBox1.Clear();
@@ -913,10 +955,36 @@ namespace DXClusterUtil
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            RestoreWindowPosition();
-            if (this.Size.Width < 100 || this.Size.Height < 100)
+            try
             {
-                this.Size = new Size(676, 277);
+                RestoreWindowPosition();
+                if (this.Size.Width < 100 || this.Size.Height < 100)
+                {
+                    this.Size = new Size(676, 277);
+                }
+                textBoxCallsign.Text = Properties.Settings.Default.Callsign;
+                textBoxPassword.Text = Properties.Settings.Default.Password;
+                textBoxClusterServer.Text = Properties.Settings.Default.ClusterServer;
+                textBoxPortLocal.Text = Properties.Settings.Default.PortLocal;
+                numericUpDownRTTYOffset.Value = Properties.Settings.Default.rttyOffset;
+                checkBoxCached.Checked = Properties.Settings.Default.Cached;
+                checkBoxFiltered.Checked = Properties.Settings.Default.Filtered;
+                checkBoxUSA.Checked = Properties.Settings.Default.USA;
+                comboBoxTimeIntervalForDump.SelectedIndex = Properties.Settings.Default.TimeIntervalForDump;
+                comboBoxTimeIntervalAfter.SelectedIndex = Properties.Settings.Default.TimeIntervalAfter;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                _ = MessageBox.Show("Error restoring form", ex.Message + "\n" + ex.StackTrace);
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+            }
+            Application.DoEvents();
+            if (textBoxCallsign.Text.Length > 0 && textBoxPassword.Text.Length > 0 && textBoxClusterServer.Text.Length > 0)
+            {
+                ButtonStart_Click(null, null);
             }
         }
         private void RestoreWindowPosition()
@@ -951,7 +1019,19 @@ namespace DXClusterUtil
 
         private void checkBoxUSA_CheckedChanged(object sender, EventArgs e)
         {
-            clusterClient.filterUSA = checkBoxUSA.Checked;
+            if (clusterClient != null)
+            {
+                clusterClient.filterUSA = checkBoxUSA.Checked;
+            }
+            else
+            {
+                //checkBoxUSA.Checked = false;
+            }
+        }
+
+        private void Form1_Validated(object sender, EventArgs e)
+        {
+            ButtonStart_Click(null, null);
         }
     }
     public static class RichTextBoxExtensions
@@ -968,4 +1048,5 @@ namespace DXClusterUtil
         }
 
     }
+
 }

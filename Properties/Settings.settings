@@ -29,14 +29,26 @@
     <Setting Name="Ignore" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TimeInterval" Type="System.String" Scope="User">
+    <Setting Name="TimeInterval" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">60</Value>
     </Setting>
     <Setting Name="HasSetDefaults" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="TimeIntervalAfter" Type="System.String" Scope="User">
+    <Setting Name="TimeIntervalAfter" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">6</Value>
+    </Setting>
+    <Setting Name="USA" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="TimeIntervalForDump" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">15</Value>
+    </Setting>
+    <Setting Name="Cached" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Filtered" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

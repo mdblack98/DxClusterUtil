@@ -17,10 +17,10 @@ namespace DXClusterUtil
 {
     class ClusterClient: IDisposable
     {
-        public TcpClient client = null;
-        private NetworkStream nStream = null;
-        ConcurrentBag<string> log4omQueue = null;
-        readonly ConcurrentBag<string> clusterQueue = null;
+        public TcpClient client;
+        private NetworkStream nStream;
+        ConcurrentBag<string> log4omQueue;
+        readonly ConcurrentBag<string> clusterQueue;
         public readonly Dictionary<string, int> cacheSpottedCalls = new Dictionary<string, int>();
         readonly string myHost;
         readonly int myPort;
@@ -34,7 +34,7 @@ namespace DXClusterUtil
         public List<string> callSuffixList = new List<string>();
         public string reviewedSpotters = "";
         public string ignoredSpottersAndSpots = "";
-        private readonly QRZ qrz = null;
+        private readonly QRZ qrz;
         public bool debug = true;
         public float rttyOffset;
         public ListBox listBoxIgnore;

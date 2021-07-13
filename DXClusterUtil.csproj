@@ -73,9 +73,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
+    <PackageReference Include="DotNetEssentials" Version="1.5.99999--date20201112-1006.git-31f95c7" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0-preview.5.21301.5" />
     <PackageReference Include="Nancy" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>

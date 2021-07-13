@@ -56,9 +56,9 @@
             this.listBoxIgnoredSpotters = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxTimeIntervalAfter = new System.Windows.Forms.ComboBox();
-            this.comboBoxTimeInterval = new System.Windows.Forms.ComboBox();
-            this.checkedListBoxReviewedSpotters = new DXClusterUtil.ColorCodedCheckedListBox();
             this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            this.comboBoxTimeIntervalForDump = new System.Windows.Forms.ComboBox();
+            this.checkedListBoxReviewedSpotters = new DXClusterUtil.ColorCodedCheckedListBox();
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource2 = new System.Windows.Forms.BindingSource(this.components);
             this.checkBoxUSA = new System.Windows.Forms.CheckBox();
@@ -109,7 +109,6 @@
             // textBoxCallsign
             // 
             this.textBoxCallsign.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBoxCallsign.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "Callsign", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxCallsign.Location = new System.Drawing.Point(117, 17);
             this.textBoxCallsign.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxCallsign.Name = "textBoxCallsign";
@@ -129,7 +128,6 @@
             // textBoxPortLocal
             // 
             this.textBoxPortLocal.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBoxPortLocal.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "PortLocal", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxPortLocal.Location = new System.Drawing.Point(15, 47);
             this.textBoxPortLocal.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxPortLocal.Name = "textBoxPortLocal";
@@ -149,7 +147,6 @@
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(415, 3);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
@@ -160,7 +157,6 @@
             // 
             // label2
             // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(539, 3);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
@@ -241,7 +237,6 @@
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "Password", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.textBoxPassword.Location = new System.Drawing.Point(190, 17);
             this.textBoxPassword.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxPassword.Name = "textBoxPassword";
@@ -262,7 +257,6 @@
             // 
             // numericUpDownRTTYOffset
             // 
-            this.numericUpDownRTTYOffset.DataBindings.Add(new System.Windows.Forms.Binding("Value", settings1, "rttyOffset", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.numericUpDownRTTYOffset.Increment = new decimal(new int[] {
             100,
             0,
@@ -299,7 +293,6 @@
             // 
             // label3
             // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(680, 3);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
@@ -310,7 +303,7 @@
             // 
             // comboBoxTimeIntervalAfter
             // 
-            this.comboBoxTimeIntervalAfter.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "TimeIntervalAfter", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.comboBoxTimeIntervalAfter.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.form1BindingSource1, "TimeIntervalAfter", true));
             this.comboBoxTimeIntervalAfter.FormattingEnabled = true;
             this.comboBoxTimeIntervalAfter.Items.AddRange(new object[] {
             "1",
@@ -330,21 +323,25 @@
             this.comboBoxTimeIntervalAfter.TabIndex = 10;
             this.comboBoxTimeIntervalAfter.SelectedIndexChanged += new System.EventHandler(this.ComboBoxTimeForDump_SelectedIndexChanged);
             // 
-            // comboBoxTimeInterval
+            // form1BindingSource1
             // 
-            this.comboBoxTimeInterval.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "TimeInterval", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.comboBoxTimeInterval.FormattingEnabled = true;
-            this.comboBoxTimeInterval.Items.AddRange(new object[] {
+            this.form1BindingSource1.DataSource = typeof(DXClusterUtil.Form1);
+            // 
+            // comboBoxTimeIntervalForDump
+            // 
+            this.comboBoxTimeIntervalForDump.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.form1BindingSource1, "TimeIntervalForDump", true));
+            this.comboBoxTimeIntervalForDump.FormattingEnabled = true;
+            this.comboBoxTimeIntervalForDump.Items.AddRange(new object[] {
             "1",
             "15",
             "30",
             "60"});
-            this.comboBoxTimeInterval.Location = new System.Drawing.Point(16, 104);
-            this.comboBoxTimeInterval.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.comboBoxTimeInterval.Name = "comboBoxTimeInterval";
-            this.comboBoxTimeInterval.Size = new System.Drawing.Size(46, 23);
-            this.comboBoxTimeInterval.TabIndex = 27;
-            this.comboBoxTimeInterval.SelectedIndexChanged += new System.EventHandler(this.ComboBoxInterval_SelectedIndexChanged);
+            this.comboBoxTimeIntervalForDump.Location = new System.Drawing.Point(16, 104);
+            this.comboBoxTimeIntervalForDump.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.comboBoxTimeIntervalForDump.Name = "comboBoxTimeIntervalForDump";
+            this.comboBoxTimeIntervalForDump.Size = new System.Drawing.Size(46, 23);
+            this.comboBoxTimeIntervalForDump.TabIndex = 27;
+            this.comboBoxTimeIntervalForDump.SelectedIndexChanged += new System.EventHandler(this.ComboBoxInterval_SelectedIndexChanged);
             // 
             // checkedListBoxReviewedSpotters
             // 
@@ -361,10 +358,6 @@
             this.checkedListBoxReviewedSpotters.SelectedIndexChanged += new System.EventHandler(this.CheckedListBoxReviewedSpotters_SelectedIndexChanged);
             this.checkedListBoxReviewedSpotters.MouseUp += new System.Windows.Forms.MouseEventHandler(this.CheckedListBoxReviewedSpotters_MouseUp);
             // 
-            // form1BindingSource1
-            // 
-            this.form1BindingSource1.DataSource = typeof(DXClusterUtil.Form1);
-            // 
             // form1BindingSource
             // 
             this.form1BindingSource.DataSource = typeof(DXClusterUtil.Form1);
@@ -376,6 +369,7 @@
             // checkBoxUSA
             // 
             this.checkBoxUSA.AutoSize = true;
+            this.checkBoxUSA.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.form1BindingSource1, "USA", true));
             this.checkBoxUSA.Location = new System.Drawing.Point(346, 81);
             this.checkBoxUSA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBoxUSA.Name = "checkBoxUSA";
@@ -389,9 +383,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ControlLight;
             this.ClientSize = new System.Drawing.Size(770, 275);
             this.Controls.Add(this.checkBoxUSA);
-            this.Controls.Add(this.comboBoxTimeInterval);
+            this.Controls.Add(this.comboBoxTimeIntervalForDump);
             this.Controls.Add(this.comboBoxTimeIntervalAfter);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.listBoxIgnoredSpotters);
@@ -418,11 +413,12 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "Form1";
-            this.Text = "DxClusterUtil V1.20 by W9MDB";
+            this.Text = "DxClusterUtil V1.22 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
+            this.Validated += new System.EventHandler(this.Form1_Validated);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).EndInit();
@@ -460,7 +456,7 @@
         private System.Windows.Forms.ListBox listBoxIgnoredSpotters;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox comboBoxTimeIntervalAfter;
-        private System.Windows.Forms.ComboBox comboBoxTimeInterval;
+        private System.Windows.Forms.ComboBox comboBoxTimeIntervalForDump;
         private System.Windows.Forms.CheckBox checkBoxUSA;
     }
 }

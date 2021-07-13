@@ -12,7 +12,7 @@ namespace DXClusterUtil.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.0.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -134,9 +134,9 @@ namespace DXClusterUtil.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("60")]
-        public string TimeInterval {
+        public int TimeInterval {
             get {
-                return ((string)(this["TimeInterval"]));
+                return ((int)(this["TimeInterval"]));
             }
             set {
                 this["TimeInterval"] = value;
@@ -158,12 +158,60 @@ namespace DXClusterUtil.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("6")]
-        public string TimeIntervalAfter {
+        public int TimeIntervalAfter {
             get {
-                return ((string)(this["TimeIntervalAfter"]));
+                return ((int)(this["TimeIntervalAfter"]));
             }
             set {
                 this["TimeIntervalAfter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool USA {
+            get {
+                return ((bool)(this["USA"]));
+            }
+            set {
+                this["USA"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public int TimeIntervalForDump {
+            get {
+                return ((int)(this["TimeIntervalForDump"]));
+            }
+            set {
+                this["TimeIntervalForDump"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Cached {
+            get {
+                return ((bool)(this["Cached"]));
+            }
+            set {
+                this["Cached"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Filtered {
+            get {
+                return ((bool)(this["Filtered"]));
+            }
+            set {
+                this["Filtered"] = value;
             }
         }
     }

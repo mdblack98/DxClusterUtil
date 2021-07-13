@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "DxClusterUtil"
-#define MyAppVersion "1.19"
+#define MyAppVersion "1.22"
 #define MyAppExeName "DxClusterUtil.exe"
 
 [Setup]
@@ -30,7 +30,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\mdbla\Dropbox\Projects\DxClusterUtil\bin\Release\DxClusterUtil.exe"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "C:\Users\mdbla\Dropbox\Projects\DxClusterUtil\bin\Release\net5.0-windows\DxClusterUtil.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DxClusterUtil\bin\Release\net5.0-windows\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 ;Source: "C:\Users\mdbla\Dropbox\Projects\W3LPcny shared system files
 
 [Icons]
