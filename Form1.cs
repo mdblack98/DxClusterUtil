@@ -315,7 +315,7 @@ namespace DXClusterUtil
             if (clusterClient == null) return;
             string msg;
             //TimeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
-            while ((msg = clusterClient.Get(out bool cachedQRZ)) != null)
+            while ((msg = clusterClient.Get(out bool cachedQRZ, richTextBox1)) != null)
             {
                 char[] delims = { '\n' };
                 string[] lines = msg.Split(delims);

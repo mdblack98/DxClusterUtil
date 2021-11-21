@@ -211,23 +211,25 @@ namespace DXClusterUtil
             return gotem;
         }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
-        public string Get(out bool cachedQRZ)
+        public string Get(out bool cachedQRZ, RichTextBox debuglog)
         {
             cachedQRZ = false;
-            if (client == null | qrz == null)
+            if (client == null || qrz == null)
             {
-                string s1, s2;
+                string s1;
                 bool isNull = client == null;
                 if (isNull)
                     s1 = "null";
                 else
                     s1 = "OK";
+                debuglog.AppendText("cluster client is " + s1);
                 isNull = qrz == null;
                 if (isNull)
-                    s2 = "null";
+                    s1 = "null";
                 else
-                    s2 = "OK";
-                MessageBox.Show("client == null =" + s1 + " or qrz == null = " + s2);
+                    s1 = "OK";
+                debuglog.AppendText("qrz client is " + s1);
+                return null;
             }
             if (clusterQueue.TryTake(out string result))
             {
@@ -583,9 +585,12 @@ namespace DXClusterUtil
             {
 
                 Disconnect();
-                if (!Connect())
+                int n = 1;
+                while(!Connect())
                 {
-                    MessageBox.Show("Error connecting to cluster server", "DXClusterUtil");
+                    debuglog.AppendText("Error connecting to cluster server, try#"+n+++"\n");
+                    //MessageBox.Show("Error connecting to cluster server", "DXClusterUtil");
+                    Thread.Sleep(60 * 1000); // 1 minute wait until retry
                 }
             }
             return null;
