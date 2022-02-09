@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -19,6 +20,9 @@ namespace DXClusterUtil
         bool stop = false;
         bool connected;
         readonly TcpListener listener;
+        NetworkStream stream;
+        Thread myThreadID;
+
         public int TimeIntervalAfter { get; set; } // in seconds
         public int TimeInterval { get; set; } // Expecting 1, 15, 30, 60 
 
@@ -31,7 +35,7 @@ namespace DXClusterUtil
                 try
                 {
                     listener = new TcpListener(IPAddress.Any, port);
-                    listener.Start();
+                    //listener.Start();
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch
@@ -58,18 +62,63 @@ namespace DXClusterUtil
         {
             running = false;
             stop = true;
+            connected = false;
             listener.Stop();
             Thread.Sleep(500);
         }
+
+        void ReadThread()
+        {
+            connected = true;
+            while (connected)
+            {
+                try
+                {
+                    var bytes = new byte[8192];
+                    int bytesRead = stream.Read(bytes, 0, bytes.Length);
+                    string cmd = Encoding.ASCII.GetString(bytes, 0, bytesRead);
+                    if (cmd.Contains("bye", StringComparison.InvariantCulture))
+                    {
+                        //connected = running = false;
+                    }
+                    else if (bytesRead == 0)
+                    {
+                        connected = false;
+                        running = false;
+                    }
+                    else
+                    {
+                        if (cmd.Length > 0)
+                        {
+                            spotQueue.Add(cmd);
+                        }
+                    }
+                }
+                catch (IOException ex)
+                {
+                    if (ex.HResult != -2146232800)
+                    {
+                        connected = false;
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+                    }
+                }
+            }
+        }
+
         public void Start()
         {
             while (true && !stop)
             {
+                if (listener != null) 
+                    listener.Stop();
+                listener.Start();
                 running = true;
                 TcpClient client;
                 try
                 {
                     client = listener.AcceptTcpClient();
+                    //Thread.Sleep(500);
+                    connected = true;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch 
@@ -80,7 +129,9 @@ namespace DXClusterUtil
                 }
                 client.ReceiveTimeout = 1000;
                 client.SendTimeout = 1000;
-                NetworkStream stream = client.GetStream();
+                stream = client.GetStream();
+                myThreadID = new Thread(new ThreadStart(ReadThread));
+                myThreadID.Start();
                 byte[] bytes;
                 string msg;
                 while (running)
@@ -125,39 +176,56 @@ namespace DXClusterUtil
                         }
                         else
                         {
-                            connected = true;
+                            //connected = true;
                         }
                         // Let's see if the client wants to send stuff
-                        while (stream.DataAvailable)
+                        byte[] tmp = new byte[1];
+                        //stream.Socket.Write(tmp, 0, 0);
+                        //var xxx = stream.Read(tmp, 0, 0);
+                        var xx = stream.Socket.IsBound;
+                        if (!client.Connected)
+                        {
+                            connected = running = false;
+                        }
+                        /*
+                        while (stream.DataAvailable && connected)
                         {
                             bytes = new byte[8192];
                             int bytesRead = stream.Read(bytes, 0, bytes.Length);
                             string cmd = Encoding.ASCII.GetString(bytes, 0, bytesRead);
-                            if (!cmd.Contains("bye"))
+                            if (cmd.Contains("bye",StringComparison.InvariantCulture))
+                            {
+                                //connected = running = false;
+                            }
+                            else
                             {
                                 spotQueue.Add(cmd);
                             }
+
                         }
-                        msg = "";
-                        bytes = Encoding.ASCII.GetBytes(msg);
-                        stream.Write(bytes, 0, bytes.Length);
+                        */
+                        //msg = "";
+                        //stream.Write(bytes, 0, bytes.Length);
                         Thread.Sleep(200);
                     }
 #pragma warning disable CA1031 // Do not catch general exception types
-                    catch (Exception)
+                    catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
                         //if (!WSAGetLastError() == 10053)
                         //{
-                        //    MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "DxClusterUtil");
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
                         //}
                         running = false;
                     }
                 }
-                stream.Close();
-                client.Close();
+                 stream.Close();
+                if (client.Connected) 
+                    client.Close();
                 connected = false;
             }
+            listener.Stop();
+
         }
     }
 }

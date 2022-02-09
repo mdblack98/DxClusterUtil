@@ -118,12 +118,12 @@
             // labelStatusQServer
             // 
             this.labelStatusQServer.AutoSize = true;
-            this.labelStatusQServer.Location = new System.Drawing.Point(90, 51);
+            this.labelStatusQServer.Location = new System.Drawing.Point(86, 51);
             this.labelStatusQServer.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelStatusQServer.Name = "labelStatusQServer";
-            this.labelStatusQServer.Size = new System.Drawing.Size(38, 15);
+            this.labelStatusQServer.Size = new System.Drawing.Size(73, 15);
             this.labelStatusQServer.TabIndex = 8;
-            this.labelStatusQServer.Text = "Client";
+            this.labelStatusQServer.Text = "Client Status";
             // 
             // textBoxPortLocal
             // 
@@ -413,7 +413,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "Form1";
-            this.Text = "DxClusterUtil V1.23 by W9MDB";
+            this.Text = "DxClusterUtil V1.24 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);

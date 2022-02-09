@@ -28,6 +28,7 @@ namespace DXClusterUtil
         private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
         private int badCalls;
         bool startupConnect = true;
+        System.Drawing.Color qServerBackColor;
 
         public bool Debug { get; private set; }
         public int TimeIntervalAfter
@@ -351,7 +352,7 @@ namespace DXClusterUtil
                         bool filtered = firstFive.Equals("!! de",StringComparison.InvariantCultureIgnoreCase);
                         bool clusterCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
                         bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
-                        bool ignored = ss.Contains("Ignoring");
+                        bool ignored = ss.Contains("Ignoring", StringComparison.InvariantCulture);
                         if (qrzError)
                         {
                             //this.WindowState = FormWindowState.Minimized;
@@ -384,7 +385,7 @@ namespace DXClusterUtil
                         {
                             myColor = Color.Green;
                         }
-                        else if (s.Contains(textBoxCallsign.Text))
+                        else if (s.Contains(textBoxCallsign.Text, StringComparison.InvariantCulture))
                         {
                             myColor = Color.DarkBlue;
                             if (Debug)
@@ -397,8 +398,8 @@ namespace DXClusterUtil
                         }
                         labelQRZCache.Text = "" + qrz.cacheQRZ.Count + "/" + badCalls;
                         labelClusterCache.Text = "" + clusterClient.cacheSpottedCalls.Count;
-                        ss = ss.Replace("\r", "");
-                        ss = ss.Replace("\n", "");
+                        ss = ss.Replace("\r", "", StringComparison.InvariantCulture);
+                        ss = ss.Replace("\n", "", StringComparison.InvariantCulture);
                         RichTextBoxExtensions.AppendText(richTextBox1, ss + "\n", myColor);
                         richTextBox1.SelectionStart = richTextBox1.Text.Length;
                         richTextBox1.ScrollToCaret();
@@ -433,21 +434,21 @@ namespace DXClusterUtil
             {
                 if (server != null && server.IsConnected())
                 {
-                    labelStatusQServer.BackColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
-                    labelStatusQServer.Text = "Client connected";
+                    labelStatusQServer.BackColor = qServerBackColor;
+                    labelStatusQServer.Text = "Client Connected";
                 }
                 else
                 {
-                    if (labelStatusQServer.Text.Equals("Client connected", StringComparison.InvariantCultureIgnoreCase))
+                    if (labelStatusQServer.Text.Equals("Client Connected", StringComparison.InvariantCultureIgnoreCase))
                     { // then it disconnected
                         labelStatusQServer.BackColor = System.Drawing.Color.Red;
                         labelStatusQServer.Text = "Client disconnected";
                         WindowState = FormWindowState.Minimized;
                         WindowState = FormWindowState.Normal;
                     }
-                    else if (labelStatusQServer.Text.Equals("Client", StringComparison.InvariantCultureIgnoreCase))
+                    else if (labelStatusQServer.Text.Equals("Client Status", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        labelStatusQServer.BackColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
+                        labelStatusQServer.BackColor = qServerBackColor;
                         labelStatusQServer.Text = "Ready for client";
                     }
                 }
@@ -489,7 +490,7 @@ namespace DXClusterUtil
         {
             try
             {             //qrz.CacheSave(textBoxCacheLocation.Text);
-
+                server.Stop();
                 if (qrz != null) qrz.CacheSave(pathQRZCache);
                 ReviewedSpottersSave(true);
                 string group = "";
@@ -986,6 +987,7 @@ namespace DXClusterUtil
             {
                 ButtonStart_Click(null, null);
             }
+            qServerBackColor = labelStatusQServer.BackColor;
         }
         private void RestoreWindowPosition()
         {

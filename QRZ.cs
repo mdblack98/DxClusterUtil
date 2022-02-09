@@ -84,7 +84,7 @@ namespace DXClusterUtil
                 ConcurrentDictionary<string,string> tmpDict = new ConcurrentDictionary<string, string>();
                 foreach (var d in cacheQRZ)
                 {
-                    if (!d.Value.Contains("BAD"))
+                    if (!d.Value.Contains("BAD",StringComparison.InvariantCulture))
                     {
                         tmpDict.TryAdd(d.Key, d.Value);
                     }
@@ -321,7 +321,7 @@ namespace DXClusterUtil
                 }
                 DataRow dr = QRZData.Tables["QRZDatabase"].Rows[0];
                 //Lversion.Text = QRZField(dr, "version");
-                if (url.Contains("username"))
+                if (url.Contains("username", StringComparison.InvariantCulture))
                 {
                     DataTable sess = QRZData.Tables["Session"];
                     DataRow sr = sess.Rows[0];
@@ -341,7 +341,7 @@ namespace DXClusterUtil
                     DataRow sr = sess.Rows[0];
                     string xmlError = QRZField(sr, "Error");
                     xmlSession = QRZField(sr, "Key");
-                    if (xmlError.Contains("Not found"))
+                    if (xmlError.Contains("Not found", StringComparison.InvariantCulture))
                     {
 
                         try
@@ -357,7 +357,7 @@ namespace DXClusterUtil
                         mutexQRZ.ReleaseMutex();
                         return false;
                     }
-                    else if (xmlError.Contains("password") || xmlError.Contains("Timeout"))
+                    else if (xmlError.Contains("password", StringComparison.InvariantCulture) || xmlError.Contains("Timeout", StringComparison.InvariantCulture))
                     {
                         isOnline = false;
                         //Connect(urlConnect);

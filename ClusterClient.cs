@@ -141,7 +141,7 @@ namespace DXClusterUtil
                                 debug.AppendText(response);
                                 Application.DoEvents();
                                 clientQueue.Add(response);
-                                if (response.Contains("call:") || response.Contains("callsign."))
+                                if (response.Contains("call:", StringComparison.InvariantCulture) || response.Contains("callsign.", StringComparison.InvariantCulture))
                                 {
                                     var msg = Encoding.ASCII.GetBytes("\n"+callsign + "\n");
                                     Thread.Sleep(1000);
@@ -149,7 +149,7 @@ namespace DXClusterUtil
                                     //nStream.Write(msg, 0, msg.Length);
                                     //return true;
                                 }
-                                else if (response.Contains(callsign + " de ") || response.Contains("Hello") || response.Contains("Welcome"))
+                                else if (response.Contains(callsign + " de ", StringComparison.InvariantCulture) || response.Contains("Hello", StringComparison.InvariantCulture) || response.Contains("Welcome", StringComparison.InvariantCulture))
                                 {
                                     loggedIn = true;
                                     //var msg = Encoding.ASCII.GetBytes("Set Dx Filter (skimmer and unique > 2 AND spottercont=na) OR (not skimmer and spottercont=na)\n");
@@ -188,26 +188,26 @@ namespace DXClusterUtil
         public bool ReviewedSpottersIsChecked(string s)
         {
             string check = s + ",1";
-            bool gotem = reviewedSpotters.Contains(check);
+            bool gotem = reviewedSpotters.Contains(check, StringComparison.InvariantCulture);
             return gotem;
         }
         public bool ReviewedSpottersContains(string s)
         {
             string check = s + ",";
-            bool gotem = reviewedSpotters.Contains(check);
-            if (!gotem && newSpotters != null) gotem = newSpotters.Contains(check);
+            bool gotem = reviewedSpotters.Contains(check, StringComparison.InvariantCulture);
+            if (!gotem && newSpotters != null) gotem = newSpotters.Contains(check, StringComparison.InvariantCulture);
             return gotem;
         }
         public bool ReviewedSpottersIsNotChecked(string s)
         {
             string check = s + ",0";
-            bool gotem = reviewedSpotters.Contains(check);
+            bool gotem = reviewedSpotters.Contains(check, StringComparison.InvariantCulture);
             return gotem;
         }
 
         public bool IgnoredSpottersContains(string s)
         {
-            bool gotem = ignoredSpottersAndSpots.Contains(s);
+            bool gotem = ignoredSpottersAndSpots.Contains(s, StringComparison.InvariantCulture);
             return gotem;
         }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
@@ -320,10 +320,10 @@ namespace DXClusterUtil
                         var comment = line.Substring(38, 20);
                         var time = line.Substring(70, 3); // use 10 minute cache
                         var key = freq + "|" + spot + "|" + time;
-                        if (comment.Contains("RTTY"))
+                        if (comment.Contains("RTTY", StringComparison.InvariantCulture))
                         {
                             ffreq += rttyOffset / 1000;
-                            swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture, "{0,7:0.0}", ffreq));
+                            swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture, "{0,7:0.0}", ffreq), StringComparison.InvariantCulture);
                             key = ffreq + "|" + spot + "|" + time;
                         }
                         if (!Int32.TryParse(line.Substring(73, 1), out int minute))
@@ -379,11 +379,11 @@ namespace DXClusterUtil
                             //#pragma warning disable CA1806 // Do not ignore method results
                             int n1 = spottedCall.Length;
                             String spaces = "               ".Substring(0, n1 - 3);
-                            swork = line.Replace(spottedCall, specialCall + spaces);
+                            swork = line.Replace(spottedCall, specialCall + spaces, StringComparison.InvariantCulture);
                             //#pragma warning restore CA1806 // Do not ignore method results
                         }
-                        bool skimmer = swork.Contains("WPM CQ") || swork.Contains("BPS CQ") || swork.Contains("WPM BEACON") || swork.Contains("WPM NCDXF");
-                        if ((line.Contains("-") && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
+                        bool skimmer = swork.Contains("WPM CQ", StringComparison.InvariantCulture) || swork.Contains("BPS CQ", StringComparison.InvariantCulture) || swork.Contains("WPM BEACON", StringComparison.InvariantCulture) || swork.Contains("WPM NCDXF", StringComparison.InvariantCulture);
+                        if ((line.Contains("-", StringComparison.InvariantCulture) && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
                         {
                             filteredOut = true; // we dont' filter here if it's not a skimmer
                             if (!callSuffixList.Contains(tokens2[2]))
@@ -437,11 +437,11 @@ namespace DXClusterUtil
                             string sss = swork;
                             if (!validCall && cachedQRZ) // then the bad call is cached
                             {
-                                sss = swork.Replace("DX de", "#* de");
+                                sss = swork.Replace("DX de", "#* de", StringComparison.InvariantCulture);
                             }
                             else if (!validCall) // then first time QRZ tried it
                             {
-                                sss = swork.Replace("DX de", "## de");
+                                sss = swork.Replace("DX de", "## de", StringComparison.InvariantCulture);
                             }
                             else
                             {
@@ -468,7 +468,7 @@ namespace DXClusterUtil
                             }
                             sreturn += sss + "\r\n";
                         }
-                        else if (swork.Contains(myCallsign))  // allow our own spots through too
+                        else if (swork.Contains(myCallsign, StringComparison.InvariantCulture))  // allow our own spots through too
                         {
                             ++totalLinesKept;
                             log4omQueue.Add(swork + "\r\n");
@@ -528,7 +528,7 @@ namespace DXClusterUtil
                                         catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
                                     }
-                                    if (qrz.xmlError.Contains("Error"))
+                                    if (qrz.xmlError.Contains("Error", StringComparison.InvariantCulture))
                                     {
                                         log4omQueue.Add(qrz.xmlError + "\n");
                                         try
@@ -566,7 +566,7 @@ namespace DXClusterUtil
                     else
                     {
                         // Once in a while the time isn't on the DX message so we just skip it
-                        if (line.Contains("DX de") && line.Length < 74)
+                        if (line.Contains("DX de", StringComparison.InvariantCulture) && line.Length < 74)
                             MessageBox.Show("Length wrong??\n" + line);
                         if (line.Length > 1) sreturn += line + "\r\n";
                     }
