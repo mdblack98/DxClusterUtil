@@ -768,7 +768,7 @@ namespace DXClusterUtil
             bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
             if (richTextBox1.Text.Length > 0)
             {
-                System.Windows.Clipboard.SetText(richTextBox1.Text);
+                //System.Windows.Clipboard.SetText(richTextBox1.Text);
                 if (ctrlKey)
                 {
                     richTextBox1.Clear();
