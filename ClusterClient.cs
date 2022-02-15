@@ -624,9 +624,9 @@ namespace DXClusterUtil
             {
                 if (disposing)
                 {
-                    if (client != null) client.Dispose();
-                    if (nStream != null) nStream.Dispose();
-                    if (qrz != null) qrz.Dispose();
+                    if (client != null) { client.Dispose(); client = null; }
+                    if (nStream != null) { nStream.Dispose(); nStream = null; }
+                    //if (qrz != null) { qrz.Dispose(); qrz = null; }
                     // TODO: dispose managed state (managed objects).
                 }
 

@@ -325,16 +325,34 @@ namespace DXClusterUtil
                     if (s.Length == 0) continue;
                     string ss = s;
                     Color myColor = Color.Black;
-                    while (richTextBox1.Lines.Length > 1000)
+                    richTextBox1.ReadOnly = false;
+                    int nlines = 1;
+                    while (richTextBox1.Lines.Length > 100 && nlines > 0)
                     {
-                        richTextBox1.ReadOnly = false;
-                        richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(100));
-                        richTextBox1.Cut();
+                        nlines = richTextBox1.Lines.Length;
+                        richTextBox1.SelectionStart = 0;
+#pragma warning disable CA1307 // Specify StringComparison
+                        richTextBox1.SelectionLength = richTextBox1.Text.IndexOf("\n", 0) + 1;
+#pragma warning restore CA1307 // Specify StringComparison
+                              //richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(2));
+                              //richTextBox1.Cut();
                         richTextBox1.SelectedText = "";
+                        richTextBox1.Update();
                         Application.DoEvents();
+                        if (richTextBox1.Lines.Length == nlines) nlines = 0;  // didn't delete anything so quit
                     }
                     richTextBox1.ReadOnly = true;
-                    System.Drawing.Point p = richTextBox1.PointToClient(Control.MousePosition);
+                    System.Drawing.Point p;
+                    try
+                    {
+                        p = richTextBox1.PointToClient(Control.MousePosition);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        return;
+                    }
                     System.Drawing.Rectangle client = richTextBox1.ClientRectangle;
                     client.Width += 30;
                     if (!client.Contains(p))
