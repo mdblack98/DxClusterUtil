@@ -31,7 +31,7 @@ namespace DXClusterUtil
         private int lastMinute = 1; // for cache usage
         public bool filterOn = true;
         public bool filterUSA = false;
-        public List<string> callSuffixList = new List<string>();
+        public HashSet<string> callSuffixList = new HashSet<string>();
         public string reviewedSpotters = "";
         public string ignoredSpottersAndSpots = "";
         private readonly QRZ qrz;
@@ -388,8 +388,8 @@ namespace DXClusterUtil
                             filteredOut = true; // we dont' filter here if it's not a skimmer
                             if (!callSuffixList.Contains(tokens2[2]))
                             {
-                                if (skimmer) callSuffixList.Insert(0, spotterCall + ":SK");
-                                else callSuffixList.Insert(0, spotterCall + ":OK");
+                                if (skimmer) callSuffixList.Add(spotterCall + ":SK");
+                                else callSuffixList.Add(spotterCall + ":OK");
                             }
                         }
                         if (filterUSA)

@@ -325,9 +325,9 @@ namespace DXClusterUtil
                     if (s.Length == 0) continue;
                     string ss = s;
                     Color myColor = Color.Black;
-                    richTextBox1.ReadOnly = false;
-                    int nlines = 1;
-                    while (richTextBox1.Lines.Length > 100 && nlines > 0)
+                    if (richTextBox1.ReadOnly == true) richTextBox1.ReadOnly = false;
+                    int nlines = 10;
+                    while (richTextBox1.Lines.Length > 110 && nlines > 0)
                     {
                         nlines = richTextBox1.Lines.Length;
                         richTextBox1.SelectionStart = 0;
@@ -341,7 +341,7 @@ namespace DXClusterUtil
                         Application.DoEvents();
                         if (richTextBox1.Lines.Length == nlines) nlines = 0;  // didn't delete anything so quit
                     }
-                    richTextBox1.ReadOnly = true;
+                    //richTextBox1.ReadOnly = true;
                     System.Drawing.Point p;
                     try
                     {
@@ -434,7 +434,6 @@ namespace DXClusterUtil
             // See if our filter list needs updating
             foreach (var s in clusterClient.callSuffixList)
             {
-
                 string[] tokens = s.Split(':');
                 string justcall = tokens[0];
                 if (!checkedListBoxReviewedSpotters.Items.Contains(justcall) && !checkedListBoxNewSpotters.Items.Contains(justcall) && !listBoxIgnoredSpotters.Items.Contains(justcall))
