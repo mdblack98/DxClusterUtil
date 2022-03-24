@@ -62,6 +62,7 @@
             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.form1BindingSource2 = new System.Windows.Forms.BindingSource(this.components);
             this.checkBoxUSA = new System.Windows.Forms.CheckBox();
+            this.timer2 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).BeginInit();
@@ -90,8 +91,9 @@
             this.labelQDepth.Location = new System.Drawing.Point(202, 51);
             this.labelQDepth.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelQDepth.Name = "labelQDepth";
-            this.labelQDepth.Size = new System.Drawing.Size(0, 15);
+            this.labelQDepth.Size = new System.Drawing.Size(33, 15);
             this.labelQDepth.TabIndex = 6;
+            this.labelQDepth.Text = "Time";
             this.labelQDepth.Click += new System.EventHandler(this.LabelQDepth_Click);
             // 
             // textBoxClusterServer
@@ -376,7 +378,12 @@
             this.checkBoxUSA.TabIndex = 28;
             this.checkBoxUSA.Text = "USA";
             this.checkBoxUSA.UseVisualStyleBackColor = true;
-            this.checkBoxUSA.CheckedChanged += new System.EventHandler(this.checkBoxUSA_CheckedChanged);
+            this.checkBoxUSA.CheckedChanged += new System.EventHandler(this.CheckBoxUSA_CheckedChanged);
+            // 
+            // timer2
+            // 
+            this.timer2.Interval = 200;
+            this.timer2.Tick += new System.EventHandler(this.Timer2_Tick);
             // 
             // Form1
             // 
@@ -412,7 +419,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "Form1";
-            this.Text = "DxClusterUtil V1.27 by W9MDB";
+            this.Text = "DxClusterUtil V1.30 by W9MDB";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -457,6 +464,7 @@
         private System.Windows.Forms.ComboBox comboBoxTimeIntervalAfter;
         private System.Windows.Forms.ComboBox comboBoxTimeIntervalForDump;
         private System.Windows.Forms.CheckBox checkBoxUSA;
+        private System.Windows.Forms.Timer timer2;
     }
 }
 

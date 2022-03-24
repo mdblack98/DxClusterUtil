@@ -20,10 +20,10 @@ namespace DXClusterUtil
     {
         private static Form1 _instance;
         private ClusterClient clusterClient;
-        readonly ConcurrentBag<string> clientQueue = new ConcurrentBag<string>();
-        readonly ConcurrentBag<string> spotQueue = new ConcurrentBag<string>();
+        readonly ConcurrentBag<string> clientQueue = new();
+        readonly ConcurrentBag<string> spotQueue = new();
         QServer server;
-        readonly ToolTip tooltip = new ToolTip();
+        readonly ToolTip tooltip = new();
         private QRZ qrz;
         private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
         private int badCalls;
@@ -115,6 +115,8 @@ namespace DXClusterUtil
             tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
             tip = "Enable to filter out USA spots";
             tooltip.SetToolTip(checkBoxUSA, tip);
+            tip = "Q(Depth), UTC Time(local time to UTC offset)";
+            tooltip.SetToolTip(labelQDepth, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
 
             string[] tokens = reviewedSpotters.Split(';');
@@ -178,6 +180,7 @@ namespace DXClusterUtil
                     listBoxIgnoredSpotters.Items.Add(token);
                 }
             }
+            timer2.Start();
         }
 
         //[System.Diagnostics.C(odeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
@@ -303,12 +306,12 @@ namespace DXClusterUtil
                 if (result == false)
                 {
                     buttonStart.Text = "Connect";
+                    buttonStart.Enabled = true;
                     richTextBox1.AppendText("Disconnected due to error\n");
                 }
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "<Pending>")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         private void Timer1_Tick(object sender, EventArgs e)
         {
@@ -363,7 +366,7 @@ namespace DXClusterUtil
                         // ** means cluster spot is cached
                         // ## means bad call 
                         // #* means bad call cached
-                        string firstFive = ss.Substring(0, 5);
+                        string firstFive = ss[..5];
                         bool qrzError = firstFive.Equals("ZZ de",StringComparison.InvariantCultureIgnoreCase);
                         bool badCall = firstFive.Equals("## de",StringComparison.InvariantCultureIgnoreCase);
                         bool badCallCached = firstFive.Equals("#* de", StringComparison.InvariantCultureIgnoreCase);
@@ -425,10 +428,6 @@ namespace DXClusterUtil
                     }
                 }
             }
-            TimeSpan tzone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
-            string myTime = DateTime.UtcNow.ToString("HH:mm:ss");
-
-            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + "(" + tzone.Hours.ToString("+00;-00;+00") + ")";
 
 
             // See if our filter list needs updating
@@ -507,7 +506,7 @@ namespace DXClusterUtil
         {
             try
             {             //qrz.CacheSave(textBoxCacheLocation.Text);
-                server.Stop();
+                if(server != null) server.Stop();
                 if (qrz != null) qrz.CacheSave(pathQRZCache);
                 ReviewedSpottersSave(true);
                 string group = "";
@@ -760,7 +759,7 @@ namespace DXClusterUtil
             //System.Configuration.ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel level)
             var userConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
             string fileName = "user.config_" + DateTime.Now.ToString("yyyy-MM-ddTHHmmss", CultureInfo.InvariantCulture); // almost ISO 8601 format but have to remove colons
-            System.Windows.Forms.SaveFileDialog myDialog = new System.Windows.Forms.SaveFileDialog
+            System.Windows.Forms.SaveFileDialog myDialog = new()
             {
                 FileName = fileName,
                 CheckPathExists = true,
@@ -828,11 +827,11 @@ namespace DXClusterUtil
         }
         public static DialogResult InputBox(string title, string promptText, ref string value)
         {
-            Form form = new Form();
-            Label label = new Label();
-            TextBox textBox = new TextBox();
-            Button buttonOk = new Button();
-            Button buttonCancel = new Button();
+            Form form = new();
+            Label label = new();
+            TextBox textBox = new();
+            Button buttonOk = new();
+            Button buttonCancel = new();
 
             form.Text = title;
             label.Text = promptText;
@@ -1036,7 +1035,7 @@ namespace DXClusterUtil
             //Properties.Settings.Default.Save();
         }
 
-        private void checkBoxUSA_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxUSA_CheckedChanged(object sender, EventArgs e)
         {
             if (clusterClient != null)
             {
@@ -1051,6 +1050,15 @@ namespace DXClusterUtil
         private void Form1_Validated(object sender, EventArgs e)
         {
             ButtonStart_Click(null, null);
+        }
+
+        private void Timer2_Tick(object sender, EventArgs e)
+        {
+            TimeSpan tzone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
+#pragma warning disable CA1305 // Specify IFormatProvider
+            string myTime = DateTime.UtcNow.ToString("HH:mm:ss");
+            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + "(" + tzone.Hours.ToString("+00;-00;+00") + ")";
+#pragma warning restore CA1305 // Specify IFormatProvider
         }
     }
     public static class RichTextBoxExtensions

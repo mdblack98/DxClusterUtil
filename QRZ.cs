@@ -17,7 +17,7 @@ namespace DXClusterUtil
     class QRZ : IDisposable
     {
         const string server = "http://xmldata.qrz.com/xml/current";
-        private readonly DataSet QRZData = new DataSet("QData");
+        private readonly DataSet QRZData = new("QData");
         private readonly WebClient wc = new WebClientWithTimeout();
         public bool isOnline = false;
         public string xmlSession = "";
@@ -25,10 +25,10 @@ namespace DXClusterUtil
         public string xml = "";
         readonly string urlConnect = "";
         public bool debug = false;
-        public ConcurrentDictionary<string, string> cacheQRZ = new ConcurrentDictionary<string, string>();
-        public ConcurrentDictionary<string, string> cacheQRZBad = new ConcurrentDictionary<string, string>();
-        private readonly ConcurrentBag<string> aliasNeeded = new ConcurrentBag<string>();
-        readonly Mutex mutexQRZ = new Mutex();
+        public ConcurrentDictionary<string, string> cacheQRZ = new();
+        public ConcurrentDictionary<string, string> cacheQRZBad = new();
+        private readonly ConcurrentBag<string> aliasNeeded = new();
+        readonly Mutex mutexQRZ = new();
         readonly private string pathQRZAlias = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzalias.txt");
         readonly private string pathQRZLog = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzlog.txt");
         //readonly private string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzerror.txt");
@@ -46,7 +46,7 @@ namespace DXClusterUtil
                 stream.Dispose();
 
             }
-            StreamReader aliasFile = new StreamReader(pathQRZAlias);
+            StreamReader aliasFile = new(pathQRZAlias);
             string s;
             while ((s = aliasFile.ReadLine())!=null)
             {
@@ -81,7 +81,7 @@ namespace DXClusterUtil
         {
             if (cacheQRZ != null)
             {
-                ConcurrentDictionary<string,string> tmpDict = new ConcurrentDictionary<string, string>();
+                ConcurrentDictionary<string,string> tmpDict = new();
                 foreach (var d in cacheQRZ)
                 {
                     if (!d.Value.Contains("BAD",StringComparison.InvariantCulture))
@@ -185,10 +185,10 @@ namespace DXClusterUtil
             // Not in cache so have to look it up.
             bool valid;
             bool validfull;
-            validfull = valid = CallQRZ(myurl, callSign, out _, out int dxcc);
+            validfull = valid = CallQRZ(myurl, callSign, out _, out _);
             if (!validfull) // if whole callsign isn't valid we'll try the split callsign
             {
-                valid = CallQRZ(myurl, callSignSplit, out string email2, out int qrzdxcc);
+                valid = CallQRZ(myurl, callSignSplit, out string email2, out _);
                 int n = 0;
                 while (!isOnline)
                 {
@@ -262,7 +262,7 @@ namespace DXClusterUtil
         //
         public bool Connect(string url) // CallQRZ for getting sessionid
         {
-            return CallQRZ(url,"",out _, out int qrzdxcc);
+            return CallQRZ(url,"",out _, out _);
         }
 
         //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
@@ -286,11 +286,9 @@ namespace DXClusterUtil
                     //_ = QRZData.ReadXml(xMLReader);
                     //_ = QRZData.ReadXml(xml);
 #pragma warning disable CA5366 // Use XmlReader For DataSet Read Xml
-#pragma warning disable CA3075 // Insecure DTD processing in XML
                     if (qrzstrm != null)
                     {
                         _ = QRZData.ReadXml(qrzstrm, XmlReadMode.InferSchema);
-#pragma warning restore CA3075 // Insecure DTD processing in XML
 #pragma warning restore CA5366 // Use XmlReader For DataSet Read Xml
                         xml = QRZData.GetXml();
                         qrzstrm.Close();
@@ -347,7 +345,7 @@ namespace DXClusterUtil
                         try
                         {
                             File.AppendAllText(pathQRZBad, call + "\n");
-                            StreamWriter badFile = new StreamWriter(pathQRZBad, true);
+                            StreamWriter badFile = new(pathQRZBad, true);
                             badFile.WriteLine(call);
                             badFile.Close();
                         }
@@ -380,12 +378,15 @@ namespace DXClusterUtil
                     DataTable callTable = QRZData.Tables["Callsign"];
                     if (callTable.Rows.Count == 0) return false;
                     dr = callTable.Rows[0];
+                    string callsign = QRZField(dr, "Call");
+                    if (callsign.Length == 0) return false;
                     email = QRZField(dr, "email");
                     string fname = QRZField(dr, "fname");
                     if (email.Length == 0) email = "none" + "," + fname;
                     else email = email + "," + fname;
 #pragma warning disable CA1305 // Specify IFormatProvider
-                    qrzdxcc = Convert.ToInt32(QRZField(dr, "dxcc"));
+                    //if (QRZField(dr, "dxcc").Length != 0)
+                        qrzdxcc = Convert.ToInt32(QRZField(dr, "dxcc"));
 #pragma warning restore CA1305 // Specify IFormatProvider
                 }
 
@@ -393,7 +394,9 @@ namespace DXClusterUtil
             catch (Exception err)
             {
                 mutexQRZ.ReleaseMutex();
-                _ = MessageBox.Show(err.Message, "XML Error"+err.StackTrace);
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                _ = MessageBox.Show(err.Message+"\n"+err.StackTrace+"\n"+xml, "XML Error");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
                 throw;
             }
             isOnline = (xmlSession.Length > 0);
