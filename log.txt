@@ -1,0 +1,442 @@
+commit 543f18d349838e70ee018b1e0aede5ba69c56b21
+Author: Michael Black <mdblack98@yahoo.com>
+Date:   Thu Mar 24 11:44:01 2022 -0500
+
+    v1.30
+    Fix new QRZ empty messages
+    Fix .Net 7.0 warnings
+
+diff --git a/ClusterClient.cs b/ClusterClient.cs
+index d8b1abb..3ae23e7 100644
+--- a/ClusterClient.cs
++++ b/ClusterClient.cs
+@@ -21,7 +21,7 @@ namespace DXClusterUtil
+         private NetworkStream nStream;
+         ConcurrentBag<string> log4omQueue;
+         readonly ConcurrentBag<string> clusterQueue;
+-        public readonly Dictionary<string, int> cacheSpottedCalls = new Dictionary<string, int>();
++        public readonly Dictionary<string, int> cacheSpottedCalls = new();
+         readonly string myHost;
+         readonly int myPort;
+         RichTextBox myDebug;
+@@ -31,7 +31,7 @@ namespace DXClusterUtil
+         private int lastMinute = 1; // for cache usage
+         public bool filterOn = true;
+         public bool filterUSA = false;
+-        public HashSet<string> callSuffixList = new HashSet<string>();
++        public HashSet<string> callSuffixList = new();
+         public string reviewedSpotters = "";
+         public string ignoredSpottersAndSpots = "";
+         private readonly QRZ qrz;
+@@ -313,7 +313,7 @@ namespace DXClusterUtil
+                         var freq = sfreq;
+                         var ffreq = float.Parse(freq, CultureInfo.InvariantCulture);
+                         freq = Math.Round(ffreq).ToString(CultureInfo.InvariantCulture);
+-                        if (freq.Length > 4) freq = freq.Substring(0, freq.Length - 2);
++                        if (freq.Length > 4) freq = freq[0..^2];
+                         var spot = line.Substring(26, 9);
+                         // Remove any suffix from special callsigns
+                         spot = HandleSpecialCalls(spot);
+@@ -326,7 +326,7 @@ namespace DXClusterUtil
+                             swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture, "{0,7:0.0}", ffreq), StringComparison.InvariantCulture);
+                             key = ffreq + "|" + spot + "|" + time;
+                         }
+-                        if (!Int32.TryParse(line.Substring(73, 1), out int minute))
++                        if (!Int32.TryParse(line.AsSpan(73, 1), out int minute))
+                         {
+                             continue;
+                         }
+@@ -378,12 +378,12 @@ namespace DXClusterUtil
+                         {
+                             //#pragma warning disable CA1806 // Do not ignore method results
+                             int n1 = spottedCall.Length;
+-                            String spaces = "               ".Substring(0, n1 - 3);
++                            String spaces = "               "[..(n1 - 3)];
+                             swork = line.Replace(spottedCall, specialCall + spaces, StringComparison.InvariantCulture);
+                             //#pragma warning restore CA1806 // Do not ignore method results
+                         }
+                         bool skimmer = swork.Contains("WPM CQ", StringComparison.InvariantCulture) || swork.Contains("BPS CQ", StringComparison.InvariantCulture) || swork.Contains("WPM BEACON", StringComparison.InvariantCulture) || swork.Contains("WPM NCDXF", StringComparison.InvariantCulture);
+-                        if ((line.Contains("-", StringComparison.InvariantCulture) && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
++                        if ((line.Contains('-', StringComparison.InvariantCulture) && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
+                         {
+                             filteredOut = true; // we dont' filter here if it's not a skimmer
+                             if (!callSuffixList.Contains(tokens2[2]))
+@@ -395,7 +395,7 @@ namespace DXClusterUtil
+                         if (filterUSA)
+                         {
+                             // don't spot USA callsigns
+-                            var firstChar = spottedCall.Substring(0, 1);
++                            var firstChar = spottedCall[..1];
+                             if ((firstChar == "A" && spottedCall[1] <= 'L') || firstChar == "K" || firstChar == "N" || firstChar == "W")
+                             {
+                                 filteredOut = true;
+@@ -558,7 +558,7 @@ namespace DXClusterUtil
+                                     tag = "**";
+                                     cachedQRZ = true;
+                                 }
+-                                sreturn += tag + swork.Substring(2) + "\r\n";
++                                sreturn += tag + swork[2..] + "\r\n";
+                             }
+                         }
+ 
+@@ -602,7 +602,7 @@ namespace DXClusterUtil
+             MatchCollection mc = Regex.Matches(callsign, "[WKN][0-9][A-WYZ]/");
+             foreach (Match m in mc)
+             {
+-                callsign = m.Value.Substring(0, 3);
++                callsign = m.Value[..3];
+             }
+             return callsign;
+         }
+diff --git a/DXCluster.iss b/DXCluster.iss
+index 4985307..e308c48 100644
+--- a/DXCluster.iss
++++ b/DXCluster.iss
+@@ -2,7 +2,7 @@
+ ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
+ 
+ #define MyAppName "DxClusterUtil"
+-#define MyAppVersion "1.27"
++#define MyAppVersion "1.29"
+ #define MyAppExeName "DxClusterUtil.exe"
+ 
+ [Setup]
+diff --git a/DXClusterUtil.csproj b/DXClusterUtil.csproj
+index 87ccefd..7f00fec 100644
+--- a/DXClusterUtil.csproj
++++ b/DXClusterUtil.csproj
+@@ -5,7 +5,7 @@
+   <Import Project="packages\Microsoft.CodeQuality.Analyzers.2.9.8\build\Microsoft.CodeQuality.Analyzers.props" Condition="Exists('packages\Microsoft.CodeQuality.Analyzers.2.9.8\build\Microsoft.CodeQuality.Analyzers.props')" />
+   <Import Project="packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props" Condition="Exists('packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" />
+   <PropertyGroup>
+-    <TargetFramework>net6.0-windows</TargetFramework>
++    <TargetFramework>net7.0-windows</TargetFramework>
+     <OutputType>WinExe</OutputType>
+     <IsWebBootstrapper>false</IsWebBootstrapper>
+     <PublishUrl>publish\</PublishUrl>
+diff --git a/DXClusterUtil1.28.exe b/DXClusterUtil1.28.exe
+new file mode 100644
+index 0000000..da7a7a5
+Binary files /dev/null and b/DXClusterUtil1.28.exe differ
+diff --git a/DXClusterUtil1.29.exe b/DXClusterUtil1.29.exe
+new file mode 100644
+index 0000000..4917604
+Binary files /dev/null and b/DXClusterUtil1.29.exe differ
+diff --git a/DXClusterUtil1.30.exe b/DXClusterUtil1.30.exe
+new file mode 100644
+index 0000000..ce89332
+Binary files /dev/null and b/DXClusterUtil1.30.exe differ
+diff --git a/Form1.Designer.cs b/Form1.Designer.cs
+index fb5e7a0..6fd5eec 100644
+--- a/Form1.Designer.cs
++++ b/Form1.Designer.cs
+@@ -62,6 +62,7 @@
+             this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
+             this.form1BindingSource2 = new System.Windows.Forms.BindingSource(this.components);
+             this.checkBoxUSA = new System.Windows.Forms.CheckBox();
++            this.timer2 = new System.Windows.Forms.Timer(this.components);
+             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).BeginInit();
+             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).BeginInit();
+             ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).BeginInit();
+@@ -90,8 +91,9 @@
+             this.labelQDepth.Location = new System.Drawing.Point(202, 51);
+             this.labelQDepth.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+             this.labelQDepth.Name = "labelQDepth";
+-            this.labelQDepth.Size = new System.Drawing.Size(0, 15);
++            this.labelQDepth.Size = new System.Drawing.Size(33, 15);
+             this.labelQDepth.TabIndex = 6;
++            this.labelQDepth.Text = "Time";
+             this.labelQDepth.Click += new System.EventHandler(this.LabelQDepth_Click);
+             // 
+             // textBoxClusterServer
+@@ -376,7 +378,12 @@
+             this.checkBoxUSA.TabIndex = 28;
+             this.checkBoxUSA.Text = "USA";
+             this.checkBoxUSA.UseVisualStyleBackColor = true;
+-            this.checkBoxUSA.CheckedChanged += new System.EventHandler(this.checkBoxUSA_CheckedChanged);
++            this.checkBoxUSA.CheckedChanged += new System.EventHandler(this.CheckBoxUSA_CheckedChanged);
++            // 
++            // timer2
++            // 
++            this.timer2.Interval = 200;
++            this.timer2.Tick += new System.EventHandler(this.Timer2_Tick);
+             // 
+             // Form1
+             // 
+@@ -412,7 +419,7 @@
+             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+             this.Name = "Form1";
+-            this.Text = "DxClusterUtil V1.27 by W9MDB";
++            this.Text = "DxClusterUtil V1.30 by W9MDB";
+             this.Activated += new System.EventHandler(this.Form1_Activated);
+             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+             this.Load += new System.EventHandler(this.Form1_Load);
+@@ -457,6 +464,7 @@
+         private System.Windows.Forms.ComboBox comboBoxTimeIntervalAfter;
+         private System.Windows.Forms.ComboBox comboBoxTimeIntervalForDump;
+         private System.Windows.Forms.CheckBox checkBoxUSA;
++        private System.Windows.Forms.Timer timer2;
+     }
+ }
+ 
+diff --git a/Form1.cs b/Form1.cs
+index 66b407c..f6079a1 100644
+--- a/Form1.cs
++++ b/Form1.cs
+@@ -20,10 +20,10 @@ namespace DXClusterUtil
+     {
+         private static Form1 _instance;
+         private ClusterClient clusterClient;
+-        readonly ConcurrentBag<string> clientQueue = new ConcurrentBag<string>();
+-        readonly ConcurrentBag<string> spotQueue = new ConcurrentBag<string>();
++        readonly ConcurrentBag<string> clientQueue = new();
++        readonly ConcurrentBag<string> spotQueue = new();
+         QServer server;
+-        readonly ToolTip tooltip = new ToolTip();
++        readonly ToolTip tooltip = new();
+         private QRZ qrz;
+         private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
+         private int badCalls;
+@@ -115,6 +115,8 @@ namespace DXClusterUtil
+             tooltip.SetToolTip(numericUpDownRTTYOffset, tip);
+             tip = "Enable to filter out USA spots";
+             tooltip.SetToolTip(checkBoxUSA, tip);
++            tip = "Q(Depth), UTC Time(local time to UTC offset)";
++            tooltip.SetToolTip(labelQDepth, tip);
+             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
+ 
+             string[] tokens = reviewedSpotters.Split(';');
+@@ -178,6 +180,7 @@ namespace DXClusterUtil
+                     listBoxIgnoredSpotters.Items.Add(token);
+                 }
+             }
++            timer2.Start();
+         }
+ 
+         //[System.Diagnostics.C(odeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+@@ -303,12 +306,12 @@ namespace DXClusterUtil
+                 if (result == false)
+                 {
+                     buttonStart.Text = "Connect";
++                    buttonStart.Enabled = true;
+                     richTextBox1.AppendText("Disconnected due to error\n");
+                 }
+             }
+         }
+ 
+-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "<Pending>")]
+         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+         private void Timer1_Tick(object sender, EventArgs e)
+         {
+@@ -363,7 +366,7 @@ namespace DXClusterUtil
+                         // ** means cluster spot is cached
+                         // ## means bad call 
+                         // #* means bad call cached
+-                        string firstFive = ss.Substring(0, 5);
++                        string firstFive = ss[..5];
+                         bool qrzError = firstFive.Equals("ZZ de",StringComparison.InvariantCultureIgnoreCase);
+                         bool badCall = firstFive.Equals("## de",StringComparison.InvariantCultureIgnoreCase);
+                         bool badCallCached = firstFive.Equals("#* de", StringComparison.InvariantCultureIgnoreCase);
+@@ -425,10 +428,6 @@ namespace DXClusterUtil
+                     }
+                 }
+             }
+-            TimeSpan tzone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
+-            string myTime = DateTime.UtcNow.ToString("HH:mm:ss");
+-
+-            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + "(" + tzone.Hours.ToString("+00;-00;+00") + ")";
+ 
+ 
+             // See if our filter list needs updating
+@@ -507,7 +506,7 @@ namespace DXClusterUtil
+         {
+             try
+             {             //qrz.CacheSave(textBoxCacheLocation.Text);
+-                server.Stop();
++                if(server != null) server.Stop();
+                 if (qrz != null) qrz.CacheSave(pathQRZCache);
+                 ReviewedSpottersSave(true);
+                 string group = "";
+@@ -760,7 +759,7 @@ namespace DXClusterUtil
+             //System.Configuration.ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel level)
+             var userConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
+             string fileName = "user.config_" + DateTime.Now.ToString("yyyy-MM-ddTHHmmss", CultureInfo.InvariantCulture); // almost ISO 8601 format but have to remove colons
+-            System.Windows.Forms.SaveFileDialog myDialog = new System.Windows.Forms.SaveFileDialog
++            System.Windows.Forms.SaveFileDialog myDialog = new()
+             {
+                 FileName = fileName,
+                 CheckPathExists = true,
+@@ -828,11 +827,11 @@ namespace DXClusterUtil
+         }
+         public static DialogResult InputBox(string title, string promptText, ref string value)
+         {
+-            Form form = new Form();
+-            Label label = new Label();
+-            TextBox textBox = new TextBox();
+-            Button buttonOk = new Button();
+-            Button buttonCancel = new Button();
++            Form form = new();
++            Label label = new();
++            TextBox textBox = new();
++            Button buttonOk = new();
++            Button buttonCancel = new();
+ 
+             form.Text = title;
+             label.Text = promptText;
+@@ -1036,7 +1035,7 @@ namespace DXClusterUtil
+             //Properties.Settings.Default.Save();
+         }
+ 
+-        private void checkBoxUSA_CheckedChanged(object sender, EventArgs e)
++        private void CheckBoxUSA_CheckedChanged(object sender, EventArgs e)
+         {
+             if (clusterClient != null)
+             {
+@@ -1052,6 +1051,15 @@ namespace DXClusterUtil
+         {
+             ButtonStart_Click(null, null);
+         }
++
++        private void Timer2_Tick(object sender, EventArgs e)
++        {
++            TimeSpan tzone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
++#pragma warning disable CA1305 // Specify IFormatProvider
++            string myTime = DateTime.UtcNow.ToString("HH:mm:ss");
++            labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + "(" + tzone.Hours.ToString("+00;-00;+00") + ")";
++#pragma warning restore CA1305 // Specify IFormatProvider
++        }
+     }
+     public static class RichTextBoxExtensions
+     {
+diff --git a/Form1.resx b/Form1.resx
+index 4086fd1..f112636 100644
+--- a/Form1.resx
++++ b/Form1.resx
+@@ -81,6 +81,9 @@ Dark Red is bad call cached
+   <metadata name="form1BindingSource2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+     <value>518, 17</value>
+   </metadata>
++  <metadata name="timer2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
++    <value>688, 17</value>
++  </metadata>
+   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+     <value>
+diff --git a/QRZ.cs b/QRZ.cs
+index 1288415..685c319 100644
+--- a/QRZ.cs
++++ b/QRZ.cs
+@@ -17,7 +17,7 @@ namespace DXClusterUtil
+     class QRZ : IDisposable
+     {
+         const string server = "http://xmldata.qrz.com/xml/current";
+-        private readonly DataSet QRZData = new DataSet("QData");
++        private readonly DataSet QRZData = new("QData");
+         private readonly WebClient wc = new WebClientWithTimeout();
+         public bool isOnline = false;
+         public string xmlSession = "";
+@@ -25,10 +25,10 @@ namespace DXClusterUtil
+         public string xml = "";
+         readonly string urlConnect = "";
+         public bool debug = false;
+-        public ConcurrentDictionary<string, string> cacheQRZ = new ConcurrentDictionary<string, string>();
+-        public ConcurrentDictionary<string, string> cacheQRZBad = new ConcurrentDictionary<string, string>();
+-        private readonly ConcurrentBag<string> aliasNeeded = new ConcurrentBag<string>();
+-        readonly Mutex mutexQRZ = new Mutex();
++        public ConcurrentDictionary<string, string> cacheQRZ = new();
++        public ConcurrentDictionary<string, string> cacheQRZBad = new();
++        private readonly ConcurrentBag<string> aliasNeeded = new();
++        readonly Mutex mutexQRZ = new();
+         readonly private string pathQRZAlias = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzalias.txt");
+         readonly private string pathQRZLog = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzlog.txt");
+         //readonly private string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzerror.txt");
+@@ -46,7 +46,7 @@ namespace DXClusterUtil
+                 stream.Dispose();
+ 
+             }
+-            StreamReader aliasFile = new StreamReader(pathQRZAlias);
++            StreamReader aliasFile = new(pathQRZAlias);
+             string s;
+             while ((s = aliasFile.ReadLine())!=null)
+             {
+@@ -81,7 +81,7 @@ namespace DXClusterUtil
+         {
+             if (cacheQRZ != null)
+             {
+-                ConcurrentDictionary<string,string> tmpDict = new ConcurrentDictionary<string, string>();
++                ConcurrentDictionary<string,string> tmpDict = new();
+                 foreach (var d in cacheQRZ)
+                 {
+                     if (!d.Value.Contains("BAD",StringComparison.InvariantCulture))
+@@ -185,10 +185,10 @@ namespace DXClusterUtil
+             // Not in cache so have to look it up.
+             bool valid;
+             bool validfull;
+-            validfull = valid = CallQRZ(myurl, callSign, out _, out int dxcc);
++            validfull = valid = CallQRZ(myurl, callSign, out _, out _);
+             if (!validfull) // if whole callsign isn't valid we'll try the split callsign
+             {
+-                valid = CallQRZ(myurl, callSignSplit, out string email2, out int qrzdxcc);
++                valid = CallQRZ(myurl, callSignSplit, out string email2, out _);
+                 int n = 0;
+                 while (!isOnline)
+                 {
+@@ -262,7 +262,7 @@ namespace DXClusterUtil
+         //
+         public bool Connect(string url) // CallQRZ for getting sessionid
+         {
+-            return CallQRZ(url,"",out _, out int qrzdxcc);
++            return CallQRZ(url,"",out _, out _);
+         }
+ 
+         //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+@@ -286,11 +286,9 @@ namespace DXClusterUtil
+                     //_ = QRZData.ReadXml(xMLReader);
+                     //_ = QRZData.ReadXml(xml);
+ #pragma warning disable CA5366 // Use XmlReader For DataSet Read Xml
+-#pragma warning disable CA3075 // Insecure DTD processing in XML
+                     if (qrzstrm != null)
+                     {
+                         _ = QRZData.ReadXml(qrzstrm, XmlReadMode.InferSchema);
+-#pragma warning restore CA3075 // Insecure DTD processing in XML
+ #pragma warning restore CA5366 // Use XmlReader For DataSet Read Xml
+                         xml = QRZData.GetXml();
+                         qrzstrm.Close();
+@@ -347,7 +345,7 @@ namespace DXClusterUtil
+                         try
+                         {
+                             File.AppendAllText(pathQRZBad, call + "\n");
+-                            StreamWriter badFile = new StreamWriter(pathQRZBad, true);
++                            StreamWriter badFile = new(pathQRZBad, true);
+                             badFile.WriteLine(call);
+                             badFile.Close();
+                         }
+@@ -380,12 +378,15 @@ namespace DXClusterUtil
+                     DataTable callTable = QRZData.Tables["Callsign"];
+                     if (callTable.Rows.Count == 0) return false;
+                     dr = callTable.Rows[0];
++                    string callsign = QRZField(dr, "Call");
++                    if (callsign.Length == 0) return false;
+                     email = QRZField(dr, "email");
+                     string fname = QRZField(dr, "fname");
+                     if (email.Length == 0) email = "none" + "," + fname;
+                     else email = email + "," + fname;
+ #pragma warning disable CA1305 // Specify IFormatProvider
+-                    qrzdxcc = Convert.ToInt32(QRZField(dr, "dxcc"));
++                    //if (QRZField(dr, "dxcc").Length != 0)
++                        qrzdxcc = Convert.ToInt32(QRZField(dr, "dxcc"));
+ #pragma warning restore CA1305 // Specify IFormatProvider
+                 }
+ 
+@@ -393,7 +394,9 @@ namespace DXClusterUtil
+             catch (Exception err)
+             {
+                 mutexQRZ.ReleaseMutex();
+-                _ = MessageBox.Show(err.Message, "XML Error"+err.StackTrace);
++#pragma warning disable CA1303 // Do not pass literals as localized parameters
++                _ = MessageBox.Show(err.Message+"\n"+err.StackTrace+"\n"+xml, "XML Error");
++#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                 throw;
+             }
+             isOnline = (xmlSession.Length > 0);

@@ -6,6 +6,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,11 +15,11 @@ using System.Xml;
 
 namespace DXClusterUtil
 {
-    class QRZ : IDisposable
+    sealed class QRZ : IDisposable
     {
         const string server = "http://xmldata.qrz.com/xml/current";
         private readonly DataSet QRZData = new("QData");
-        private readonly WebClient wc = new WebClientWithTimeout();
+        private readonly MessageSender wc = new();
         public bool isOnline = false;
         public string xmlSession = "";
         public string xmlError = "";
@@ -48,7 +49,7 @@ namespace DXClusterUtil
             }
             StreamReader aliasFile = new(pathQRZAlias);
             string s;
-            while ((s = aliasFile.ReadLine())!=null)
+            while ((s = aliasFile.ReadLine()) != null)
             {
                 string[] tokens = s.Split(',');
                 aliasNeeded.Add(tokens[0]);
@@ -81,10 +82,10 @@ namespace DXClusterUtil
         {
             if (cacheQRZ != null)
             {
-                ConcurrentDictionary<string,string> tmpDict = new();
+                ConcurrentDictionary<string, string> tmpDict = new();
                 foreach (var d in cacheQRZ)
                 {
-                    if (!d.Value.Contains("BAD",StringComparison.InvariantCulture))
+                    if (!d.Value.Contains("BAD", StringComparison.InvariantCulture))
                     {
                         tmpDict.TryAdd(d.Key, d.Value);
                     }
@@ -136,7 +137,7 @@ namespace DXClusterUtil
                 catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
-            if (cacheQRZ.TryGetValue(callSign,out string validCall))
+            if (cacheQRZ.TryGetValue(callSign, out string validCall))
             { // it's in the cache so check our previous result for BAD
                 if (debug)
                 {
@@ -161,7 +162,7 @@ namespace DXClusterUtil
                         catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
                     }
-                    xml = "Bad call cached="+callSignSplit+"\n";
+                    xml = "Bad call cached=" + callSignSplit + "\n";
                     return false;
                 }
                 return true;
@@ -262,15 +263,16 @@ namespace DXClusterUtil
         //
         public bool Connect(string url) // CallQRZ for getting sessionid
         {
-            return CallQRZ(url,"",out _, out _);
+            return CallQRZ(url, "", out _, out _);
         }
 
         //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
-        public bool CallQRZ(string url, string call, out string email,out int qrzdxcc)
+        public bool CallQRZ(string url, string call, out string email, out int qrzdxcc)
         {
             qrzdxcc = 0;
             mutexQRZ.WaitOne();
             email = "none";
+            String qrzstr;
             Stream qrzstrm = null;
             try
             {
@@ -278,22 +280,26 @@ namespace DXClusterUtil
                 try
                 {
                     if (call.Length > 0) url = url + ";callsign=" + call;
-                    qrzstrm = wc.OpenRead(url);
+                    var uri = new System.Uri(url);
+                    qrzstr = wc.GetMessage(uri);
                     //var settings = new XmlReaderSettings();
                     //settings.XmlResolver = ;
                     //XmlReader xMLReader = XmlReader.Create(url,settings);
                     //string xml = xMLReader.ReadContentAsString();
                     //_ = QRZData.ReadXml(xMLReader);
                     //_ = QRZData.ReadXml(xml);
+                    byte[] byteArray = Encoding.ASCII.GetBytes(qrzstr);
+                    qrzstrm = new MemoryStream(byteArray);
 #pragma warning disable CA5366 // Use XmlReader For DataSet Read Xml
                     if (qrzstrm != null)
                     {
                         _ = QRZData.ReadXml(qrzstrm, XmlReadMode.InferSchema);
 #pragma warning restore CA5366 // Use XmlReader For DataSet Read Xml
+                        
                         xml = QRZData.GetXml();
                         qrzstrm.Close();
                     }
-                    else { mutexQRZ.ReleaseMutex(); return false;  }
+                    else { mutexQRZ.ReleaseMutex(); return false; }
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
@@ -303,8 +309,8 @@ namespace DXClusterUtil
                     isOnline = false;
                     if (qrzstrm != null)
                     {
-                        qrzstrm.Close();
-                        qrzstrm.Dispose();
+                        //qrzstrm.Close();
+                        //qrzstrm.Dispose();
                     }
                     mutexQRZ.ReleaseMutex();
                     return false;
@@ -385,8 +391,12 @@ namespace DXClusterUtil
                     if (email.Length == 0) email = "none" + "," + fname;
                     else email = email + "," + fname;
 #pragma warning disable CA1305 // Specify IFormatProvider
-                    //if (QRZField(dr, "dxcc").Length != 0)
+                    string dxcc = QRZField(dr, "dxcc");
+                    if (dxcc != null && dxcc.Length > 0)
                         qrzdxcc = Convert.ToInt32(QRZField(dr, "dxcc"));
+                    else
+                        MessageBox.Show("Callsign " + callsign + " does not have DXCC field in QRZ xml...need to notify the operator!!");
+
 #pragma warning restore CA1305 // Specify IFormatProvider
                 }
 
@@ -395,7 +405,7 @@ namespace DXClusterUtil
             {
                 mutexQRZ.ReleaseMutex();
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
-                _ = MessageBox.Show(err.Message+"\n"+err.StackTrace+"\n"+xml, "XML Error");
+                _ = MessageBox.Show(err.Message + "\n" + err.StackTrace + "\n" + xml, "XML Error");
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 throw;
             }
@@ -424,14 +434,46 @@ namespace DXClusterUtil
             mutexQRZ.Dispose();
             wc.Dispose();
         }
-        public class WebClientWithTimeout : WebClient
+    }
+    public sealed class MessageSender : IDisposable
+    {
+        private readonly HttpClient httpClient;
+        bool disposed = true;
+        public MessageSender()
         {
-            protected override WebRequest GetWebRequest(Uri address)
+            //Create the request sender object
+            httpClient = new()
             {
-                WebRequest wr = base.GetWebRequest(address);
-                wr.Timeout = 5000; // timeout in milliseconds (ms)
-                return wr;
-            }
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+            disposed = false;
+            //Set the headers
+            //httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("MessageService/3.1");
+
+        }
+        public string GetMessage(Uri uri)
+        {
+            /* Initialize the request content 
+               and 
+               Send the POST
+            */
+            //var response = await httpClient.GetAsync(uri).ConfigureAwait(false);
+            var response = httpClient.GetAsync(uri).GetAwaiter().GetResult();
+
+            //Check for error status
+            response.EnsureSuccessStatusCode();
+
+            //Get the response content
+            return response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+        }
+        public void Dispose()
+        {
+            if (!this.disposed)
+                httpClient?.Dispose();
+            if (this != null) GC.SuppressFinalize(this);
+            disposed = true;
         }
     }
 }
+
+    
