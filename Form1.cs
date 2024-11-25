@@ -11,8 +11,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Runtime.Versioning;
 using Xamarin.Essentials;
+using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace DXClusterUtil
 {
@@ -23,7 +25,7 @@ namespace DXClusterUtil
         readonly ConcurrentBag<string> clientQueue = new();
         readonly ConcurrentBag<string> spotQueue = new();
         QServer server;
-        readonly ToolTip tooltip = new();
+        readonly ToolTip tooltip = new() { ShowAlways = true };
         private QRZ qrz;
         private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
         private int badCalls;
@@ -69,7 +71,7 @@ namespace DXClusterUtil
             _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
             Size = Properties.Settings.Default.Size;
-            var tip = "!! means spotter is filtered out\n * *means spot is duplicate\n## means bad call\n#* means bad call cached\nGreen is call sign good and QRZ is cached\nOrange is call sign good and new QRZ query\nRed is bad call\nDark Red is bad call cached\nBlue is your own spot";
+            var tip = "!! means spotter is filtered out\n * *means spot is duplicate\n## means bad call\n#* means bad call cached\n<< means < CW db cutoff\nGreen is call sign good and QRZ is cached\nOrange is call sign good and new QRZ query\nRed is bad call\nDark Red is bad call cached\nBlue is your own spot";
             tooltip.AutoPopDelay = 36000;
             tooltip.InitialDelay = 1000;
             tooltip.AutoPopDelay = 10000;
@@ -117,6 +119,8 @@ namespace DXClusterUtil
             tooltip.SetToolTip(checkBoxUSA, tip);
             tip = "Q(Depth), UTC Time(local time to UTC offset)";
             tooltip.SetToolTip(labelQDepth, tip);
+            tip = "CW Skimmer Minimum dB";
+            tooltip.SetToolTip(numericUpDownCwMinimum, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
 
             string[] tokens = reviewedSpotters.Split(';');
@@ -311,6 +315,21 @@ namespace DXClusterUtil
                 }
             }
         }
+        bool TryParseSignalStrength(string input, out int value)
+        {
+            // Initialize out parameter
+            value = 0;
+
+            // Match the "CW [number] dB" pattern
+            var match = Regex.Match(input, @"CW\s+(\d+)\s+dB");
+
+            if (match.Success && int.TryParse(match.Groups[1].Value, out value))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         private void Timer1_Tick(object sender, EventArgs e)
@@ -374,6 +393,15 @@ namespace DXClusterUtil
                         bool clusterCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
                         bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
                         bool ignored = ss.Contains("Ignoring", StringComparison.InvariantCulture);
+                        bool tooWeak = false;
+                        if (TryParseSignalStrength(ss, out var signalStrength))
+                        {
+                            if (signalStrength < numericUpDownCwMinimum.Value)
+                            {
+                                tooWeak = true;
+                                ss = "<<" + ss;
+                            }
+                        }
                         if (qrzError)
                         {
                             //this.WindowState = FormWindowState.Minimized;
@@ -412,6 +440,10 @@ namespace DXClusterUtil
                             if (Debug)
                             {
                             }
+                        }
+                        else if (tooWeak)
+                        {
+                            myColor = Color.Yellow;
                         }
                         else
                         {
@@ -484,6 +516,7 @@ namespace DXClusterUtil
             clusterClient.Disconnect();
             clusterClient = null;
             server.Stop();
+            server = null;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
@@ -527,6 +560,7 @@ namespace DXClusterUtil
                 Properties.Settings.Default.USA = checkBoxUSA.Checked;
                 Properties.Settings.Default.TimeIntervalForDump = comboBoxTimeIntervalForDump.SelectedIndex;
                 Properties.Settings.Default.TimeIntervalAfter = comboBoxTimeIntervalAfter.SelectedIndex;
+                Properties.Settings.Default.CWMinimum = (int)numericUpDownCwMinimum.Value;
                 SaveWindowPosition();
                 Properties.Settings.Default.Save();
             }
@@ -672,8 +706,24 @@ namespace DXClusterUtil
             }
             if (clusterClient != null)
             {
-                clusterClient.ignoredSpottersAndSpots = listBoxIgnoredSpotters.Items.ToString();
-                clusterClient.reviewedSpotters = reviewedSpotters;  // reviewSpotter also contains checked newSpotters
+                if (clusterClient != null)
+                {
+                    if (listBoxIgnoredSpotters.Items != null)
+                    {
+                        if (listBoxIgnoredSpotters.Items != null)
+                        {
+                            clusterClient.ignoredSpottersAndSpots = string.Join(",", listBoxIgnoredSpotters.Items.Cast<string>());
+                        }
+                        //clusterClient.ignoredSpottersAndSpots = listBoxIgnoredSpotters.Items.ToString();
+                    }
+                    else
+                    {
+                        clusterClient.ignoredSpottersAndSpots = string.Empty;
+                    }
+                    clusterClient.reviewedSpotters = reviewedSpotters;  // reviewSpotter also contains checked newSpotters
+                }
+                //clusterClient.ignoredSpottersAndSpots = listBoxIgnoredSpotters.Items.ToString();
+                //clusterClient.reviewedSpotters = reviewedSpotters;  // reviewSpotter also contains checked newSpotters
             }
         }
         private void CheckedListBoxNewSpotters_SelectedIndexChanged(object sender, EventArgs e)
@@ -878,7 +928,14 @@ namespace DXClusterUtil
             bool altKey = ModifierKeys.HasFlag(Keys.Alt);
             if (shiftKey && ctrlKey && !altKey)
             {
-                listBoxIgnoredSpotters.Items.Remove(listBoxIgnoredSpotters.SelectedItem);
+                if (shiftKey && ctrlKey && !altKey)
+                {
+                    if (listBoxIgnoredSpotters.SelectedItem != null)
+                    {
+                        listBoxIgnoredSpotters.Items.Remove(listBoxIgnoredSpotters.SelectedItem);
+                    }
+                    return;
+                }
                 return;
             }
             if (!shiftKey && !ctrlKey && altKey)
@@ -989,6 +1046,7 @@ namespace DXClusterUtil
                 checkBoxUSA.Checked = Properties.Settings.Default.USA;
                 comboBoxTimeIntervalForDump.SelectedIndex = Properties.Settings.Default.TimeIntervalForDump;
                 comboBoxTimeIntervalAfter.SelectedIndex = Properties.Settings.Default.TimeIntervalAfter;
+                numericUpDownCwMinimum.Value = Properties.Settings.Default.CWMinimum;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)

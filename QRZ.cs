@@ -1,5 +1,4 @@
-﻿using Nancy.Json;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -77,7 +77,7 @@ namespace DXClusterUtil
                 isOnline = false;
             }
         }
-
+        
         public void CacheSave(string filename)
         {
             if (cacheQRZ != null)
@@ -90,13 +90,20 @@ namespace DXClusterUtil
                         tmpDict.TryAdd(d.Key, d.Value);
                     }
                 }
-                File.WriteAllText(filename, new JavaScriptSerializer().Serialize(tmpDict));
+                File.WriteAllText(filename, JsonSerializer.Serialize(tmpDict));
             }
         }
 
         private static string QRZField(DataRow row, string f)
         {
-            if (row.Table.Columns.Contains(f)) return row[f].ToString(); else return "";
+            if (row.Table.Columns.Contains(f))
+            {
+                return row[f]?.ToString() ?? "";
+            }
+            else
+            {
+                return "";
+            }
         }
 
         public bool GetCallsign(string callSign, out bool cached)
@@ -419,7 +426,11 @@ namespace DXClusterUtil
             {
                 if (File.Exists(filename))
                 {
-                    cacheQRZ = new JavaScriptSerializer().Deserialize<ConcurrentDictionary<string, string>>(File.ReadAllText(filename));
+                    var cacheData = JsonSerializer.Deserialize<ConcurrentDictionary<string, string>>(File.ReadAllText(filename));
+                    if (cacheData != null)
+                    {
+                        cacheQRZ = cacheData;
+                    }
                 }
             }
             catch (Exception)

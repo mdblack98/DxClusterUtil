@@ -5,12 +5,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace DXClusterUtil
@@ -92,7 +89,6 @@ namespace DXClusterUtil
             Form1.Instance.TextStatusColor = System.Drawing.ColorTranslator.FromHtml("#F0F0F0");
             Form1.Instance.TextStatus = "Client connected";
 
-            Form1.Instance.TextStatus = "Connected";
             totalLines = 0;
             totalLinesKept = 0;
             return true;
@@ -211,7 +207,7 @@ namespace DXClusterUtil
             return gotem;
         }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
-        public string Get(out bool cachedQRZ, RichTextBox debuglog)
+        public string? Get(out bool cachedQRZ, RichTextBox debuglog)
         {
             cachedQRZ = false;
             if (client == null || qrz == null)

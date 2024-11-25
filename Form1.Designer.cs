@@ -31,407 +31,405 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            DXClusterUtil.Properties.Settings settings1 = new DXClusterUtil.Properties.Settings();
+            components = new System.ComponentModel.Container();
+            Properties.Settings settings2 = new Properties.Settings();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.buttonStart = new System.Windows.Forms.Button();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.labelQDepth = new System.Windows.Forms.Label();
-            this.textBoxClusterServer = new System.Windows.Forms.TextBox();
-            this.textBoxCallsign = new System.Windows.Forms.TextBox();
-            this.labelStatusQServer = new System.Windows.Forms.Label();
-            this.textBoxPortLocal = new System.Windows.Forms.TextBox();
-            this.checkedListBoxNewSpotters = new System.Windows.Forms.CheckedListBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.buttonBackup = new System.Windows.Forms.Button();
-            this.buttonCopy = new System.Windows.Forms.Button();
-            this.checkBoxCached = new System.Windows.Forms.CheckBox();
-            this.checkBoxFiltered = new System.Windows.Forms.CheckBox();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.labelQRZCache = new System.Windows.Forms.Label();
-            this.textBoxPassword = new System.Windows.Forms.TextBox();
-            this.labelClusterCache = new System.Windows.Forms.Label();
-            this.numericUpDownRTTYOffset = new System.Windows.Forms.NumericUpDown();
-            this.listBoxIgnoredSpotters = new System.Windows.Forms.ListBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.comboBoxTimeIntervalAfter = new System.Windows.Forms.ComboBox();
-            this.form1BindingSource1 = new System.Windows.Forms.BindingSource(this.components);
-            this.comboBoxTimeIntervalForDump = new System.Windows.Forms.ComboBox();
-            this.checkedListBoxReviewedSpotters = new DXClusterUtil.ColorCodedCheckedListBox();
-            this.form1BindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.form1BindingSource2 = new System.Windows.Forms.BindingSource(this.components);
-            this.checkBoxUSA = new System.Windows.Forms.CheckBox();
-            this.timer2 = new System.Windows.Forms.Timer(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource2)).BeginInit();
-            this.SuspendLayout();
+            buttonStart = new System.Windows.Forms.Button();
+            timer1 = new System.Windows.Forms.Timer(components);
+            labelQDepth = new System.Windows.Forms.Label();
+            textBoxClusterServer = new System.Windows.Forms.TextBox();
+            textBoxCallsign = new System.Windows.Forms.TextBox();
+            labelStatusQServer = new System.Windows.Forms.Label();
+            textBoxPortLocal = new System.Windows.Forms.TextBox();
+            checkedListBoxNewSpotters = new System.Windows.Forms.CheckedListBox();
+            label1 = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            buttonBackup = new System.Windows.Forms.Button();
+            buttonCopy = new System.Windows.Forms.Button();
+            checkBoxCached = new System.Windows.Forms.CheckBox();
+            checkBoxFiltered = new System.Windows.Forms.CheckBox();
+            richTextBox1 = new System.Windows.Forms.RichTextBox();
+            labelQRZCache = new System.Windows.Forms.Label();
+            textBoxPassword = new System.Windows.Forms.TextBox();
+            labelClusterCache = new System.Windows.Forms.Label();
+            numericUpDownRTTYOffset = new System.Windows.Forms.NumericUpDown();
+            listBoxIgnoredSpotters = new System.Windows.Forms.ListBox();
+            label3 = new System.Windows.Forms.Label();
+            comboBoxTimeIntervalAfter = new System.Windows.Forms.ComboBox();
+            form1BindingSource1 = new System.Windows.Forms.BindingSource(components);
+            comboBoxTimeIntervalForDump = new System.Windows.Forms.ComboBox();
+            checkedListBoxReviewedSpotters = new ColorCodedCheckedListBox();
+            form1BindingSource = new System.Windows.Forms.BindingSource(components);
+            form1BindingSource2 = new System.Windows.Forms.BindingSource(components);
+            checkBoxUSA = new System.Windows.Forms.CheckBox();
+            timer2 = new System.Windows.Forms.Timer(components);
+            numericUpDownCwMinimum = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownRTTYOffset).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)form1BindingSource1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)form1BindingSource).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)form1BindingSource2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownCwMinimum).BeginInit();
+            SuspendLayout();
             // 
             // buttonStart
             // 
-            this.buttonStart.Location = new System.Drawing.Point(15, 15);
-            this.buttonStart.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(88, 27);
-            this.buttonStart.TabIndex = 0;
-            this.buttonStart.Text = "Start";
-            this.buttonStart.UseVisualStyleBackColor = true;
-            this.buttonStart.Click += new System.EventHandler(this.ButtonStart_Click);
+            buttonStart.Location = new System.Drawing.Point(15, 15);
+            buttonStart.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonStart.Name = "buttonStart";
+            buttonStart.Size = new System.Drawing.Size(88, 27);
+            buttonStart.TabIndex = 0;
+            buttonStart.Text = "Start";
+            buttonStart.UseVisualStyleBackColor = true;
+            buttonStart.Click += ButtonStart_Click;
             // 
             // timer1
             // 
-            this.timer1.Interval = 1000;
-            this.timer1.Tick += new System.EventHandler(this.Timer1_Tick);
+            timer1.Interval = 1000;
+            timer1.Tick += Timer1_Tick;
             // 
             // labelQDepth
             // 
-            this.labelQDepth.AutoSize = true;
-            this.labelQDepth.Location = new System.Drawing.Point(202, 51);
-            this.labelQDepth.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.labelQDepth.Name = "labelQDepth";
-            this.labelQDepth.Size = new System.Drawing.Size(33, 15);
-            this.labelQDepth.TabIndex = 6;
-            this.labelQDepth.Text = "Time";
-            this.labelQDepth.Click += new System.EventHandler(this.LabelQDepth_Click);
+            labelQDepth.AutoSize = true;
+            labelQDepth.Location = new System.Drawing.Point(202, 51);
+            labelQDepth.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            labelQDepth.Name = "labelQDepth";
+            labelQDepth.Size = new System.Drawing.Size(34, 15);
+            labelQDepth.TabIndex = 6;
+            labelQDepth.Text = "Time";
+            labelQDepth.Click += LabelQDepth_Click;
             // 
             // textBoxClusterServer
             // 
-            settings1.SettingsKey = "";
-            this.textBoxClusterServer.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "ClusterServer", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBoxClusterServer.Location = new System.Drawing.Point(264, 17);
-            this.textBoxClusterServer.Margin = new System.Windows.Forms.Padding(2);
-            this.textBoxClusterServer.Name = "textBoxClusterServer";
-            this.textBoxClusterServer.Size = new System.Drawing.Size(125, 23);
-            this.textBoxClusterServer.TabIndex = 3;
-            this.textBoxClusterServer.TextChanged += new System.EventHandler(this.TextBoxClusterServer_TextChanged);
-            this.textBoxClusterServer.Leave += new System.EventHandler(this.TextBoxCluster_Leave);
+            settings2.Cached = false;
+            settings2.Callsign = "";
+            settings2.ClusterServer = "";
+            settings2.Filtered = false;
+            settings2.HasSetDefaults = false;
+            settings2.Ignore = "";
+            settings2.Location = new System.Drawing.Point(0, 19);
+            settings2.Password = "";
+            settings2.PortLocal = "7373";
+            settings2.ReviewedSpotters = "";
+            settings2.rttyOffset = new decimal(new int[] { 600, 0, 0, int.MinValue });
+            settings2.SettingsKey = "";
+            settings2.Size = new System.Drawing.Size(705, 263);
+            settings2.TimeInterval = 60;
+            settings2.TimeIntervalAfter = 6;
+            settings2.TimeIntervalForDump = 15;
+            settings2.USA = true;
+            textBoxClusterServer.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings2, "ClusterServer", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            textBoxClusterServer.Location = new System.Drawing.Point(264, 17);
+            textBoxClusterServer.Margin = new System.Windows.Forms.Padding(2);
+            textBoxClusterServer.Name = "textBoxClusterServer";
+            textBoxClusterServer.Size = new System.Drawing.Size(125, 23);
+            textBoxClusterServer.TabIndex = 3;
+            textBoxClusterServer.TextChanged += TextBoxClusterServer_TextChanged;
+            textBoxClusterServer.Leave += TextBoxCluster_Leave;
             // 
             // textBoxCallsign
             // 
-            this.textBoxCallsign.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBoxCallsign.Location = new System.Drawing.Point(117, 17);
-            this.textBoxCallsign.Margin = new System.Windows.Forms.Padding(2);
-            this.textBoxCallsign.Name = "textBoxCallsign";
-            this.textBoxCallsign.Size = new System.Drawing.Size(68, 23);
-            this.textBoxCallsign.TabIndex = 1;
+            textBoxCallsign.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            textBoxCallsign.Location = new System.Drawing.Point(117, 17);
+            textBoxCallsign.Margin = new System.Windows.Forms.Padding(2);
+            textBoxCallsign.Name = "textBoxCallsign";
+            textBoxCallsign.Size = new System.Drawing.Size(68, 23);
+            textBoxCallsign.TabIndex = 1;
             // 
             // labelStatusQServer
             // 
-            this.labelStatusQServer.AutoSize = true;
-            this.labelStatusQServer.Location = new System.Drawing.Point(86, 51);
-            this.labelStatusQServer.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.labelStatusQServer.Name = "labelStatusQServer";
-            this.labelStatusQServer.Size = new System.Drawing.Size(73, 15);
-            this.labelStatusQServer.TabIndex = 8;
-            this.labelStatusQServer.Text = "Client Status";
+            labelStatusQServer.AutoSize = true;
+            labelStatusQServer.Location = new System.Drawing.Point(86, 51);
+            labelStatusQServer.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            labelStatusQServer.Name = "labelStatusQServer";
+            labelStatusQServer.Size = new System.Drawing.Size(73, 15);
+            labelStatusQServer.TabIndex = 8;
+            labelStatusQServer.Text = "Client Status";
             // 
             // textBoxPortLocal
             // 
-            this.textBoxPortLocal.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBoxPortLocal.Location = new System.Drawing.Point(15, 47);
-            this.textBoxPortLocal.Margin = new System.Windows.Forms.Padding(2);
-            this.textBoxPortLocal.Name = "textBoxPortLocal";
-            this.textBoxPortLocal.Size = new System.Drawing.Size(62, 23);
-            this.textBoxPortLocal.TabIndex = 4;
+            textBoxPortLocal.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            textBoxPortLocal.Location = new System.Drawing.Point(15, 47);
+            textBoxPortLocal.Margin = new System.Windows.Forms.Padding(2);
+            textBoxPortLocal.Name = "textBoxPortLocal";
+            textBoxPortLocal.Size = new System.Drawing.Size(62, 23);
+            textBoxPortLocal.TabIndex = 4;
             // 
             // checkedListBoxNewSpotters
             // 
-            this.checkedListBoxNewSpotters.CheckOnClick = true;
-            this.checkedListBoxNewSpotters.FormattingEnabled = true;
-            this.checkedListBoxNewSpotters.Location = new System.Drawing.Point(399, 21);
-            this.checkedListBoxNewSpotters.Margin = new System.Windows.Forms.Padding(2);
-            this.checkedListBoxNewSpotters.Name = "checkedListBoxNewSpotters";
-            this.checkedListBoxNewSpotters.Size = new System.Drawing.Size(121, 94);
-            this.checkedListBoxNewSpotters.TabIndex = 12;
-            this.checkedListBoxNewSpotters.SelectedIndexChanged += new System.EventHandler(this.CheckedListBoxNewSpotters_SelectedIndexChanged);
+            checkedListBoxNewSpotters.CheckOnClick = true;
+            checkedListBoxNewSpotters.FormattingEnabled = true;
+            checkedListBoxNewSpotters.Location = new System.Drawing.Point(399, 21);
+            checkedListBoxNewSpotters.Margin = new System.Windows.Forms.Padding(2);
+            checkedListBoxNewSpotters.Name = "checkedListBoxNewSpotters";
+            checkedListBoxNewSpotters.Size = new System.Drawing.Size(121, 94);
+            checkedListBoxNewSpotters.TabIndex = 12;
+            checkedListBoxNewSpotters.SelectedIndexChanged += CheckedListBoxNewSpotters_SelectedIndexChanged;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(415, 3);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(77, 15);
-            this.label1.TabIndex = 12;
-            this.label1.Text = "New Spotters";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(415, 3);
+            label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(77, 15);
+            label1.TabIndex = 12;
+            label1.Text = "New Spotters";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(539, 3);
-            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(103, 15);
-            this.label2.TabIndex = 13;
-            this.label2.Text = "Reviewed Spotters";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(539, 3);
+            label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(103, 15);
+            label2.TabIndex = 13;
+            label2.Text = "Reviewed Spotters";
             // 
             // buttonBackup
             // 
-            this.buttonBackup.Location = new System.Drawing.Point(15, 75);
-            this.buttonBackup.Margin = new System.Windows.Forms.Padding(2);
-            this.buttonBackup.Name = "buttonBackup";
-            this.buttonBackup.Size = new System.Drawing.Size(88, 27);
-            this.buttonBackup.TabIndex = 6;
-            this.buttonBackup.Text = "Backup";
-            this.buttonBackup.UseVisualStyleBackColor = true;
-            this.buttonBackup.Click += new System.EventHandler(this.ButtonBackup_Click);
+            buttonBackup.Location = new System.Drawing.Point(15, 75);
+            buttonBackup.Margin = new System.Windows.Forms.Padding(2);
+            buttonBackup.Name = "buttonBackup";
+            buttonBackup.Size = new System.Drawing.Size(88, 27);
+            buttonBackup.TabIndex = 6;
+            buttonBackup.Text = "Backup";
+            buttonBackup.UseVisualStyleBackColor = true;
+            buttonBackup.Click += ButtonBackup_Click;
             // 
             // buttonCopy
             // 
-            this.buttonCopy.Location = new System.Drawing.Point(115, 75);
-            this.buttonCopy.Margin = new System.Windows.Forms.Padding(2);
-            this.buttonCopy.Name = "buttonCopy";
-            this.buttonCopy.Size = new System.Drawing.Size(88, 27);
-            this.buttonCopy.TabIndex = 7;
-            this.buttonCopy.Text = "Copy Log";
-            this.buttonCopy.UseVisualStyleBackColor = true;
-            this.buttonCopy.Click += new System.EventHandler(this.Button1_Click);
+            buttonCopy.Location = new System.Drawing.Point(115, 75);
+            buttonCopy.Margin = new System.Windows.Forms.Padding(2);
+            buttonCopy.Name = "buttonCopy";
+            buttonCopy.Size = new System.Drawing.Size(88, 27);
+            buttonCopy.TabIndex = 7;
+            buttonCopy.Text = "Copy Log";
+            buttonCopy.UseVisualStyleBackColor = true;
+            buttonCopy.Click += Button1_Click;
             // 
             // checkBoxCached
             // 
-            this.checkBoxCached.AutoSize = true;
-            this.checkBoxCached.Location = new System.Drawing.Point(216, 81);
-            this.checkBoxCached.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkBoxCached.Name = "checkBoxCached";
-            this.checkBoxCached.Size = new System.Drawing.Size(53, 19);
-            this.checkBoxCached.TabIndex = 8;
-            this.checkBoxCached.Text = "Dups";
-            this.checkBoxCached.UseVisualStyleBackColor = true;
-            this.checkBoxCached.CheckedChanged += new System.EventHandler(this.CheckBoxCached_CheckedChanged);
+            checkBoxCached.AutoSize = true;
+            checkBoxCached.Location = new System.Drawing.Point(216, 81);
+            checkBoxCached.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            checkBoxCached.Name = "checkBoxCached";
+            checkBoxCached.Size = new System.Drawing.Size(53, 19);
+            checkBoxCached.TabIndex = 8;
+            checkBoxCached.Text = "Dups";
+            checkBoxCached.UseVisualStyleBackColor = true;
+            checkBoxCached.CheckedChanged += CheckBoxCached_CheckedChanged;
             // 
             // checkBoxFiltered
             // 
-            this.checkBoxFiltered.AutoSize = true;
-            this.checkBoxFiltered.Location = new System.Drawing.Point(273, 81);
-            this.checkBoxFiltered.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkBoxFiltered.Name = "checkBoxFiltered";
-            this.checkBoxFiltered.Size = new System.Drawing.Size(65, 19);
-            this.checkBoxFiltered.TabIndex = 9;
-            this.checkBoxFiltered.Text = "Filtered";
-            this.checkBoxFiltered.UseVisualStyleBackColor = true;
+            checkBoxFiltered.AutoSize = true;
+            checkBoxFiltered.Location = new System.Drawing.Point(273, 81);
+            checkBoxFiltered.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            checkBoxFiltered.Name = "checkBoxFiltered";
+            checkBoxFiltered.Size = new System.Drawing.Size(65, 19);
+            checkBoxFiltered.TabIndex = 9;
+            checkBoxFiltered.Text = "Filtered";
+            checkBoxFiltered.UseVisualStyleBackColor = true;
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox1.Font = new System.Drawing.Font("Lucida Sans Typewriter", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.richTextBox1.Location = new System.Drawing.Point(7, 133);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(2);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(750, 139);
-            this.richTextBox1.TabIndex = 14;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
-            this.richTextBox1.WordWrap = false;
+            richTextBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            richTextBox1.Font = new System.Drawing.Font("Lucida Sans Typewriter", 9F);
+            richTextBox1.Location = new System.Drawing.Point(7, 133);
+            richTextBox1.Margin = new System.Windows.Forms.Padding(2);
+            richTextBox1.Name = "richTextBox1";
+            richTextBox1.Size = new System.Drawing.Size(750, 139);
+            richTextBox1.TabIndex = 14;
+            richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            richTextBox1.WordWrap = false;
             // 
             // labelQRZCache
             // 
-            this.labelQRZCache.AutoSize = true;
-            this.labelQRZCache.Location = new System.Drawing.Point(220, 107);
-            this.labelQRZCache.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelQRZCache.Name = "labelQRZCache";
-            this.labelQRZCache.Size = new System.Drawing.Size(66, 15);
-            this.labelQRZCache.TabIndex = 21;
-            this.labelQRZCache.Text = "QRZ Cache";
+            labelQRZCache.AutoSize = true;
+            labelQRZCache.Location = new System.Drawing.Point(220, 107);
+            labelQRZCache.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelQRZCache.Name = "labelQRZCache";
+            labelQRZCache.Size = new System.Drawing.Size(66, 15);
+            labelQRZCache.TabIndex = 21;
+            labelQRZCache.Text = "QRZ Cache";
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.Location = new System.Drawing.Point(190, 17);
-            this.textBoxPassword.Margin = new System.Windows.Forms.Padding(2);
-            this.textBoxPassword.Name = "textBoxPassword";
-            this.textBoxPassword.PasswordChar = '*';
-            this.textBoxPassword.Size = new System.Drawing.Size(68, 23);
-            this.textBoxPassword.TabIndex = 2;
+            textBoxPassword.Location = new System.Drawing.Point(190, 17);
+            textBoxPassword.Margin = new System.Windows.Forms.Padding(2);
+            textBoxPassword.Name = "textBoxPassword";
+            textBoxPassword.PasswordChar = '*';
+            textBoxPassword.Size = new System.Drawing.Size(68, 23);
+            textBoxPassword.TabIndex = 2;
             // 
             // labelClusterCache
             // 
-            this.labelClusterCache.AutoSize = true;
-            this.labelClusterCache.Location = new System.Drawing.Point(302, 107);
-            this.labelClusterCache.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelClusterCache.Name = "labelClusterCache";
-            this.labelClusterCache.Size = new System.Drawing.Size(78, 15);
-            this.labelClusterCache.TabIndex = 23;
-            this.labelClusterCache.Tag = "Cluster cache";
-            this.labelClusterCache.Text = "Cluster cache";
+            labelClusterCache.AutoSize = true;
+            labelClusterCache.Location = new System.Drawing.Point(302, 107);
+            labelClusterCache.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelClusterCache.Name = "labelClusterCache";
+            labelClusterCache.Size = new System.Drawing.Size(78, 15);
+            labelClusterCache.TabIndex = 23;
+            labelClusterCache.Tag = "Cluster cache";
+            labelClusterCache.Text = "Cluster cache";
             // 
             // numericUpDownRTTYOffset
             // 
-            this.numericUpDownRTTYOffset.Increment = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.numericUpDownRTTYOffset.Location = new System.Drawing.Point(332, 47);
-            this.numericUpDownRTTYOffset.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDownRTTYOffset.Maximum = new decimal(new int[] {
-            2000,
-            0,
-            0,
-            0});
-            this.numericUpDownRTTYOffset.Minimum = new decimal(new int[] {
-            2000,
-            0,
-            0,
-            -2147483648});
-            this.numericUpDownRTTYOffset.Name = "numericUpDownRTTYOffset";
-            this.numericUpDownRTTYOffset.Size = new System.Drawing.Size(56, 23);
-            this.numericUpDownRTTYOffset.TabIndex = 5;
-            this.numericUpDownRTTYOffset.ValueChanged += new System.EventHandler(this.NumericUpDownRTTYOffset_ValueChanged);
+            numericUpDownRTTYOffset.Increment = new decimal(new int[] { 100, 0, 0, 0 });
+            numericUpDownRTTYOffset.Location = new System.Drawing.Point(332, 47);
+            numericUpDownRTTYOffset.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownRTTYOffset.Maximum = new decimal(new int[] { 2000, 0, 0, 0 });
+            numericUpDownRTTYOffset.Minimum = new decimal(new int[] { 2000, 0, 0, int.MinValue });
+            numericUpDownRTTYOffset.Name = "numericUpDownRTTYOffset";
+            numericUpDownRTTYOffset.Size = new System.Drawing.Size(56, 23);
+            numericUpDownRTTYOffset.TabIndex = 5;
+            numericUpDownRTTYOffset.ValueChanged += NumericUpDownRTTYOffset_ValueChanged;
             // 
             // listBoxIgnoredSpotters
             // 
-            this.listBoxIgnoredSpotters.FormattingEnabled = true;
-            this.listBoxIgnoredSpotters.ItemHeight = 15;
-            this.listBoxIgnoredSpotters.Location = new System.Drawing.Point(662, 20);
-            this.listBoxIgnoredSpotters.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.listBoxIgnoredSpotters.Name = "listBoxIgnoredSpotters";
-            this.listBoxIgnoredSpotters.Size = new System.Drawing.Size(93, 109);
-            this.listBoxIgnoredSpotters.TabIndex = 11;
-            this.listBoxIgnoredSpotters.Click += new System.EventHandler(this.ListBox1_Click);
-            this.listBoxIgnoredSpotters.SelectedIndexChanged += new System.EventHandler(this.ListBoxIgnore_SelectedIndexChanged);
+            listBoxIgnoredSpotters.FormattingEnabled = true;
+            listBoxIgnoredSpotters.ItemHeight = 15;
+            listBoxIgnoredSpotters.Location = new System.Drawing.Point(662, 20);
+            listBoxIgnoredSpotters.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            listBoxIgnoredSpotters.Name = "listBoxIgnoredSpotters";
+            listBoxIgnoredSpotters.Size = new System.Drawing.Size(93, 109);
+            listBoxIgnoredSpotters.TabIndex = 11;
+            listBoxIgnoredSpotters.Click += ListBox1_Click;
+            listBoxIgnoredSpotters.SelectedIndexChanged += ListBoxIgnore_SelectedIndexChanged;
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(680, 3);
-            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(48, 15);
-            this.label3.TabIndex = 26;
-            this.label3.Text = "Ignored";
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(680, 3);
+            label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(48, 15);
+            label3.TabIndex = 26;
+            label3.Text = "Ignored";
             // 
             // comboBoxTimeIntervalAfter
             // 
-            this.comboBoxTimeIntervalAfter.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.form1BindingSource1, "TimeIntervalAfter", true));
-            this.comboBoxTimeIntervalAfter.FormattingEnabled = true;
-            this.comboBoxTimeIntervalAfter.Items.AddRange(new object[] {
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "10"});
-            this.comboBoxTimeIntervalAfter.Location = new System.Drawing.Point(70, 104);
-            this.comboBoxTimeIntervalAfter.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.comboBoxTimeIntervalAfter.Name = "comboBoxTimeIntervalAfter";
-            this.comboBoxTimeIntervalAfter.Size = new System.Drawing.Size(44, 23);
-            this.comboBoxTimeIntervalAfter.TabIndex = 10;
-            this.comboBoxTimeIntervalAfter.SelectedIndexChanged += new System.EventHandler(this.ComboBoxTimeForDump_SelectedIndexChanged);
+            comboBoxTimeIntervalAfter.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", form1BindingSource1, "TimeIntervalAfter", true));
+            comboBoxTimeIntervalAfter.FormattingEnabled = true;
+            comboBoxTimeIntervalAfter.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
+            comboBoxTimeIntervalAfter.Location = new System.Drawing.Point(70, 104);
+            comboBoxTimeIntervalAfter.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            comboBoxTimeIntervalAfter.Name = "comboBoxTimeIntervalAfter";
+            comboBoxTimeIntervalAfter.Size = new System.Drawing.Size(44, 23);
+            comboBoxTimeIntervalAfter.TabIndex = 10;
+            comboBoxTimeIntervalAfter.SelectedIndexChanged += ComboBoxTimeForDump_SelectedIndexChanged;
             // 
             // form1BindingSource1
             // 
-            this.form1BindingSource1.DataSource = typeof(DXClusterUtil.Form1);
+            form1BindingSource1.DataSource = typeof(Form1);
             // 
             // comboBoxTimeIntervalForDump
             // 
-            this.comboBoxTimeIntervalForDump.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.form1BindingSource1, "TimeIntervalForDump", true));
-            this.comboBoxTimeIntervalForDump.FormattingEnabled = true;
-            this.comboBoxTimeIntervalForDump.Items.AddRange(new object[] {
-            "1",
-            "15",
-            "30",
-            "60"});
-            this.comboBoxTimeIntervalForDump.Location = new System.Drawing.Point(16, 104);
-            this.comboBoxTimeIntervalForDump.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.comboBoxTimeIntervalForDump.Name = "comboBoxTimeIntervalForDump";
-            this.comboBoxTimeIntervalForDump.Size = new System.Drawing.Size(46, 23);
-            this.comboBoxTimeIntervalForDump.TabIndex = 27;
-            this.comboBoxTimeIntervalForDump.SelectedIndexChanged += new System.EventHandler(this.ComboBoxInterval_SelectedIndexChanged);
+            comboBoxTimeIntervalForDump.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", form1BindingSource1, "TimeIntervalForDump", true));
+            comboBoxTimeIntervalForDump.FormattingEnabled = true;
+            comboBoxTimeIntervalForDump.Items.AddRange(new object[] { "1", "15", "30", "60" });
+            comboBoxTimeIntervalForDump.Location = new System.Drawing.Point(16, 104);
+            comboBoxTimeIntervalForDump.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            comboBoxTimeIntervalForDump.Name = "comboBoxTimeIntervalForDump";
+            comboBoxTimeIntervalForDump.Size = new System.Drawing.Size(46, 23);
+            comboBoxTimeIntervalForDump.TabIndex = 27;
+            comboBoxTimeIntervalForDump.SelectedIndexChanged += ComboBoxInterval_SelectedIndexChanged;
             // 
             // checkedListBoxReviewedSpotters
             // 
-            this.checkedListBoxReviewedSpotters.CheckedColor = System.Drawing.Color.Green;
-            this.checkedListBoxReviewedSpotters.CheckOnClick = true;
-            this.checkedListBoxReviewedSpotters.FormattingEnabled = true;
-            this.checkedListBoxReviewedSpotters.IndeterminateColor = System.Drawing.Color.Orange;
-            this.checkedListBoxReviewedSpotters.Location = new System.Drawing.Point(531, 21);
-            this.checkedListBoxReviewedSpotters.Margin = new System.Windows.Forms.Padding(2);
-            this.checkedListBoxReviewedSpotters.Name = "checkedListBoxReviewedSpotters";
-            this.checkedListBoxReviewedSpotters.Size = new System.Drawing.Size(121, 94);
-            this.checkedListBoxReviewedSpotters.TabIndex = 13;
-            this.checkedListBoxReviewedSpotters.UncheckedColor = System.Drawing.Color.Red;
-            this.checkedListBoxReviewedSpotters.SelectedIndexChanged += new System.EventHandler(this.CheckedListBoxReviewedSpotters_SelectedIndexChanged);
-            this.checkedListBoxReviewedSpotters.MouseUp += new System.Windows.Forms.MouseEventHandler(this.CheckedListBoxReviewedSpotters_MouseUp);
+            checkedListBoxReviewedSpotters.CheckedColor = System.Drawing.Color.Green;
+            checkedListBoxReviewedSpotters.CheckOnClick = true;
+            checkedListBoxReviewedSpotters.FormattingEnabled = true;
+            checkedListBoxReviewedSpotters.IndeterminateColor = System.Drawing.Color.Orange;
+            checkedListBoxReviewedSpotters.Location = new System.Drawing.Point(531, 21);
+            checkedListBoxReviewedSpotters.Margin = new System.Windows.Forms.Padding(2);
+            checkedListBoxReviewedSpotters.Name = "checkedListBoxReviewedSpotters";
+            checkedListBoxReviewedSpotters.Size = new System.Drawing.Size(121, 94);
+            checkedListBoxReviewedSpotters.TabIndex = 13;
+            checkedListBoxReviewedSpotters.UncheckedColor = System.Drawing.Color.Red;
+            checkedListBoxReviewedSpotters.SelectedIndexChanged += CheckedListBoxReviewedSpotters_SelectedIndexChanged;
+            checkedListBoxReviewedSpotters.MouseUp += CheckedListBoxReviewedSpotters_MouseUp;
             // 
             // form1BindingSource
             // 
-            this.form1BindingSource.DataSource = typeof(DXClusterUtil.Form1);
+            form1BindingSource.DataSource = typeof(Form1);
             // 
             // form1BindingSource2
             // 
-            this.form1BindingSource2.DataSource = typeof(DXClusterUtil.Form1);
+            form1BindingSource2.DataSource = typeof(Form1);
             // 
             // checkBoxUSA
             // 
-            this.checkBoxUSA.AutoSize = true;
-            this.checkBoxUSA.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.form1BindingSource1, "USA", true));
-            this.checkBoxUSA.Location = new System.Drawing.Point(346, 81);
-            this.checkBoxUSA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkBoxUSA.Name = "checkBoxUSA";
-            this.checkBoxUSA.Size = new System.Drawing.Size(48, 19);
-            this.checkBoxUSA.TabIndex = 28;
-            this.checkBoxUSA.Text = "USA";
-            this.checkBoxUSA.UseVisualStyleBackColor = true;
-            this.checkBoxUSA.CheckedChanged += new System.EventHandler(this.CheckBoxUSA_CheckedChanged);
+            checkBoxUSA.AutoSize = true;
+            checkBoxUSA.DataBindings.Add(new System.Windows.Forms.Binding("Checked", form1BindingSource1, "USA", true));
+            checkBoxUSA.Location = new System.Drawing.Point(346, 81);
+            checkBoxUSA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            checkBoxUSA.Name = "checkBoxUSA";
+            checkBoxUSA.Size = new System.Drawing.Size(48, 19);
+            checkBoxUSA.TabIndex = 28;
+            checkBoxUSA.Text = "USA";
+            checkBoxUSA.UseVisualStyleBackColor = true;
+            checkBoxUSA.CheckedChanged += CheckBoxUSA_CheckedChanged;
             // 
             // timer2
             // 
-            this.timer2.Interval = 200;
-            this.timer2.Tick += new System.EventHandler(this.Timer2_Tick);
+            timer2.Interval = 200;
+            timer2.Tick += Timer2_Tick;
+            // 
+            // numericUpDownCwMinimum
+            // 
+            numericUpDownCwMinimum.Location = new System.Drawing.Point(121, 105);
+            numericUpDownCwMinimum.Maximum = new decimal(new int[] { 30, 0, 0, 0 });
+            numericUpDownCwMinimum.Name = "numericUpDownCwMinimum";
+            numericUpDownCwMinimum.Size = new System.Drawing.Size(38, 23);
+            numericUpDownCwMinimum.TabIndex = 29;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.ClientSize = new System.Drawing.Size(770, 275);
-            this.Controls.Add(this.checkBoxUSA);
-            this.Controls.Add(this.comboBoxTimeIntervalForDump);
-            this.Controls.Add(this.comboBoxTimeIntervalAfter);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.listBoxIgnoredSpotters);
-            this.Controls.Add(this.numericUpDownRTTYOffset);
-            this.Controls.Add(this.labelClusterCache);
-            this.Controls.Add(this.textBoxPassword);
-            this.Controls.Add(this.labelQRZCache);
-            this.Controls.Add(this.richTextBox1);
-            this.Controls.Add(this.checkBoxFiltered);
-            this.Controls.Add(this.checkBoxCached);
-            this.Controls.Add(this.buttonCopy);
-            this.Controls.Add(this.buttonBackup);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.checkedListBoxNewSpotters);
-            this.Controls.Add(this.checkedListBoxReviewedSpotters);
-            this.Controls.Add(this.textBoxPortLocal);
-            this.Controls.Add(this.labelStatusQServer);
-            this.Controls.Add(this.textBoxClusterServer);
-            this.Controls.Add(this.labelQDepth);
-            this.Controls.Add(this.textBoxCallsign);
-            this.Controls.Add(this.buttonStart);
-            this.DataBindings.Add(new System.Windows.Forms.Binding("Location", settings1, "Location", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.Name = "Form1";
-            this.Text = "DxClusterUtil V1.33 by W9MDB";
-            this.Activated += new System.EventHandler(this.Form1_Activated);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
-            this.Validated += new System.EventHandler(this.Form1_Validated);
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRTTYOffset)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.form1BindingSource2)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(770, 275);
+            Controls.Add(numericUpDownCwMinimum);
+            Controls.Add(checkBoxUSA);
+            Controls.Add(comboBoxTimeIntervalForDump);
+            Controls.Add(comboBoxTimeIntervalAfter);
+            Controls.Add(label3);
+            Controls.Add(listBoxIgnoredSpotters);
+            Controls.Add(numericUpDownRTTYOffset);
+            Controls.Add(labelClusterCache);
+            Controls.Add(textBoxPassword);
+            Controls.Add(labelQRZCache);
+            Controls.Add(richTextBox1);
+            Controls.Add(checkBoxFiltered);
+            Controls.Add(checkBoxCached);
+            Controls.Add(buttonCopy);
+            Controls.Add(buttonBackup);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            Controls.Add(checkedListBoxNewSpotters);
+            Controls.Add(checkedListBoxReviewedSpotters);
+            Controls.Add(textBoxPortLocal);
+            Controls.Add(labelStatusQServer);
+            Controls.Add(textBoxClusterServer);
+            Controls.Add(labelQDepth);
+            Controls.Add(textBoxCallsign);
+            Controls.Add(buttonStart);
+            DataBindings.Add(new System.Windows.Forms.Binding("Location", settings2, "Location", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            Name = "Form1";
+            Text = "DxClusterUtil 241125 by W9MDB";
+            Activated += Form1_Activated;
+            FormClosing += Form1_FormClosing;
+            Load += Form1_Load;
+            ResizeEnd += Form1_ResizeEnd;
+            Validated += Form1_Validated;
+            ((System.ComponentModel.ISupportInitialize)numericUpDownRTTYOffset).EndInit();
+            ((System.ComponentModel.ISupportInitialize)form1BindingSource1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)form1BindingSource).EndInit();
+            ((System.ComponentModel.ISupportInitialize)form1BindingSource2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownCwMinimum).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -465,6 +463,7 @@
         private System.Windows.Forms.ComboBox comboBoxTimeIntervalForDump;
         private System.Windows.Forms.CheckBox checkBoxUSA;
         private System.Windows.Forms.Timer timer2;
+        private System.Windows.Forms.NumericUpDown numericUpDownCwMinimum;
     }
 }
 
