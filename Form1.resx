@@ -130,11 +130,10 @@ Green is call sign good and cached
 Orange is call sign good and new QRZ query
 Red is bad call
 Dark Red is bad call cached
+&lt;&lt; is CW Skimmer less than minimum
+
 </value>
   </data>
-  <metadata name="form1BindingSource1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>314, 17</value>
-  </metadata>
   <metadata name="form1BindingSource1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>314, 17</value>
   </metadata>

@@ -408,6 +408,7 @@ namespace DXClusterUtil
                             //this.Show();
                             //this.WindowState = FormWindowState.Normal;
                         }
+                        if (tooWeak) continue;
                         if ((filtered||ignored) && !checkBoxFiltered.Checked) continue;
                         else if (clusterCached && !checkBoxCached.Checked) continue;
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached)
@@ -437,13 +438,6 @@ namespace DXClusterUtil
                         else if (s.Contains(textBoxCallsign.Text, StringComparison.InvariantCulture))
                         {
                             myColor = Color.DarkBlue;
-                            if (Debug)
-                            {
-                            }
-                        }
-                        else if (tooWeak)
-                        {
-                            myColor = Color.Yellow;
                         }
                         else
                         {

@@ -32,7 +32,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            Properties.Settings settings2 = new Properties.Settings();
+            Properties.Settings settings1 = new Properties.Settings();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             buttonStart = new System.Windows.Forms.Button();
             timer1 = new System.Windows.Forms.Timer(components);
@@ -100,24 +100,25 @@
             // 
             // textBoxClusterServer
             // 
-            settings2.Cached = false;
-            settings2.Callsign = "";
-            settings2.ClusterServer = "";
-            settings2.Filtered = false;
-            settings2.HasSetDefaults = false;
-            settings2.Ignore = "";
-            settings2.Location = new System.Drawing.Point(0, 19);
-            settings2.Password = "";
-            settings2.PortLocal = "7373";
-            settings2.ReviewedSpotters = "";
-            settings2.rttyOffset = new decimal(new int[] { 600, 0, 0, int.MinValue });
-            settings2.SettingsKey = "";
-            settings2.Size = new System.Drawing.Size(705, 263);
-            settings2.TimeInterval = 60;
-            settings2.TimeIntervalAfter = 6;
-            settings2.TimeIntervalForDump = 15;
-            settings2.USA = true;
-            textBoxClusterServer.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings2, "ClusterServer", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            settings1.Cached = false;
+            settings1.Callsign = "";
+            settings1.ClusterServer = "";
+            settings1.CWMinimum = 0;
+            settings1.Filtered = false;
+            settings1.HasSetDefaults = false;
+            settings1.Ignore = "";
+            settings1.Location = new System.Drawing.Point(0, 19);
+            settings1.Password = "";
+            settings1.PortLocal = "7373";
+            settings1.ReviewedSpotters = "";
+            settings1.rttyOffset = new decimal(new int[] { 600, 0, 0, int.MinValue });
+            settings1.SettingsKey = "";
+            settings1.Size = new System.Drawing.Size(705, 263);
+            settings1.TimeInterval = 60;
+            settings1.TimeIntervalAfter = 6;
+            settings1.TimeIntervalForDump = 15;
+            settings1.USA = true;
+            textBoxClusterServer.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "ClusterServer", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             textBoxClusterServer.Location = new System.Drawing.Point(264, 17);
             textBoxClusterServer.Margin = new System.Windows.Forms.Padding(2);
             textBoxClusterServer.Name = "textBoxClusterServer";
@@ -413,11 +414,11 @@
             Controls.Add(labelQDepth);
             Controls.Add(textBoxCallsign);
             Controls.Add(buttonStart);
-            DataBindings.Add(new System.Windows.Forms.Binding("Location", settings2, "Location", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            DataBindings.Add(new System.Windows.Forms.Binding("Location", settings1, "Location", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "Form1";
-            Text = "DxClusterUtil 241125 by W9MDB";
+            Text = "DxClusterUtil 241126 by W9MDB";
             Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;

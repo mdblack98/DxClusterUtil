@@ -6,7 +6,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ClusterServer" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">dxc.w3lpl.net:23</Value>
     </Setting>
     <Setting Name="Location" Type="System.Drawing.Point" Scope="User">
       <Value Profile="(Default)">0, 19</Value>
@@ -36,13 +36,10 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="TimeIntervalAfter" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">6</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="USA" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="TimeIntervalForDump" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">15</Value>
     </Setting>
     <Setting Name="Cached" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -52,6 +49,9 @@
     </Setting>
     <Setting Name="CWMinimum" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="TimeIntervalForDump" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
     </Setting>
   </Settings>
 </SettingsFile>

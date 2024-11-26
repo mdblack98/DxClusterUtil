@@ -37,7 +37,7 @@ namespace DXClusterUtil.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("dxc.w3lpl.net:23")]
         public string ClusterServer {
             get {
                 return ((string)(this["ClusterServer"]));
@@ -157,7 +157,7 @@ namespace DXClusterUtil.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("6")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public int TimeIntervalAfter {
             get {
                 return ((int)(this["TimeIntervalAfter"]));
@@ -176,18 +176,6 @@ namespace DXClusterUtil.Properties {
             }
             set {
                 this["USA"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("15")]
-        public int TimeIntervalForDump {
-            get {
-                return ((int)(this["TimeIntervalForDump"]));
-            }
-            set {
-                this["TimeIntervalForDump"] = value;
             }
         }
         
@@ -224,6 +212,18 @@ namespace DXClusterUtil.Properties {
             }
             set {
                 this["CWMinimum"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int TimeIntervalForDump {
+            get {
+                return ((int)(this["TimeIntervalForDump"]));
+            }
+            set {
+                this["TimeIntervalForDump"] = value;
             }
         }
     }
