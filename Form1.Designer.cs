@@ -288,7 +288,6 @@
             // listBoxIgnoredSpotters
             // 
             listBoxIgnoredSpotters.FormattingEnabled = true;
-            listBoxIgnoredSpotters.ItemHeight = 15;
             listBoxIgnoredSpotters.Location = new System.Drawing.Point(662, 20);
             listBoxIgnoredSpotters.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             listBoxIgnoredSpotters.Name = "listBoxIgnoredSpotters";
@@ -337,16 +336,13 @@
             // 
             // checkedListBoxReviewedSpotters
             // 
-            checkedListBoxReviewedSpotters.CheckedColor = System.Drawing.Color.Green;
             checkedListBoxReviewedSpotters.CheckOnClick = true;
             checkedListBoxReviewedSpotters.FormattingEnabled = true;
-            checkedListBoxReviewedSpotters.IndeterminateColor = System.Drawing.Color.Orange;
             checkedListBoxReviewedSpotters.Location = new System.Drawing.Point(531, 21);
             checkedListBoxReviewedSpotters.Margin = new System.Windows.Forms.Padding(2);
             checkedListBoxReviewedSpotters.Name = "checkedListBoxReviewedSpotters";
             checkedListBoxReviewedSpotters.Size = new System.Drawing.Size(121, 94);
             checkedListBoxReviewedSpotters.TabIndex = 13;
-            checkedListBoxReviewedSpotters.UncheckedColor = System.Drawing.Color.Red;
             checkedListBoxReviewedSpotters.SelectedIndexChanged += CheckedListBoxReviewedSpotters_SelectedIndexChanged;
             checkedListBoxReviewedSpotters.MouseUp += CheckedListBoxReviewedSpotters_MouseUp;
             // 
@@ -379,7 +375,7 @@
             // numericUpDownCwMinimum
             // 
             numericUpDownCwMinimum.Location = new System.Drawing.Point(121, 105);
-            numericUpDownCwMinimum.Maximum = new decimal(new int[] { 30, 0, 0, 0 });
+            numericUpDownCwMinimum.Maximum = new decimal(new int[] { 50, 0, 0, 0 });
             numericUpDownCwMinimum.Name = "numericUpDownCwMinimum";
             numericUpDownCwMinimum.Size = new System.Drawing.Size(38, 23);
             numericUpDownCwMinimum.TabIndex = 29;
@@ -418,7 +414,7 @@
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "Form1";
-            Text = "DxClusterUtil 241126 by W9MDB";
+            Text = "DxClusterUtil 241128 by W9MDB";
             Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
@@ -464,7 +460,7 @@
         private System.Windows.Forms.ComboBox comboBoxTimeIntervalForDump;
         private System.Windows.Forms.CheckBox checkBoxUSA;
         private System.Windows.Forms.Timer timer2;
-        private System.Windows.Forms.NumericUpDown numericUpDownCwMinimum;
+        public System.Windows.Forms.NumericUpDown numericUpDownCwMinimum;
     }
 }
 

@@ -15,6 +15,7 @@ using System.Runtime.Versioning;
 using Xamarin.Essentials;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace DXClusterUtil
 {
@@ -32,18 +33,22 @@ namespace DXClusterUtil
         bool startupConnect = true;
         System.Drawing.Color qServerBackColor;
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool Debug { get; private set; }
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int TimeIntervalAfter
         {
             get { return server.TimeIntervalAfter; }
             set { if (server != null) server.TimeIntervalAfter = value; Properties.Settings.Default.TimeIntervalAfter = value; }
         }
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int TimeIntervalForDump
         {
             get { return server.TimeInterval; }
             set { if (server != null) server.TimeInterval = value; Properties.Settings.Default.TimeIntervalForDump = value;  }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool USA
         {
             get { return checkBoxUSA.Checked; }
@@ -66,7 +71,6 @@ namespace DXClusterUtil
         public Form1()
         {
             InitializeComponent();
-            //var userConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
             Icon = Properties.Resources.filter3;
             _instance = this;
             //richTextBox1.ScrollBars = ScrollBars.Vertical;
@@ -189,12 +193,17 @@ namespace DXClusterUtil
 
         //[System.Diagnostics.C(odeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+
+        //[System.Diagnostics.C(odeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+
         public string TextStatus
         {
             get { return labelStatusQServer.Text; }
             set { labelStatusQServer.Text = value; }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color TextStatusColor
         {
             get { return labelStatusQServer.BackColor; }
@@ -315,7 +324,7 @@ namespace DXClusterUtil
                 }
             }
         }
-        bool TryParseSignalStrength(string input, out int value)
+        public static bool TryParseSignalStrength(string input, out int value)
         {
             // Initialize out parameter
             value = 0;
@@ -393,25 +402,16 @@ namespace DXClusterUtil
                         bool clusterCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
                         bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
                         bool ignored = ss.Contains("Ignoring", StringComparison.InvariantCulture);
-                        bool tooWeak = false;
-                        if (TryParseSignalStrength(ss, out var signalStrength))
-                        {
-                            if (signalStrength < numericUpDownCwMinimum.Value)
-                            {
-                                tooWeak = true;
-                                ss = "<<" + ss;
-                            }
-                        }
+                        bool tooWeak = firstFive.Equals("<< de", StringComparison.InvariantCultureIgnoreCase);
                         if (qrzError)
                         {
                             //this.WindowState = FormWindowState.Minimized;
                             //this.Show();
                             //this.WindowState = FormWindowState.Normal;
                         }
-                        if (tooWeak) continue;
                         if ((filtered||ignored) && !checkBoxFiltered.Checked) continue;
                         else if (clusterCached && !checkBoxCached.Checked) continue;
-                        else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached)
+                        else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached && !tooWeak)
                         {
                             RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
                             richTextBox1.SelectionStart = richTextBox1.Text.Length;

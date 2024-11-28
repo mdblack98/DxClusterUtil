@@ -139,7 +139,7 @@ namespace DXClusterUtil
                                 clientQueue.Add(response);
                                 if (response.Contains("call:", StringComparison.InvariantCulture) || response.Contains("callsign.", StringComparison.InvariantCulture))
                                 {
-                                    var msg = Encoding.ASCII.GetBytes("\n"+callsign + "\n");
+                                    var msg = Encoding.ASCII.GetBytes("\n" + callsign + "\n");
                                     Thread.Sleep(1000);
                                     nStream.Write(msg, 0, msg.Length);
                                     //nStream.Write(msg, 0, msg.Length);
@@ -172,9 +172,11 @@ namespace DXClusterUtil
                 catch (Exception)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    client.Close();
-                    client.Dispose();
-                    client = null;
+                    if (client is not null) { 
+                        client.Close();
+                        client.Dispose();
+                        client = null;
+                    }
                     Form1.Instance.TextStatus = "Connect error "+ ++counter;
                 }
             } while (client != null);
@@ -397,8 +399,19 @@ namespace DXClusterUtil
                                 filteredOut = true;
                             }
                         }
+                        bool tooWeak = false;
+                        if (skimmer) { // filter out CW below minimum dB level
+                            if (Form1.TryParseSignalStrength(ss, out var signalStrength))
+                            {
+                                if (signalStrength < Form1.numericUpDownCwMinimum.Value)
+                                {
+                                    filteredOut = true;
+                                    tooWeak = true;
+                                }
+                            }
+                        }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
-                        if (!skimmer && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
+                        if (!tooWeak && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
                         {
                             ++totalLinesKept;
                             // we may have changed the freq so we add the change to log4omQueue
@@ -553,6 +566,10 @@ namespace DXClusterUtil
                                 {
                                     tag = "**";
                                     cachedQRZ = true;
+                                }
+                                else if (tooWeak)
+                                {
+                                    tag = "<<";
                                 }
                                 sreturn += tag + swork[2..] + "\r\n";
                             }

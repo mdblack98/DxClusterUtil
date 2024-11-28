@@ -6,13 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.ComponentModel.Com2Interop;
+using System.ComponentModel;
 
 namespace DXClusterUtil
 {
     class ColorCodedCheckedListBox : CheckedListBox
     {
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color UncheckedColor { get; set; }
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color CheckedColor { get; set; }
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color IndeterminateColor { get; set; }
 
         /// <summary>
