@@ -414,7 +414,7 @@
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "Form1";
-            Text = "DxClusterUtil 241128 by W9MDB";
+            Text = "DxClusterUtil 241204 by W9MDB";
             Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
@@ -460,7 +460,7 @@
         private System.Windows.Forms.ComboBox comboBoxTimeIntervalForDump;
         private System.Windows.Forms.CheckBox checkBoxUSA;
         private System.Windows.Forms.Timer timer2;
-        public System.Windows.Forms.NumericUpDown numericUpDownCwMinimum;
+        static public System.Windows.Forms.NumericUpDown numericUpDownCwMinimum;
     }
 }
 

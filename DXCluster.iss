@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "DXCluster"
-#define MyAppVersion "241125"
+#define MyAppVersion "241205"
 #define MyAppPublisher "W9MDB"
 #define MyAppURL "https://github.com/mdblack98/DxClusterUtil"
 #define MyAppExeName "DXClusterUtil.exe"
@@ -36,7 +36,7 @@ DisableProgramGroupPage=yes
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=C:\Users\mdbla\Dropbox\Projects\DXClusterUtil
-OutputBaseFilename=DXCluster
+OutputBaseFilename=DXCluster{#MyAppVersion}
 SetupIconFile=C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\filter3.ico
 Compression=lzma
 SolidCompression=yes
@@ -49,60 +49,41 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\DXClusterUtil.deps.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\DXClusterUtil.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\DXClusterUtil.dll.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\DXClusterUtil.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\DXClusterUtil.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\DXClusterUtil.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\Microsoft.Bcl.AsyncInterfaces.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\Microsoft.Bcl.Cryptography.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\Microsoft.Win32.Registry.AccessControl.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\Microsoft.Win32.SystemEvents.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\Microsoft.Windows.SDK.NET.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.CodeDom.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ComponentModel.Composition.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ComponentModel.Composition.Registration.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Configuration.ConfigurationManager.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Data.Odbc.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Data.OleDb.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Data.SqlClient.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Diagnostics.EventLog.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Diagnostics.PerformanceCounter.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.DirectoryServices.AccountManagement.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.DirectoryServices.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.DirectoryServices.Protocols.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Drawing.Common.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Formats.Asn1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.IO.Packaging.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.IO.Ports.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Management.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Private.ServiceModel.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Private.Windows.Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Reflection.Context.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Runtime.Caching.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Security.Cryptography.Pkcs.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Security.Cryptography.ProtectedData.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Security.Cryptography.Xml.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Security.Permissions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceModel.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceModel.Duplex.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceModel.Http.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceModel.NetTcp.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceModel.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceModel.Security.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceModel.Syndication.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.ServiceProcess.ServiceController.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Speech.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Text.Encoding.CodePages.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Threading.AccessControl.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Web.Services.Description.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\System.Windows.Extensions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\WinRT.Runtime.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\Xamarin.Essentials.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\cs\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net8.0-windows10.0.17763.0\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\DXClusterUtil.deps.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\DXClusterUtil.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\DXClusterUtil.dll.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\DXClusterUtil.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\DXClusterUtil.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\DXClusterUtil.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\Microsoft.Bcl.AsyncInterfaces.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\Microsoft.Windows.SDK.NET.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ComponentModel.Composition.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ComponentModel.Composition.Registration.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Data.Odbc.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Data.OleDb.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Data.SqlClient.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.DirectoryServices.AccountManagement.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.DirectoryServices.Protocols.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.IO.Ports.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Management.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Private.ServiceModel.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Reflection.Context.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Runtime.Caching.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceModel.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceModel.Duplex.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceModel.Http.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceModel.NetTcp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceModel.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceModel.Security.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceModel.Syndication.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.ServiceProcess.ServiceController.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Speech.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\System.Web.Services.Description.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\WinRT.Runtime.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\Xamarin.Essentials.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\cs\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\bin\Release\net9.0-windows10.0.17763.0\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]

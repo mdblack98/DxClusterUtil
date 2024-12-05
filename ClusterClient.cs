@@ -36,6 +36,8 @@ namespace DXClusterUtil
         public float rttyOffset;
         public ListBox listBoxIgnore;
         private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_Log.txt");
+        Mutex mutex = new(true);
+
 
         private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_qrzerror.txt");
 
@@ -63,6 +65,7 @@ namespace DXClusterUtil
 
         private void Cleanup()
         {
+            mutex.Dispose();
             if (client != null)
             {
                 //nStream.Close();
@@ -401,6 +404,7 @@ namespace DXClusterUtil
                         }
                         bool tooWeak = false;
                         if (skimmer) { // filter out CW below minimum dB level
+                            mutex.WaitOne();
                             if (Form1.TryParseSignalStrength(ss, out var signalStrength))
                             {
                                 if (signalStrength < Form1.numericUpDownCwMinimum.Value)
@@ -409,6 +413,7 @@ namespace DXClusterUtil
                                     tooWeak = true;
                                 }
                             }
+                            mutex.ReleaseMutex();
                         }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                         if (!tooWeak && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded

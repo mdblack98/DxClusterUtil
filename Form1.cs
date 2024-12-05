@@ -330,7 +330,7 @@ namespace DXClusterUtil
             value = 0;
 
             // Match the "CW [number] dB" pattern
-            var match = Regex.Match(input, @"CW\s+(\d+)\s+dB");
+            var match = Regex.Match(input, @"CW\s+(\+?\d+)\s+dB"); // CW\s\d+\sdB
 
             if (match.Success && int.TryParse(match.Groups[1].Value, out value))
             {
