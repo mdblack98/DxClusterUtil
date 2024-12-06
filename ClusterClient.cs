@@ -37,7 +37,7 @@ namespace DXClusterUtil
         public ListBox listBoxIgnore;
         private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_Log.txt");
         Mutex mutex = new(true);
-
+        public int numericUpDownCwMinimum = 0;
 
         private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_qrzerror.txt");
 
@@ -407,7 +407,7 @@ namespace DXClusterUtil
                             mutex.WaitOne();
                             if (Form1.TryParseSignalStrength(ss, out var signalStrength))
                             {
-                                if (signalStrength < Form1.numericUpDownCwMinimum.Value)
+                                if (signalStrength < numericUpDownCwMinimum)
                                 {
                                     filteredOut = true;
                                     tooWeak = true;

@@ -45,7 +45,7 @@ namespace DXClusterUtil
         public int TimeIntervalForDump
         {
             get { return server.TimeInterval; }
-            set { if (server != null) server.TimeInterval = value; Properties.Settings.Default.TimeIntervalForDump = value;  }
+            set { if (server != null) server.TimeInterval = value; Properties.Settings.Default.TimeIntervalForDump = value; }
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -82,7 +82,7 @@ namespace DXClusterUtil
             tooltip.ReshowDelay = 2000;
             tooltip.ShowAlways = true;
             tooltip.SetToolTip(richTextBox1, tip);
-     
+
             tip = "Callsign for QRZ login";
             tooltip.SetToolTip(textBoxCallsign, tip);
             tip = "QRZ password";
@@ -207,9 +207,9 @@ namespace DXClusterUtil
         public Color TextStatusColor
         {
             get { return labelStatusQServer.BackColor; }
-            set { labelStatusQServer.BackColor = value;  }
+            set { labelStatusQServer.BackColor = value; }
         }
-        public static Form1 Instance { get { return _instance;} }
+        public static Form1 Instance { get { return _instance; } }
 
         public bool Connect()
         {
@@ -261,8 +261,8 @@ namespace DXClusterUtil
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                     buttonStart.Text = "Disconnect";
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
-                              //richTextBox1.SelectionStart = richTextBox1.Text.Length;
-                              //richTextBox1.ScrollToCaret();
+                    //richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                    //richTextBox1.ScrollToCaret();
                 }
                 else
                 {
@@ -365,8 +365,8 @@ namespace DXClusterUtil
 #pragma warning disable CA1307 // Specify StringComparison
                         richTextBox1.SelectionLength = richTextBox1.Text.IndexOf("\n", 0) + 1;
 #pragma warning restore CA1307 // Specify StringComparison
-                              //richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(2));
-                              //richTextBox1.Cut();
+                        //richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(2));
+                        //richTextBox1.Cut();
                         richTextBox1.SelectedText = "";
                         richTextBox1.Update();
                         Application.DoEvents();
@@ -395,12 +395,12 @@ namespace DXClusterUtil
                         // ## means bad call 
                         // #* means bad call cached
                         string firstFive = ss[..5];
-                        bool qrzError = firstFive.Equals("ZZ de",StringComparison.InvariantCultureIgnoreCase);
-                        bool badCall = firstFive.Equals("## de",StringComparison.InvariantCultureIgnoreCase);
+                        bool qrzError = firstFive.Equals("ZZ de", StringComparison.InvariantCultureIgnoreCase);
+                        bool badCall = firstFive.Equals("## de", StringComparison.InvariantCultureIgnoreCase);
                         bool badCallCached = firstFive.Equals("#* de", StringComparison.InvariantCultureIgnoreCase);
-                        bool filtered = firstFive.Equals("!! de",StringComparison.InvariantCultureIgnoreCase);
+                        bool filtered = firstFive.Equals("!! de", StringComparison.InvariantCultureIgnoreCase);
                         bool clusterCached = firstFive.Equals("** de", StringComparison.InvariantCultureIgnoreCase);
-                        bool dxline = firstFive.Equals("Dx de",StringComparison.InvariantCultureIgnoreCase);
+                        bool dxline = firstFive.Equals("Dx de", StringComparison.InvariantCultureIgnoreCase);
                         bool ignored = ss.Contains("Ignoring", StringComparison.InvariantCulture);
                         bool tooWeak = firstFive.Equals("<< de", StringComparison.InvariantCultureIgnoreCase);
                         if (qrzError)
@@ -409,7 +409,7 @@ namespace DXClusterUtil
                             //this.Show();
                             //this.WindowState = FormWindowState.Normal;
                         }
-                        if ((filtered||ignored) && !checkBoxFiltered.Checked) continue;
+                        if ((filtered || ignored) && !checkBoxFiltered.Checked) continue;
                         else if (clusterCached && !checkBoxCached.Checked) continue;
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached && !tooWeak)
                         {
@@ -533,7 +533,7 @@ namespace DXClusterUtil
         {
             try
             {             //qrz.CacheSave(textBoxCacheLocation.Text);
-                if(server != null) server.Stop();
+                if (server != null) server.Stop();
                 if (qrz != null) qrz.CacheSave(pathQRZCache);
                 ReviewedSpottersSave(true);
                 string group = "";
@@ -575,7 +575,7 @@ namespace DXClusterUtil
             var tokens = textBoxClusterServer.Text.Split(sep);
             if (tokens.Length > 0 && tokens.Length != 2)
             {
-                MessageBox.Show("Bad web link for cluster server\nExpected server:port","DxClusterUtil");
+                MessageBox.Show("Bad web link for cluster server\nExpected server:port", "DxClusterUtil");
                 return;
             }
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
@@ -664,7 +664,7 @@ namespace DXClusterUtil
                     newSpotters += checkedListBoxNewSpotters.Items[i].ToString() + ",1;";
                 }
             }
-            if (clusterClient != null) 
+            if (clusterClient != null)
                 clusterClient.newSpotters = newSpotters;
 
         }
@@ -780,7 +780,7 @@ namespace DXClusterUtil
                     CreateNoWindow = true,
                     Arguments = $"/c start {url}"
                 };
-                Process.Start(psi);                
+                Process.Start(psi);
                 return;
             }
             else if (ctrlKey && altKey && !shiftKey)
@@ -854,7 +854,7 @@ namespace DXClusterUtil
                 Debug = !Debug;
                 clusterClient.debug = Debug;
                 qrz.debug = Debug;
-                richTextBox1.AppendText("Debug = " + Debug +"\n");
+                richTextBox1.AppendText("Debug = " + Debug + "\n");
             }
         }
 
@@ -1112,6 +1112,8 @@ namespace DXClusterUtil
             labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + "(" + tzone.Hours.ToString("+00;-00;+00") + ")";
 #pragma warning restore CA1305 // Specify IFormatProvider
         }
+
+        private void numericUpDownCwMinimum_ValueChanged(object sender, EventArgs e) => clusterClient.numericUpDownCwMinimum = (int)numericUpDownCwMinimum!.Value;
     }
     public static class RichTextBoxExtensions
     {
