@@ -1113,7 +1113,11 @@ namespace DXClusterUtil
 #pragma warning restore CA1305 // Specify IFormatProvider
         }
 
-        private void numericUpDownCwMinimum_ValueChanged(object sender, EventArgs e) => clusterClient.numericUpDownCwMinimum = (int)numericUpDownCwMinimum!.Value;
+        private void numericUpDownCwMinimum_ValueChanged(object sender, EventArgs e)
+        {
+            if (clusterClient is not null)
+                clusterClient!.numericUpDownCwMinimum = (int)numericUpDownCwMinimum!.Value;
+        }
     }
     public static class RichTextBoxExtensions
     {
