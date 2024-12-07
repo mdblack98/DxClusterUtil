@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "DXCluster"
-#define MyAppVersion "241205"
+#define MyAppVersion "241207"
 #define MyAppPublisher "W9MDB"
 #define MyAppURL "https://github.com/mdblack98/DxClusterUtil"
 #define MyAppExeName "DXClusterUtil.exe"
@@ -37,7 +37,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=C:\Users\mdbla\Dropbox\Projects\DXClusterUtil
 OutputBaseFilename=DXCluster{#MyAppVersion}
-SetupIconFile=C:\temp\filter3.ico
+SetupIconFile=C:\Users\mdbla\Dropbox\Projects\DXClusterUtil\filter3.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

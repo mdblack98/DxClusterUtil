@@ -444,7 +444,7 @@ namespace DXClusterUtil
                             return sreturn;
                         }
                         bool isClusterServerCached = cacheSpottedCalls.ContainsKey(key);
-                        if (!isClusterServerCached && !filteredOut)
+                        if (!isClusterServerCached)
                         {
                             cacheSpottedCalls[key] = minute;
                             ++totalLinesKept;
@@ -562,19 +562,19 @@ namespace DXClusterUtil
                                         tag = "##";
                                     }
                                 }
-                                else if (filteredOut)
+                                else if (tooWeak)
                                 {
-                                    tag = "!!";
-                                    //log4omQueue.Add(tag + s.Substring(2) + "\r\n");
+                                    tag = "<<";
                                 }
                                 else if (cacheSpottedCalls.ContainsKey(key))
                                 {
                                     tag = "**";
                                     cachedQRZ = true;
                                 }
-                                else if (tooWeak)
+                                else if (filteredOut)
                                 {
-                                    tag = "<<";
+                                    tag = "!!";
+                                    //log4omQueue.Add(tag + s.Substring(2) + "\r\n");
                                 }
                                 sreturn += tag + swork[2..] + "\r\n";
                             }
