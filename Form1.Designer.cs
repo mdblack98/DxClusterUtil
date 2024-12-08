@@ -415,7 +415,7 @@
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "Form1";
-            Text = "DxClusterUtil 241207 by W9MDB";
+            Text = "DxClusterUtil 241208 by W9MDB";
             Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;

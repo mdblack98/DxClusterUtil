@@ -243,7 +243,8 @@ namespace DXClusterUtil
             }
             clusterClient = new ClusterClient(host, port, spotQueue, qrz)
             {
-                rttyOffset = (float)numericUpDownRTTYOffset.Value
+                rttyOffset = (float)numericUpDownRTTYOffset.Value,
+                numericUpDownCwMinimum = (int)numericUpDownCwMinimum.Value
             };
             try
             {
