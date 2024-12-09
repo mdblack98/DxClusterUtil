@@ -451,6 +451,10 @@ namespace DXClusterUtil
                         {
                             myColor = Color.DarkBlue;
                         }
+                        else if (tooWeak)
+                        {
+                            myColor = Color.Blue;
+                        }
                         else
                         {
                             myColor = Color.Orange;

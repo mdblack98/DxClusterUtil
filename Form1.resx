@@ -130,6 +130,7 @@ Green is call sign good and cached
 Orange is call sign good and new QRZ query
 Red is bad call
 Dark Red is bad call cached
+Blue is CW &lt; CW minimum
 &lt;&lt; is CW Skimmer less than minimum
 
 </value>

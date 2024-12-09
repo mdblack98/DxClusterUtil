@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DXClusterUtil
 {
@@ -325,6 +326,13 @@ namespace DXClusterUtil
                         var comment = line.Substring(38, 20);
                         var time = line.Substring(70, 3); // use 10 minute cache
                         var key = freq + "|" + spot + "|" + time;
+                        if (cacheSpottedCalls.ContainsKey(key))
+                        {
+                            var tag = "**";
+                            cachedQRZ = true;
+                            sreturn += tag + line[2..] + "\r\n";
+                            return sreturn;
+                        }
                         if (comment.Contains("RTTY", StringComparison.InvariantCulture))
                         {
                             ffreq += rttyOffset / 1000;
@@ -577,11 +585,6 @@ namespace DXClusterUtil
                                 else if (tooWeak)
                                 {
                                     tag = "<<";
-                                }
-                                else if (cacheSpottedCalls.ContainsKey(key))
-                                {
-                                    tag = "**";
-                                    cachedQRZ = true;
                                 }
                                 else if (filteredOut)
                                 {
