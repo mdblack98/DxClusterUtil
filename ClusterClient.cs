@@ -39,6 +39,7 @@ namespace DXClusterUtil
         private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_Log.txt");
         readonly Mutex mutex = new(true);
         public int numericUpDownCwMinimum = 0;
+        private string lastcall = "";
 
         private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_qrzerror.txt");
 
@@ -283,7 +284,7 @@ namespace DXClusterUtil
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        var result1 = MessageBox.Show("File excpetion in " + logFile+"\n"+ex.Message, "DXClusterUtil Error", MessageBoxButtons.RetryCancel);
+                        var result1 = MessageBox.Show("File exception in " + logFile+"\n"+ex.Message, "DXClusterUtil Error", MessageBoxButtons.RetryCancel);
                         if (result1 == DialogResult.Retry)
                         {
                             try
@@ -311,6 +312,7 @@ namespace DXClusterUtil
                 }
                 foreach (string line in tokens)
                 {
+                    bool cacheAdded = false;
                     if (line.Length == 0) continue;
                     var swork = line;
                     if (line.ToUpperInvariant().StartsWith("DX DE", StringComparison.InvariantCultureIgnoreCase) && line.Length == 75)
@@ -326,6 +328,11 @@ namespace DXClusterUtil
                         var comment = line.Substring(38, 20);
                         var time = line.Substring(70, 3); // use 10 minute cache
                         var key = freq + "|" + spot + "|" + time;
+
+                        if (!Int32.TryParse(line.AsSpan(73, 1), out int minute))
+                        {
+                            continue;
+                        }
                         if (cacheSpottedCalls.ContainsKey(key))
                         {
                             var tag = "**";
@@ -333,15 +340,21 @@ namespace DXClusterUtil
                             sreturn += tag + line[2..] + "\r\n";
                             return sreturn;
                         }
+                        else
+                        {
+                            cacheAdded = true;
+                            cacheSpottedCalls[key] = minute;
+                        }
+                        if (key.Equals(lastcall, StringComparison.Ordinal))
+                        {
+                            int i = 1;  // for debugging dups when dups aren't working -- this catches two calls in a row when the first should be cached.
+                        }
+                        lastcall = key;
                         if (comment.Contains("RTTY", StringComparison.InvariantCulture))
                         {
                             ffreq += rttyOffset / 1000;
                             swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture, "{0,7:0.0}", ffreq), StringComparison.InvariantCulture);
                             key = ffreq + "|" + spot + "|" + time;
-                        }
-                        if (!Int32.TryParse(line.AsSpan(73, 1), out int minute))
-                        {
-                            continue;
                         }
                         if (minute != lastMinute)
                         {
@@ -463,8 +476,7 @@ namespace DXClusterUtil
                             mutex.ReleaseMutex();
                             return sreturn;
                         }
-                        bool isClusterServerCached = cacheSpottedCalls.ContainsKey(key);
-                        if (!isClusterServerCached)
+                        if (cacheAdded)
                         {
                             cacheSpottedCalls[key] = minute;
                             ++totalLinesKept;
