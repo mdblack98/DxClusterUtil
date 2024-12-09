@@ -14,29 +14,29 @@ namespace DXClusterUtil
 {
     class ClusterClient: IDisposable
     {
-        public TcpClient client;
-        private NetworkStream nStream;
-        ConcurrentBag<string> log4omQueue;
+        public TcpClient? client;
+        private NetworkStream? nStream;
+        ConcurrentBag<string>? log4omQueue;
         readonly ConcurrentBag<string> clusterQueue;
-        public readonly Dictionary<string, int> cacheSpottedCalls = new();
+        public readonly Dictionary<string, int> cacheSpottedCalls = [];
         readonly string myHost;
         readonly int myPort;
-        RichTextBox myDebug;
-        string myCallsign;
+        RichTextBox? myDebug;
+        string? myCallsign;
         public UInt64 totalLines;
         public UInt64 totalLinesKept;
         private int lastMinute = 1; // for cache usage
         public bool filterOn = true;
         public bool filterUSA = false;
-        public HashSet<string> callSuffixList = new();
+        public HashSet<string> callSuffixList = [];
         public string reviewedSpotters = "";
         public string ignoredSpottersAndSpots = "";
         private readonly QRZ qrz;
         public bool debug = true;
         public float rttyOffset;
-        public ListBox listBoxIgnore;
+        public ListBox? listBoxIgnore;
         private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_Log.txt");
-        Mutex mutex = new(true);
+        readonly Mutex mutex = new(true);
         public int numericUpDownCwMinimum = 0;
 
         private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_qrzerror.txt");
@@ -85,7 +85,7 @@ namespace DXClusterUtil
 
         private bool Connect()
         {
-            if (!Connect(myCallsign,myDebug,log4omQueue))
+            if (myCallsign is null || myDebug is null || log4omQueue is null || !Connect(myCallsign,myDebug,log4omQueue))
             {
                 return false;
             }
@@ -108,9 +108,10 @@ namespace DXClusterUtil
             {
                 File.AppendAllText(logFile, "Logging started\r\n");
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch { }
-#pragma warning restore CA1031 // Do not catch general exception types
+            catch 
+            {
+                throw;
+            }
             do 
             {
                 try
@@ -232,17 +233,18 @@ namespace DXClusterUtil
                 debuglog.AppendText("qrz client is " + s1);
                 return null;
             }
-            if (clusterQueue.TryTake(out string result))
+            if (clusterQueue.TryTake(out string? result))
             {
                 var outmsg = Encoding.ASCII.GetBytes(result);
-                nStream.Write(outmsg, 0, outmsg.Length);
+                nStream?.Write(outmsg, 0, outmsg.Length);
             }
             if (client == null) { 
                 return null; 
             }
+            mutex.WaitOne();
             if (client.Connected && nStream != null && nStream.DataAvailable)
             {
-                while (clusterQueue.TryTake(out string command))
+                while (clusterQueue.TryTake(out string? command))
                 {
                     var outmsg = Encoding.ASCII.GetBytes(command);
                     nStream.Write(outmsg, 0, outmsg.Length);
@@ -258,6 +260,7 @@ namespace DXClusterUtil
                     }
                     catch (IOException)
                     {
+                        mutex.ReleaseMutex();
                         return null;
                     }
                 } while (c != '\n');
@@ -294,7 +297,7 @@ namespace DXClusterUtil
                 } while (worked == false);
                 //Int32 bytesRead = nStream.Read(databuf, 0, databuf.Length);
                 //var responseData = System.Text.Encoding.ASCII.GetString(databuf, 0, bytesRead);
-                char[] sep = { '\n', '\r' };
+                char[] sep = ['\n', '\r'];
                 //ss = "DX de W3LPL-3:    3584.3  PJ5/KG9N     RTTY Heard in AZ and MA        1311Z";
                 var tokens = ss.Split(sep);
                 string sreturn = "";
@@ -302,6 +305,7 @@ namespace DXClusterUtil
                 {
                     Disconnect();
                     Connect();
+                    mutex.ReleaseMutex();
                     return null;
                 }
                 foreach (string line in tokens)
@@ -348,7 +352,7 @@ namespace DXClusterUtil
                         }
                         ++totalLines;
                         bool filteredOut = false;
-                        char[] delim = { ' ' };
+                        char[] delim = [' '];
                         string[] tokens2 = line.Split(delim, StringSplitOptions.RemoveEmptyEntries);
                         string spotterCall = "";
                         string spottedCall = "";
@@ -364,11 +368,17 @@ namespace DXClusterUtil
                         {
                             spotterCall = Regex.Replace(tokens2[2], "-#:", "");
                         }
-                        if (tokens2.Length < 4) return line;
+                        if (tokens2.Length < 4)
+                        {
+                            mutex.ReleaseMutex();
+                            return line;
+                        }
                         myCallsignExists = false;
                         spottedCall = tokens2[4];
-                        if (listBoxIgnore.Items.Contains(spottedCall))
+                        if (listBoxIgnore is not null && listBoxIgnore.Items.Contains(spottedCall))
                         {
+                            mutex.ReleaseMutex();
+
                             return "Ignoring " + spottedCall + "\r\n";
                         }
                         // Remove any suffix from special callsigns
@@ -404,23 +414,24 @@ namespace DXClusterUtil
                         }
                         bool tooWeak = false;
                         if (skimmer) { // filter out CW below minimum dB level
-                            mutex.WaitOne();
                             if (Form1.TryParseSignalStrength(ss, out var signalStrength))
                             {
                                 if (signalStrength < numericUpDownCwMinimum)
                                 {
                                     filteredOut = true;
                                     tooWeak = true;
+                                    ss = swork.Replace("DX de", "<< de", StringComparison.InvariantCulture);
+                                    mutex.ReleaseMutex();
+                                    return ss;
                                 }
                             }
-                            mutex.ReleaseMutex();
                         }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                         if (!tooWeak && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
                         {
                             ++totalLinesKept;
                             // we may have changed the freq so we add the change to log4omQueue
-                            log4omQueue.Add(swork + "\r\n");
+                            log4omQueue?.Add(swork + "\r\n");
                             try
                             {
                                 File.AppendAllText(logFile, swork + "\r\n");
@@ -441,6 +452,7 @@ namespace DXClusterUtil
 #pragma warning restore CA1031 // Do not catch general exception types
                             }
                             sreturn += swork + "\r\n";
+                            mutex.ReleaseMutex();
                             return sreturn;
                         }
                         bool isClusterServerCached = cacheSpottedCalls.ContainsKey(key);
@@ -459,7 +471,7 @@ namespace DXClusterUtil
                             }
                             else
                             {
-                                log4omQueue.Add(swork + "\r\n");
+                                log4omQueue?.Add(swork + "\r\n");
                                 try
                                 {
                                     File.AppendAllText(logFile, swork + "\r\n");
@@ -482,10 +494,10 @@ namespace DXClusterUtil
                             }
                             sreturn += sss + "\r\n";
                         }
-                        else if (swork.Contains(myCallsign, StringComparison.InvariantCulture))  // allow our own spots through too
+                        else if (myCallsign is not null && swork.Contains(myCallsign, StringComparison.InvariantCulture))  // allow our own spots through too
                         {
                             ++totalLinesKept;
-                            log4omQueue.Add(swork + "\r\n");
+                            log4omQueue?.Add(swork + "\r\n");
                             try
                             {
                                 File.AppendAllText(logFile, swork + "\r\n");
@@ -521,7 +533,7 @@ namespace DXClusterUtil
                                 if (qrz.isOnline == false)
                                 {
                                     tag = "ZZ"; // show QRZ is sleeping
-                                    log4omQueue.Add("QRZ not responding?\n");
+                                    log4omQueue?.Add("QRZ not responding?\n");
                                     try
                                     {
                                         File.AppendAllText(logFile, line + "\r\n");
@@ -544,7 +556,7 @@ namespace DXClusterUtil
                                     }
                                     if (qrz.xmlError.Contains("Error", StringComparison.InvariantCulture))
                                     {
-                                        log4omQueue.Add(qrz.xmlError + "\n");
+                                        log4omQueue?.Add(qrz.xmlError + "\n");
                                         try
                                         {
                                             File.AppendAllText(logFile, line + "\r\n");
@@ -589,13 +601,14 @@ namespace DXClusterUtil
                         if (line.Length > 1) sreturn += line + "\r\n";
                     }
                 }
+                mutex.ReleaseMutex();
                 return sreturn;
             }
             try
             {
                 var msg = "";
                 var bytes = Encoding.ASCII.GetBytes(msg);
-                nStream.Write(bytes, 0, bytes.Length);
+                nStream?.Write(bytes, 0, bytes.Length);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
@@ -611,6 +624,7 @@ namespace DXClusterUtil
                     Thread.Sleep(60 * 1000); // 1 minute wait until retry
                 }
             }
+            mutex.ReleaseMutex();
             return null;
         }
 
@@ -634,7 +648,7 @@ namespace DXClusterUtil
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
         public bool myCallsignExists;
-        internal string newSpotters;
+        internal string? newSpotters;
 
         protected virtual void Dispose(bool disposing)
         {

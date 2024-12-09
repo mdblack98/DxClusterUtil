@@ -21,13 +21,13 @@ namespace DXClusterUtil
 {
     public partial class Form1 : Form
     {
-        private static Form1 _instance;
-        private ClusterClient clusterClient;
-        readonly ConcurrentBag<string> clientQueue = new();
-        readonly ConcurrentBag<string> spotQueue = new();
-        QServer server;
+        private static Form1? _instance;
+        private ClusterClient? clusterClient;
+        readonly ConcurrentBag<string> clientQueue = [];
+        readonly ConcurrentBag<string> spotQueue = [];
+        QServer? server;
         readonly ToolTip tooltip = new() { ShowAlways = true };
-        private QRZ qrz;
+        private QRZ? qrz;
         private readonly string pathQRZCache = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzcache.txt");
         private int badCalls;
         bool startupConnect = true;
@@ -38,14 +38,14 @@ namespace DXClusterUtil
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int TimeIntervalAfter
         {
-            get { return server.TimeIntervalAfter; }
-            set { if (server != null) server.TimeIntervalAfter = value; Properties.Settings.Default.TimeIntervalAfter = value; }
+            get { if (server is not null) return server.TimeIntervalAfter; else return 0; }
+            set { if (server is not null) server.TimeIntervalAfter = value; Properties.Settings.Default.TimeIntervalAfter = value; }
         }
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int TimeIntervalForDump
         {
-            get { return server.TimeInterval; }
-            set { if (server != null) server.TimeInterval = value; Properties.Settings.Default.TimeIntervalForDump = value; }
+            get { if (server is not null) return server.TimeInterval; else return 60; }
+            set { if (server is not null) server.TimeInterval = value; Properties.Settings.Default.TimeIntervalForDump = value; }
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -209,7 +209,18 @@ namespace DXClusterUtil
             get { return labelStatusQServer.BackColor; }
             set { labelStatusQServer.BackColor = value; }
         }
-        public static Form1 Instance { get { return _instance; } }
+        public static Form1 Instance {
+            get
+            {
+                if (_instance == null)
+                {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                    throw new InvalidOperationException("Instance is not initialized.");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                }
+                return _instance;
+            }
+        }
 
         public bool Connect()
         {
@@ -222,7 +233,7 @@ namespace DXClusterUtil
                 buttonStart.Enabled = true;
                 return false;
             }
-            char[] sep = { ':' };
+            char[] sep = [':'];
             var tokens = textBoxClusterServer.Text.Split(sep);
             if (tokens.Length > 0 && tokens.Length != 2)
             {
@@ -234,7 +245,7 @@ namespace DXClusterUtil
             }
             string host = tokens[0];
             int port = Int32.Parse(tokens[1], CultureInfo.InvariantCulture);
-            if (qrz != null) qrz.Dispose();
+            qrz?.Dispose();
             qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text);
             if (qrz == null || qrz.isOnline == false)
             {
@@ -305,7 +316,7 @@ namespace DXClusterUtil
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1307:Specify StringComparison", Justification = "<Pending>")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
-        private void ButtonStart_Click(object sender, EventArgs e)
+        private void ButtonStart_Click(object? sender, EventArgs? e)
         {
             if (buttonStart.Text.Equals("Disconnect"))
             {
@@ -346,11 +357,11 @@ namespace DXClusterUtil
         {
             timer1.Stop();
             if (clusterClient == null) return;
-            string msg;
+            string? msg;
             //TimeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
             while ((msg = clusterClient.Get(out bool cachedQRZ, richTextBox1)) != null)
             {
-                char[] delims = { '\n' };
+                char[] delims = ['\n'];
                 string[] lines = msg.Split(delims);
                 foreach (string s in lines)
                 {
@@ -364,7 +375,7 @@ namespace DXClusterUtil
                         nlines = richTextBox1.Lines.Length;
                         richTextBox1.SelectionStart = 0;
 #pragma warning disable CA1307 // Specify StringComparison
-                        richTextBox1.SelectionLength = richTextBox1.Text.IndexOf("\n", 0) + 1;
+                        richTextBox1.SelectionLength = richTextBox1.Text.IndexOf('\n', 0) + 1;
 #pragma warning restore CA1307 // Specify StringComparison
                         //richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(2));
                         //richTextBox1.Cut();
@@ -410,7 +421,7 @@ namespace DXClusterUtil
                             //this.Show();
                             //this.WindowState = FormWindowState.Normal;
                         }
-                        if ((filtered || ignored) && !checkBoxFiltered.Checked) continue;
+                        if ((filtered || ignored || tooWeak) && !checkBoxFiltered.Checked) continue;
                         else if (clusterCached && !checkBoxCached.Checked) continue;
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached && !tooWeak)
                         {
@@ -444,7 +455,7 @@ namespace DXClusterUtil
                         {
                             myColor = Color.Orange;
                         }
-                        labelQRZCache.Text = "" + qrz.cacheQRZ.Count + "/" + badCalls;
+                        labelQRZCache.Text = "" + qrz?.cacheQRZ.Count + "/" + badCalls;
                         labelClusterCache.Text = "" + clusterClient.cacheSpottedCalls.Count;
                         ss = ss.Replace("\r", "", StringComparison.InvariantCulture);
                         ss = ss.Replace("\n", "", StringComparison.InvariantCulture);
@@ -508,9 +519,9 @@ namespace DXClusterUtil
         {
             timer1.Stop();
             Thread.Sleep(500);
-            clusterClient.Disconnect();
+            clusterClient?.Disconnect();
             clusterClient = null;
-            server.Stop();
+            server?.Stop();
             server = null;
         }
 
@@ -596,9 +607,12 @@ namespace DXClusterUtil
 
         private void LabelQDepth_Click(object sender, EventArgs e)
         {
-            clusterClient.CacheClear();
-            clusterClient.totalLines = 0;
-            clusterClient.totalLinesKept = 0;
+            if (clusterClient is not null)
+            {
+                clusterClient.CacheClear();
+                clusterClient.totalLines = 0;
+                clusterClient.totalLinesKept = 0;
+            }
         }
 
         private void CheckedListBoxReviewedSpotters_SelectedIndexChanged(object sender, EventArgs e)
@@ -612,7 +626,7 @@ namespace DXClusterUtil
             if (ctrlKey && shiftKey && altKey) // delete all
             {
                 box.Items.Clear();
-                clusterClient.callSuffixList.Clear();
+                clusterClient?.callSuffixList.Clear();
             }
             if (ctrlKey && shiftKey && !altKey) //delete one
             {
@@ -633,24 +647,28 @@ namespace DXClusterUtil
             {
                 int selected = box.SelectedIndex;
                 if (selected == -1) return;
-                string callsign = box.Items[selected].ToString();
-                box.SetItemChecked(selected, false);
-                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
-                string url = "https://qrz.com/db/" + tokens[0];
+                string? callsign = box?.Items[selected].ToString();
+                box?.SetItemChecked(selected, false);
+                string[]? tokens = callsign?.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens?[0];
                 System.Diagnostics.Process.Start(url);
                 return;
             }
             else if (ctrlKey && altKey && !shiftKey)
             {
-                string curItem = box.SelectedItem.ToString();
-                int index = box.FindString(curItem);
-                if (!listBoxIgnoredSpotters.Items.Contains(curItem))
+                string? curItem = box?.SelectedItem?.ToString();
+                if (curItem is not null)
                 {
-                    listBoxIgnoredSpotters.Items.Insert(0, curItem);
-                    listBoxIgnoredSpotters.TopIndex = 0;
-                    box.Items.RemoveAt(index);
+                    int? index = box?.FindString(curItem);
+                    if (!listBoxIgnoredSpotters.Items.Contains(curItem))
+                    {
+                        listBoxIgnoredSpotters.Items.Insert(0, curItem);
+                        listBoxIgnoredSpotters.TopIndex = 0;
+                        if (index is not null)
+                            box?.Items.RemoveAt((int)index);
+                    }
+                    ReviewedSpottersSave(true);
                 }
-                ReviewedSpottersSave(true);
             }
         }
 
@@ -674,9 +692,11 @@ namespace DXClusterUtil
             var spottersChecked = checkedListBoxReviewedSpotters.CheckedItems;
             string reviewedSpotters = "";
 
-            for (int i = 0; i < spottersChecked.Count; ++i)
+            for (int i = 0; i < spottersChecked?.Count; ++i)
             {
-                string s = spottersChecked[i].ToString();
+                string? s = "??";
+                if (spottersChecked is not null)
+                    s = spottersChecked[i]?.ToString();
                 if (checkedListBoxReviewedSpotters.GetItemCheckState(i) == CheckState.Indeterminate)
                 {
                     reviewedSpotters += s + ",2;";
@@ -689,7 +709,7 @@ namespace DXClusterUtil
             var spottersAll = checkedListBoxReviewedSpotters.Items;
             foreach (string s in spottersAll)
             {
-                if (!spottersChecked.Contains(s))
+                if (spottersChecked is not null && !spottersChecked.Contains(s))
                 {
                     reviewedSpotters += s + ",0;";
                 }
@@ -734,20 +754,22 @@ namespace DXClusterUtil
             bool altKey = ModifierKeys.HasFlag(Keys.Alt);
             if (ctrlKey && !shiftKey && !altKey) // move to reviewed spotters
             {
-                string curItem = checkedListBoxNewSpotters.SelectedItem.ToString();
-                int index = checkedListBoxNewSpotters.FindString(curItem);
+                string? curItem = checkedListBoxNewSpotters?.SelectedItem?.ToString();
+                if (curItem == null) return;
+                int? index = checkedListBoxNewSpotters?.FindString(curItem);
+                if (index is null) return;
                 if (!checkedListBoxReviewedSpotters.Items.Contains(curItem))
                 {
                     checkedListBoxReviewedSpotters.Items.Insert(0, curItem);
                     checkedListBoxReviewedSpotters.TopIndex = 0;
-                    checkedListBoxNewSpotters.Items.RemoveAt(index);
+                    checkedListBoxNewSpotters?.Items.RemoveAt((int)index);
                 }
                 ReviewedSpottersSave(true);
             }
             if (ctrlKey && shiftKey && altKey) // delete all
             {
                 box.Items.Clear();
-                clusterClient.callSuffixList.Clear();
+                clusterClient?.callSuffixList.Clear();
             }
             if (ctrlKey && shiftKey && !altKey) //delete one
             {
@@ -768,10 +790,10 @@ namespace DXClusterUtil
             {
                 int selected = box.SelectedIndex;
                 if (selected == -1) return;
-                string callsign = box.Items[selected].ToString();
-                box.SetItemChecked(selected, false);
-                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
-                string url = "https://qrz.com/db/" + tokens[0];
+                string? callsign = box?.Items[selected].ToString();
+                box?.SetItemChecked(selected, false);
+                string[]? tokens = callsign?.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens?[0];
                 //var uri = new Uri(url);
                 var psi = new ProcessStartInfo
                 {
@@ -786,15 +808,18 @@ namespace DXClusterUtil
             }
             else if (ctrlKey && altKey && !shiftKey)
             {
-                string curItem = box.SelectedItem.ToString();
-                int index = box.FindString(curItem);
-                if (!listBoxIgnoredSpotters.Items.Contains(curItem))
+                string? curItem = box?.SelectedItem.ToString();
+                if (curItem is not null)
                 {
-                    listBoxIgnoredSpotters.Items.Insert(0, curItem);
-                    listBoxIgnoredSpotters.TopIndex = 0;
-                    box.Items.RemoveAt(index);
+                    int? index = box?.FindString(curItem);
+                    if ((index is not null) && !listBoxIgnoredSpotters.Items.Contains(curItem))
+                    {
+                        listBoxIgnoredSpotters.Items.Insert(0, curItem);
+                        listBoxIgnoredSpotters.TopIndex = 0;
+                        box?.Items.RemoveAt((int)index);
+                    }
+                    //ReviewedSpottersSave(true);
                 }
-                //ReviewedSpottersSave(true);
             }
             NewSpottersSave();
         }
@@ -853,8 +878,8 @@ namespace DXClusterUtil
             if (ModifierKeys.HasFlag(Keys.Shift))
             {
                 Debug = !Debug;
-                clusterClient.debug = Debug;
-                qrz.debug = Debug;
+                if (clusterClient is not null) clusterClient.debug = Debug;
+                if (qrz is not null) qrz.debug = Debug;
                 richTextBox1.AppendText("Debug = " + Debug + "\n");
             }
         }
@@ -947,9 +972,9 @@ namespace DXClusterUtil
             {
                 int selected = box.SelectedIndex;
                 if (selected == -1) return;
-                string callsign = box.Items[selected].ToString();
-                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
-                string url = "https://qrz.com/db/" + tokens[0];
+                string? callsign = box.Items[selected].ToString();
+                string[]? tokens = callsign?.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens?[0];
                 System.Diagnostics.Process.Start(url);
                 return;
             }
@@ -976,7 +1001,7 @@ namespace DXClusterUtil
             if (ctrlKey && shiftKey && altKey) // delete all
             {
                 box.Items.Clear();
-                clusterClient.callSuffixList.Clear();
+                clusterClient?.callSuffixList.Clear();
             }
             if (ctrlKey && shiftKey && !altKey) //delete one
             {
@@ -997,10 +1022,10 @@ namespace DXClusterUtil
             {
                 int selected = box.SelectedIndex;
                 if (selected == -1) return;
-                string callsign = box.Items[selected].ToString();
-                box.SetItemChecked(selected, false);
-                string[] tokens = callsign.Split('-');  // have to remove any suffix like this
-                string url = "https://qrz.com/db/" + tokens[0];
+                string? callsign = box?.Items[selected].ToString();
+                box?.SetItemChecked(selected, false);
+                string[]? tokens = callsign?.Split('-');  // have to remove any suffix like this
+                string url = "https://qrz.com/db/" + tokens?[0];
                 System.Diagnostics.Process.Start(url);
                 return;
             }

@@ -12,16 +12,16 @@ using System.Windows.Forms;
 
 namespace DXClusterUtil
 {
-    class QServer
+    class QServer : IDisposable
     {
         readonly ConcurrentBag<string> clientQueue;
         readonly ConcurrentBag<string> spotQueue;
         bool running = false;
         bool stop = false;
         bool connected;
-        readonly TcpListener listener;
-        NetworkStream stream;
-        Thread myThreadID;
+        readonly TcpListener? listener;
+        NetworkStream? stream;
+        Thread? myThreadID;
 
         public int TimeIntervalAfter { get; set; } // in seconds
         public int TimeInterval { get; set; } // Expecting 1, 15, 30, 60 
@@ -63,7 +63,7 @@ namespace DXClusterUtil
             running = false;
             stop = true;
             connected = false;
-            listener.Stop();
+            listener?.Stop();
             Thread.Sleep(500);
         }
 
@@ -75,22 +75,31 @@ namespace DXClusterUtil
                 try
                 {
                     var bytes = new byte[8192];
-                    int bytesRead = stream.Read(bytes, 0, bytes.Length);
-                    string cmd = Encoding.ASCII.GetString(bytes, 0, bytesRead);
-                    if (cmd.Contains("bye", StringComparison.InvariantCulture))
+                    int? bytesRead = stream?.Read(bytes, 0, bytes.Length);
+                    if (bytesRead is null)
                     {
-                        //connected = running = false;
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                        MessageBox.Show("bytesRead is null?");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
                     }
-                    else if (bytesRead == 0)
+                    if (bytesRead is not null)
                     {
-                        connected = false;
-                        running = false;
-                    }
-                    else
-                    {
-                        if (cmd.Length > 0)
+                        string cmd = Encoding.ASCII.GetString(bytes, 0, (int)bytesRead);
+                        if (cmd.Contains("bye", StringComparison.InvariantCulture))
                         {
-                            spotQueue.Add(cmd);
+                            //connected = running = false;
+                        }
+                        else if (bytesRead == 0)
+                        {
+                            connected = false;
+                            running = false;
+                        }
+                        else
+                        {
+                            if (cmd.Length > 0)
+                            {
+                                spotQueue?.Add(cmd);
+                            }
                         }
                     }
                 }
@@ -109,14 +118,16 @@ namespace DXClusterUtil
         {
             while (true && !stop)
             {
-                if (listener != null) 
-                    listener.Stop();
-                listener.Start();
+                if (listener != null)
+                {
+                    listener?.Stop();
+                    listener?.Start();
+                }
                 running = true;
-                TcpClient client;
+                TcpClient? client;
                 try
                 {
-                    client = listener.AcceptTcpClient();
+                    client = listener?.AcceptTcpClient();
                     //Thread.Sleep(500);
                     connected = true;
                 }
@@ -127,13 +138,15 @@ namespace DXClusterUtil
                     running = false;
                     return;
                 }
-                client.ReceiveTimeout = 1000;
-                client.SendTimeout = 1000;
-                stream = client.GetStream();
+                if (client is not null)
+                {
+                    client.ReceiveTimeout = 1000;
+                    client.SendTimeout = 1000;
+                    stream = client?.GetStream();
+                }
                 myThreadID = new Thread(new ThreadStart(ReadThread));
-                myThreadID.Start();
+                myThreadID?.Start();
                 byte[] bytes;
-                string msg;
                 while (running)
                 {
                     try
@@ -145,7 +158,7 @@ namespace DXClusterUtil
                         if (seconds == secondsChk)
                         {
                             // Let the clock get past the zero second mark
-                            while(clientQueue.TryTake(out msg))
+                            while (clientQueue.TryTake(out string? msg))
                             {
                                 /*
                                 msg = msg.Replace("-1-#:", "-#:  ");
@@ -162,14 +175,14 @@ namespace DXClusterUtil
                                 if (msg[0] != '*')
                                 {
                                     bytes = Encoding.ASCII.GetBytes(msg);
-                                    stream.Write(bytes, 0, bytes.Length);
+                                    stream?.Write(bytes, 0, bytes.Length);
                                 }
                             }
                             Thread.Sleep(2000);
                         }
-                        if (!stream.CanWrite)
+                        if (stream is not null && !stream.CanWrite)
                             running = false;
-                        if (!client.Connected)
+                        if (client is not null && !client.Connected)
                         {
                             connected = false;
                             running = false;
@@ -182,8 +195,8 @@ namespace DXClusterUtil
                         byte[] tmp = new byte[1];
                         //stream.Socket.Write(tmp, 0, 0);
                         //var xxx = stream.Read(tmp, 0, 0);
-                        var xx = stream.Socket.IsBound;
-                        if (!client.Connected)
+                        var xx = stream?.Socket.IsBound;
+                        if (client is not null && !client.Connected)
                         {
                             connected = running = false;
                         }
@@ -219,13 +232,19 @@ namespace DXClusterUtil
                         running = false;
                     }
                 }
-                 stream.Close();
-                if (client.Connected) 
-                    client.Close();
+                stream?.Close();
+                if (client is not null && client.Connected) 
+                    client?.Close();
                 connected = false;
             }
-            listener.Stop();
+            listener?.Stop();
 
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            //throw new NotImplementedException();
         }
     }
 }

@@ -48,14 +48,14 @@ namespace DXClusterUtil
 
             }
             StreamReader aliasFile = new(pathQRZAlias);
-            string s;
-            while ((s = aliasFile.ReadLine()) != null)
+            string? s;
+            while ((s = aliasFile?.ReadLine()) != null)
             {
                 string[] tokens = s.Split(',');
                 aliasNeeded.Add(tokens[0]);
             }
-            aliasFile.Close();
-            aliasFile.Dispose();
+            aliasFile?.Close();
+            aliasFile?.Dispose();
             if (debug)
             {
                 try
@@ -94,8 +94,9 @@ namespace DXClusterUtil
             }
         }
 
-        private static string QRZField(DataRow row, string f)
+        private static string QRZField(DataRow? row, string f)
         {
+            if (row is null) return "row is null?";
             if (row.Table.Columns.Contains(f))
             {
                 return row[f]?.ToString() ?? "";
@@ -144,7 +145,7 @@ namespace DXClusterUtil
                 catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
-            if (cacheQRZ.TryGetValue(callSign, out string validCall))
+            if (cacheQRZ.TryGetValue(callSign, out string? validCall))
             { // it's in the cache so check our previous result for BAD
                 if (debug)
                 {
@@ -274,13 +275,14 @@ namespace DXClusterUtil
         }
 
         //[System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public bool CallQRZ(string url, string call, out string email, out int qrzdxcc)
         {
             qrzdxcc = 0;
             mutexQRZ.WaitOne();
             email = "none";
             String qrzstr;
-            Stream qrzstrm = null;
+            Stream? qrzstrm = null;
             try
             {
                 QRZData.Clear();
@@ -330,13 +332,36 @@ namespace DXClusterUtil
                     mutexQRZ.ReleaseMutex();
                     return false;
                 }
+                if (QRZData is null || QRZData.Tables is null)
+                {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                    MessageBox.Show("QRZDatabase??");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                    return false;
+                }
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 DataRow dr = QRZData.Tables["QRZDatabase"].Rows[0];
-                //Lversion.Text = QRZField(dr, "version");
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                              //Lversion.Text = QRZField(dr, "version");
                 if (url.Contains("username", StringComparison.InvariantCulture))
                 {
-                    DataTable sess = QRZData.Tables["Session"];
+                    if (QRZData is null)
+                    {
+                        MessageBox.Show("QRZData is null??");
+                        return false;
+                    }
+                    DataTable? sess = null;
+                    if (QRZData is not null) sess = QRZData.Tables["Session"];
+                    if (sess is null)
+                    {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                        MessageBox.Show("Session??");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                        return false;
+                    }    
                     DataRow sr = sess.Rows[0];
-                    string xx = QRZData.GetXml();
+                    string? xx = null;
+                    if (QRZData is not null) xx = QRZData.GetXml();
                     xmlError = QRZField(sr, "Error");
                     if (xmlError.Length > 0) return false;
                     if (QRZField(sr, "Key").Length > 0)
@@ -348,8 +373,8 @@ namespace DXClusterUtil
                 {
                     string version = QRZField(dr, "version");
                     //if (version.Equals("1.24")) MessageBox.Show("Version != 1.24, ==" + version);
-                    DataTable sess = QRZData.Tables["Session"];
-                    DataRow sr = sess.Rows[0];
+                    DataTable? sess = QRZData.Tables["Session"];
+                    DataRow? sr = sess?.Rows[0];
                     string xmlError = QRZField(sr, "Error");
                     xmlSession = QRZField(sr, "Key");
                     if (xmlError.Contains("Not found", StringComparison.InvariantCulture))
@@ -388,7 +413,14 @@ namespace DXClusterUtil
 #pragma warning restore CA1031 // Do not catch general exception types
                         }
                     }
-                    DataTable callTable = QRZData.Tables["Callsign"];
+                    DataTable? callTable = QRZData.Tables?["Callsign"];
+                    if (callTable == null)
+                    {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                        MessageBox.Show("callTable problem?");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                        return false;
+                    }
                     if (callTable.Rows.Count == 0) return false;
                     dr = callTable.Rows[0];
                     string callsign = QRZField(dr, "Call");
