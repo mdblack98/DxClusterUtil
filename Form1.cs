@@ -545,8 +545,8 @@ namespace DXClusterUtil
         {
             try
             {             //qrz.CacheSave(textBoxCacheLocation.Text);
-                if (server != null) server.Stop();
-                if (qrz != null) qrz.CacheSave(pathQRZCache);
+                server?.Stop();
+                qrz?.CacheSave(pathQRZCache);
                 ReviewedSpottersSave(true);
                 string group = "";
                 foreach (string token in listBoxIgnoredSpotters.Items)
@@ -583,7 +583,7 @@ namespace DXClusterUtil
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         private void TextBoxCluster_Leave(object sender, EventArgs e)
         {
-            char[] sep = { ':' };
+            char[] sep = [':'];
             var tokens = textBoxClusterServer.Text.Split(sep);
             if (tokens.Length > 0 && tokens.Length != 2)
             {
@@ -925,7 +925,7 @@ namespace DXClusterUtil
             buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
             form.ClientSize = new Size(396, 107);
-            form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
+            form.Controls.AddRange([label, textBox, buttonOk, buttonCancel]);
             form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterScreen;
@@ -936,6 +936,8 @@ namespace DXClusterUtil
 
             DialogResult dialogResult = form.ShowDialog();
             value = textBox.Text;
+            label.Dispose();
+            textBox.Dispose();
             form.Dispose();
             return dialogResult;
         }
@@ -1139,7 +1141,7 @@ namespace DXClusterUtil
 #pragma warning restore CA1305 // Specify IFormatProvider
         }
 
-        private void numericUpDownCwMinimum_ValueChanged(object sender, EventArgs e)
+        private void NumericUpDownCwMinimum_ValueChanged(object sender, EventArgs e)
         {
             if (clusterClient is not null)
                 clusterClient!.numericUpDownCwMinimum = (int)numericUpDownCwMinimum!.Value;
@@ -1149,13 +1151,19 @@ namespace DXClusterUtil
     {
         public static void AppendText(this RichTextBox box, string text, Color color)
         {
-            if (box == null) throw new ArgumentNullException(nameof(box));
-            box.SelectionStart = box.TextLength;
-            box.SelectionLength = 0;
+            if (box is null)
+            {
+                ArgumentNullException.ThrowIfNull(box);
+            }
+            else
+            {
+                box.SelectionStart = box.TextLength;
+                box.SelectionLength = 0;
 
-            box.SelectionColor = color;
-            box.AppendText(text);
-            box.SelectionColor = box.ForeColor;
+                box.SelectionColor = color;
+                box.AppendText(text);
+                box.SelectionColor = box.ForeColor;
+            }
         }
 
     }

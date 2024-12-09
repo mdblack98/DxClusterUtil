@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace DXClusterUtil
 {
-    class ClusterClient: IDisposable
+    partial class ClusterClient: IDisposable
     {
         public TcpClient? client;
         private NetworkStream? nStream;
@@ -60,6 +60,7 @@ namespace DXClusterUtil
 
         ~ClusterClient()
         {
+            mutex.Dispose();
             Cleanup();
         }
 
@@ -172,9 +173,7 @@ namespace DXClusterUtil
                         Thread.Sleep(1000);
                     }
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     if (client is not null) { 
                         client.Close();
@@ -182,6 +181,7 @@ namespace DXClusterUtil
                         client = null;
                     }
                     Form1.Instance.TextStatus = "Connect error "+ ++counter;
+                    throw;
                 }
             } while (client != null);
             return false;

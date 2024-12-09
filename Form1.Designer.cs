@@ -379,7 +379,7 @@
             numericUpDownCwMinimum.Name = "numericUpDownCwMinimum";
             numericUpDownCwMinimum.Size = new System.Drawing.Size(38, 23);
             numericUpDownCwMinimum.TabIndex = 29;
-            numericUpDownCwMinimum.ValueChanged += numericUpDownCwMinimum_ValueChanged;
+            numericUpDownCwMinimum.ValueChanged += NumericUpDownCwMinimum_ValueChanged;
             // 
             // Form1
             // 
