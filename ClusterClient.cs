@@ -68,7 +68,6 @@ namespace DXClusterUtil
 
         private void Cleanup()
         {
-            mutex.Dispose();
             if (client != null)
             {
                 //nStream.Close();
@@ -491,7 +490,7 @@ namespace DXClusterUtil
                             }
                             else
                             {
-                                log4omQueue?.Add(swork + "\r\n");
+                                if (!tooWeak) log4omQueue?.Add(swork + "\r\n");
                                 try
                                 {
                                     File.AppendAllText(logFile, swork + "\r\n");

@@ -19,7 +19,7 @@ namespace DXClusterUtil
         bool running = false;
         bool stop = false;
         bool connected;
-        readonly TcpListener? listener;
+        private readonly TcpListener? listener;
         NetworkStream? stream;
         Thread? myThreadID;
 

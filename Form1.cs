@@ -222,6 +222,25 @@ namespace DXClusterUtil
             }
         }
 
+        void AddToLog(RichTextBox log, string message, Color myColor)
+        {
+            log.Select(0, 0);
+            log.SelectionColor = myColor;
+            log.SelectedText = message;
+            if (!log.Focused)
+            {
+                log.SelectionStart = 0;
+                log.ScrollToCaret();
+            }
+            //RichTextBoxExtensions.SelectedText(log, ss, myColor)
+            if (log.Lines.Length > 200)
+            {
+                var lines = log.Lines;
+                log.Lines = lines.Take(200).ToArray();
+                Application.DoEvents();
+            }
+        }
+
         public bool Connect()
         {
             buttonStart.Enabled = false;
@@ -249,7 +268,7 @@ namespace DXClusterUtil
             qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text);
             if (qrz == null || qrz.isOnline == false)
             {
-                if (qrz != null) richTextBox1.AppendText("QRZ: " + qrz.xmlError + "\n");
+                if (qrz != null) AddToLog(richTextBox1,"QRZ: " + qrz.xmlError + "\n", Color.Black);
                 return false;
             }
             clusterClient = new ClusterClient(host, port, spotQueue, qrz)
@@ -260,7 +279,7 @@ namespace DXClusterUtil
             try
             {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
-                richTextBox1.AppendText("Trying to connect\n");
+                AddToLog(richTextBox1,"Trying to connect\n", Color.Black);
                 richTextBox1.SelectionStart = richTextBox1.TextLength;
                 richTextBox1.ScrollToCaret();
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
@@ -268,7 +287,7 @@ namespace DXClusterUtil
                 if (clusterClient.Connect(textBoxCallsign.Text, richTextBox1, clientQueue))
                 {
                     clusterClient.filterUSA = checkBoxUSA.Checked;
-                    //richTextBox1.AppendText("Connected\n");
+                    //AddToLog(richTextBox1,"Connected\n");
                     timer1.Start();
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                     buttonStart.Text = "Disconnect";
@@ -280,7 +299,7 @@ namespace DXClusterUtil
                 {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                     buttonStart.Text = "Start";
-                    richTextBox1.AppendText("Connect failed....hmmm...no answer from cluster server?\n");
+                    AddToLog(richTextBox1,"Connect failed....hmmm...no answer from cluster server?\n", Color.Black);
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 }
                 ReviewedSpottersSave(false);
@@ -322,7 +341,7 @@ namespace DXClusterUtil
             {
                 Disconnect();
                 buttonStart.Text = "Connect";
-                richTextBox1.AppendText("Disconnected\n");
+                AddToLog(richTextBox1,"Disconnected\n", Color.Black);
             }
             else
             {
@@ -332,7 +351,7 @@ namespace DXClusterUtil
                 {
                     buttonStart.Text = "Connect";
                     buttonStart.Enabled = true;
-                    richTextBox1.AppendText("Disconnected due to error\n");
+                    AddToLog(richTextBox1,"Disconnected due to error\n", Color.Black);
                 }
             }
         }
@@ -369,22 +388,6 @@ namespace DXClusterUtil
                     string ss = s;
                     Color myColor = Color.Black;
                     if (richTextBox1.ReadOnly == true) richTextBox1.ReadOnly = false;
-                    int nlines = 10;
-                    while (richTextBox1.Lines.Length > 110 && nlines > 0)
-                    {
-                        nlines = richTextBox1.Lines.Length;
-                        richTextBox1.SelectionStart = 0;
-#pragma warning disable CA1307 // Specify StringComparison
-                        richTextBox1.SelectionLength = richTextBox1.Text.IndexOf('\n', 0) + 1;
-#pragma warning restore CA1307 // Specify StringComparison
-                        //richTextBox1.Select(0, richTextBox1.GetFirstCharIndexFromLine(2));
-                        //richTextBox1.Cut();
-                        richTextBox1.SelectedText = "";
-                        richTextBox1.Update();
-                        Application.DoEvents();
-                        if (richTextBox1.Lines.Length == nlines) nlines = 0;  // didn't delete anything so quit
-                    }
-                    //richTextBox1.ReadOnly = true;
                     System.Drawing.Point p;
                     try
                     {
@@ -425,7 +428,8 @@ namespace DXClusterUtil
                         else if (clusterCached && !checkBoxCached.Checked) continue;
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached && !tooWeak)
                         {
-                            RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
+                            AddToLog(richTextBox1, ss, myColor);
+                            //RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
                             richTextBox1.SelectionStart = richTextBox1.Text.Length;
                             richTextBox1.ScrollToCaret();
                             Application.DoEvents();
@@ -463,9 +467,10 @@ namespace DXClusterUtil
                         labelClusterCache.Text = "" + clusterClient.cacheSpottedCalls.Count;
                         ss = ss.Replace("\r", "", StringComparison.InvariantCulture);
                         ss = ss.Replace("\n", "", StringComparison.InvariantCulture);
-                        RichTextBoxExtensions.AppendText(richTextBox1, ss + "\n", myColor);
-                        richTextBox1.SelectionStart = richTextBox1.Text.Length;
-                        richTextBox1.ScrollToCaret();
+                        AddToLog(richTextBox1, ss + "\n", myColor);
+                        //RichTextBoxExtensions.AppendText(richTextBox1, ss + "\n", myColor);
+                        //richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                        //richTextBox1.ScrollToCaret();
                         Application.DoEvents();
                     }
                 }
@@ -519,6 +524,7 @@ namespace DXClusterUtil
             }
         }
 
+
         private void Disconnect()
         {
             timer1.Stop();
@@ -539,7 +545,7 @@ namespace DXClusterUtil
                 {
                     buttonStart.Enabled = true;
                     buttonStart.Text = "Start";
-                    richTextBox1.AppendText("Disconnected due to error\n");
+                    AddToLog(richTextBox1,"Disconnected due to error\n", Color.Black);
                 }
                 startupConnect = false; // don't do it again
             }
@@ -884,7 +890,7 @@ namespace DXClusterUtil
                 Debug = !Debug;
                 if (clusterClient is not null) clusterClient.debug = Debug;
                 if (qrz is not null) qrz.debug = Debug;
-                richTextBox1.AppendText("Debug = " + Debug + "\n");
+                AddToLog(richTextBox1,"Debug = " + Debug + "\n", Color.Black);
             }
         }
 
