@@ -316,6 +316,7 @@
             comboBoxTimeIntervalAfter.Name = "comboBoxTimeIntervalAfter";
             comboBoxTimeIntervalAfter.Size = new System.Drawing.Size(44, 23);
             comboBoxTimeIntervalAfter.TabIndex = 10;
+            comboBoxTimeIntervalAfter.Text = "2";
             comboBoxTimeIntervalAfter.SelectedIndexChanged += ComboBoxTimeForDump_SelectedIndexChanged;
             // 
             // form1BindingSource1
@@ -332,6 +333,7 @@
             comboBoxTimeIntervalForDump.Name = "comboBoxTimeIntervalForDump";
             comboBoxTimeIntervalForDump.Size = new System.Drawing.Size(46, 23);
             comboBoxTimeIntervalForDump.TabIndex = 27;
+            comboBoxTimeIntervalForDump.Text = "60";
             comboBoxTimeIntervalForDump.SelectedIndexChanged += ComboBoxInterval_SelectedIndexChanged;
             // 
             // checkedListBoxReviewedSpotters

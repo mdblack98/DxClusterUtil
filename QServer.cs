@@ -19,7 +19,7 @@ namespace DXClusterUtil
         bool running = false;
         bool stop = false;
         bool connected;
-        private readonly TcpListener? listener;
+        private TcpListener? listener;
         NetworkStream? stream;
         Thread? myThreadID;
 
@@ -47,6 +47,7 @@ namespace DXClusterUtil
                     return;
                 }
             }
+            connected = true;
         }
 
         ~QServer()
@@ -64,6 +65,7 @@ namespace DXClusterUtil
             stop = true;
             connected = false;
             listener?.Stop();
+            if (listener is not null) listener = null;
             Thread.Sleep(500);
         }
 
@@ -75,7 +77,15 @@ namespace DXClusterUtil
                 try
                 {
                     var bytes = new byte[8192];
+                    if (stream is NetworkStream networkStream)
+                    {
+                        networkStream.ReadTimeout = 5000; // Set timeout to 5000ms (5 seconds)
+                    }
                     int? bytesRead = stream?.Read(bytes, 0, bytes.Length);
+                    if (bytesRead.HasValue && bytesRead.Value == 0)
+                    {
+                        connected = false;
+                    }
                     if (bytesRead is null)
                     {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
@@ -103,13 +113,22 @@ namespace DXClusterUtil
                         }
                     }
                 }
-                catch (IOException ex)
+                catch (IOException ex) when (ex.InnerException is SocketException socketEx &&
+                                              socketEx.SocketErrorCode == SocketError.TimedOut)
                 {
-                    if (ex.HResult != -2146232800)
-                    {
-                        connected = false;
-                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
-                    }
+                    //Console.WriteLine("Read timeout occurred.");
+                    connected = true;
+                }
+                catch (IOException)
+                {
+                    //Console.WriteLine($"IO error: {ex.Message}");
+                    connected = false;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Unexpected error: {ex.Message}");
+                    connected = false;
+                    throw;
                 }
             }
         }

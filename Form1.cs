@@ -232,13 +232,15 @@ namespace DXClusterUtil
                 log.SelectionStart = 0;
                 log.ScrollToCaret();
             }
-            //RichTextBoxExtensions.SelectedText(log, ss, myColor)
-            if (log.Lines.Length > 200)
+            var maxLines = 200;
+            if (log.Lines.Length > maxLines)
             {
-                var lines = log.Lines;
-                log.Lines = lines.Take(200).ToArray();
-                Application.DoEvents();
+                int charIndex = log.GetFirstCharIndexFromLine(maxLines); // Get the first character of the 25th line
+                // Select all text after the 25th line and remove it
+                log.Select(charIndex, log.TextLength - charIndex);
+                log.SelectedText = ""; // Remove the selected text while preserving formatting                Application.DoEvents();
             }
+            Application.DoEvents();
         }
 
         public bool Connect()
@@ -430,8 +432,8 @@ namespace DXClusterUtil
                         {
                             AddToLog(richTextBox1, ss, myColor);
                             //RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
-                            richTextBox1.SelectionStart = richTextBox1.Text.Length;
-                            richTextBox1.ScrollToCaret();
+                            //richTextBox1.SelectionStart = richTextBox1.Text.Length;
+                            //richTextBox1.ScrollToCaret();
                             Application.DoEvents();
                             continue;
                         }
