@@ -14,8 +14,8 @@ namespace DXClusterUtil
 {
     class QServer : IDisposable
     {
-        readonly ConcurrentBag<string> clientQueue;
-        readonly ConcurrentBag<string> spotQueue;
+        ConcurrentBag<string> clientQueue;
+        ConcurrentBag<string> spotQueue;
         bool running = false;
         bool stop = false;
         bool connected;
@@ -84,7 +84,8 @@ namespace DXClusterUtil
                     int? bytesRead = stream?.Read(bytes, 0, bytes.Length);
                     if (bytesRead.HasValue && bytesRead.Value == 0)
                     {
-                        connected = false;
+                        connected = false; // mdb
+                        break;
                     }
                     if (bytesRead is null)
                     {

@@ -234,7 +234,7 @@ namespace DXClusterUtil
                 debuglog.AppendText("qrz client is " + s1);
                 return null;
             }
-            if (clusterQueue.TryTake(out string? result))
+            if (clusterQueue.TryTake(out string? result)) // this is reading from Log4OM
             {
                 var outmsg = Encoding.ASCII.GetBytes(result);
                 nStream?.Write(outmsg, 0, outmsg.Length);
@@ -256,6 +256,7 @@ namespace DXClusterUtil
                 {
                     try
                     {
+                        // this is reading from our cluster spotting source (e.g. W3LPL)
                         c = (char)nStream.ReadByte();
                         ss += c;
                     }
