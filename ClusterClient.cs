@@ -236,8 +236,16 @@ namespace DXClusterUtil
             }
             if (clusterQueue.TryTake(out string? result)) // this is reading from Log4OM
             {
-                var outmsg = Encoding.ASCII.GetBytes(result);
-                nStream?.Write(outmsg, 0, outmsg.Length);
+                try
+                {
+                    var outmsg = Encoding.ASCII.GetBytes(result);
+                    nStream.Write(outmsg, 0, outmsg.Length);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("oops!!\n" + ex.Message);
+                    throw;
+                }
             }
             if (client == null) { 
                 return null; 
