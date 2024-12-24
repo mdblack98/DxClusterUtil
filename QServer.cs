@@ -14,8 +14,8 @@ namespace DXClusterUtil
 {
     class QServer : IDisposable
     {
-        ConcurrentBag<string> clientQueue;
-        ConcurrentBag<string> spotQueue;
+        readonly ConcurrentBag<string> clientQueue;
+        readonly ConcurrentBag<string> spotQueue;
         bool running = false;
         bool stop = false;
         bool connected;
@@ -71,6 +71,7 @@ namespace DXClusterUtil
 
         void ReadThread()
         {
+            int? bytesRead = 0;
             connected = true;
             while (connected)
             {
@@ -81,7 +82,7 @@ namespace DXClusterUtil
                     {
                         networkStream.ReadTimeout = 5000; // Set timeout to 5000ms (5 seconds)
                     }
-                    int? bytesRead = stream?.Read(bytes, 0, bytes.Length);
+                    bytesRead = stream?.Read(bytes, 0, bytes.Length);
                     if (bytesRead.HasValue && bytesRead.Value == 0)
                     {
                         connected = false; // mdb
@@ -171,6 +172,7 @@ namespace DXClusterUtil
                 {
                     try
                     {
+                        if (TimeInterval == 0) TimeInterval = 1;
                         var seconds = DateTime.Now.Second % TimeInterval;
                         var secondsChk = TimeInterval;
                         if (TimeInterval > 1) secondsChk += TimeIntervalAfter;

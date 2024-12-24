@@ -222,7 +222,7 @@ namespace DXClusterUtil
             }
         }
 
-        void AddToLog(RichTextBox log, string message, Color myColor)
+        static void AddToLog(RichTextBox log, string message, Color myColor)
         {
             log.Select(0, 0);
             log.SelectionColor = myColor;
@@ -306,6 +306,8 @@ namespace DXClusterUtil
                 }
                 ReviewedSpottersSave(false);
                 clusterClient.listBoxIgnore = listBoxIgnoredSpotters;
+                clusterClient.checkedListBoxReviewed = checkedListBoxReviewedSpotters;
+                clusterClient.checkListBoxNewSpotters = checkedListBoxNewSpotters;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -380,7 +382,7 @@ namespace DXClusterUtil
             if (clusterClient == null) return;
             string? msg;
             //TimeForDump = Convert.ToInt32(comboBoxTimeForDump.SelectedIndex+1);
-            while ((msg = clusterClient.Get(out bool cachedQRZ, richTextBox1)) != null)
+            while ((msg = clusterClient.Get(out bool cachedQRZ, richTextBox1, textBoxCallsign.Text)) != null)
             {
                 char[] delims = ['\n'];
                 string[] lines = msg.Split(delims);
@@ -428,6 +430,12 @@ namespace DXClusterUtil
                         }
                         if ((filtered || ignored || tooWeak) && !checkBoxFiltered.Checked) continue;
                         else if (clusterCached && !checkBoxCached.Checked) continue;
+                        else if (ss.Contains(textBoxCallsign.Text + ":",StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            AddToLog(richTextBox1, ss, myColor);
+                            //log4omQueue?.Add(swork + "\r\n");
+                            continue;
+                        }
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached && !tooWeak)
                         {
                             AddToLog(richTextBox1, ss, myColor);
@@ -455,11 +463,13 @@ namespace DXClusterUtil
                         }
                         else if (s.Contains(textBoxCallsign.Text, StringComparison.InvariantCulture))
                         {
-                            myColor = Color.DarkBlue;
+                            myColor = Color.Blue;
+                            ss += " " + textBoxCallsign.Text + " stuff";
                         }
                         else if (tooWeak)
                         {
-                            myColor = Color.Blue;
+                            myColor = Color.LightBlue;
+                            ss += " too weak";
                         }
                         else
                         {
@@ -495,6 +505,7 @@ namespace DXClusterUtil
             }
             timer1.Interval = 1000;
             timer1.Start();
+#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 if (server != null && server.IsConnected())
@@ -518,12 +529,11 @@ namespace DXClusterUtil
                     }
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return; // any error should be handled by reconnecting
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
 
@@ -582,13 +592,12 @@ namespace DXClusterUtil
                 SaveWindowPosition();
                 Properties.Settings.Default.Save();
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                 _ = MessageBox.Show("Error closing form!!!", ex.Message + "\n" + ex.StackTrace);
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
+                throw;
             }
         }
 
@@ -773,6 +782,7 @@ namespace DXClusterUtil
                 if (!checkedListBoxReviewedSpotters.Items.Contains(curItem))
                 {
                     checkedListBoxReviewedSpotters.Items.Insert(0, curItem);
+                    checkedListBoxReviewedSpotters.SetItemChecked(0, true);
                     checkedListBoxReviewedSpotters.TopIndex = 0;
                     checkedListBoxNewSpotters?.Items.RemoveAt((int)index);
                 }
@@ -922,7 +932,6 @@ namespace DXClusterUtil
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
             buttonOk.Text = "OK";
             buttonCancel.Text = "Cancel";
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
             buttonOk.DialogResult = DialogResult.OK;
             buttonCancel.DialogResult = DialogResult.Cancel;
 
@@ -1078,7 +1087,7 @@ namespace DXClusterUtil
                 checkBoxCached.Checked = Properties.Settings.Default.Cached;
                 checkBoxFiltered.Checked = Properties.Settings.Default.Filtered;
                 checkBoxUSA.Checked = Properties.Settings.Default.USA;
-                comboBoxTimeIntervalForDump.SelectedIndex = Properties.Settings.Default.TimeIntervalForDump;
+                comboBoxTimeIntervalForDump.SelectedIndex = comboBoxTimeIntervalForDump.FindStringExact(Properties.Settings.Default.TimeIntervalForDump.ToString(CultureInfo.InvariantCulture));
                 comboBoxTimeIntervalAfter.SelectedIndex = Properties.Settings.Default.TimeIntervalAfter;
                 numericUpDownCwMinimum.Value = Properties.Settings.Default.CWMinimum;
             }

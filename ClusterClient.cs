@@ -159,8 +159,11 @@ namespace DXClusterUtil
                                     //nStream.Write(msg, 0, msg.Length);
                                     return true;
                                 }
-                                bytesRead = nStream.Read(buffer, 0, buffer.Length);
-                                Application.DoEvents();
+                                if (nStream.DataAvailable)
+                                    bytesRead = nStream.Read(buffer, 0, buffer.Length);
+                                else
+                                    bytesRead = 0;
+                                    Application.DoEvents();
                                 //Thread.Sleep(2000);
                             }
                         }
@@ -214,7 +217,7 @@ namespace DXClusterUtil
             return gotem;
         }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
-        public string? Get(out bool cachedQRZ, RichTextBox debuglog)
+        public string? Get(out bool cachedQRZ, RichTextBox debuglog, string callSign)
         {
             cachedQRZ = false;
             if (client == null || qrz == null)
@@ -239,7 +242,8 @@ namespace DXClusterUtil
                 try
                 {
                     var outmsg = Encoding.ASCII.GetBytes(result);
-                    nStream.Write(outmsg, 0, outmsg.Length);
+                    nStream!.Write(outmsg, 0, outmsg.Length);
+                    return result;
                 }
                 catch (Exception ex)
                 {
@@ -388,14 +392,18 @@ namespace DXClusterUtil
                         // gotta get just the callsign to make Log4OM happy
                         // there's a bug in 1.40.0.0 where a suffix XXXX-2-# does not get processed by Log4OM
                         // So we remove all suffixes to send to Log4OM
-                        if (Regex.IsMatch(tokens2[2], "-[0-9]-#"))
+                        if (MyRegexSuffix().IsMatch(tokens2[2]))
                         {
-                            spotterCall = Regex.Replace(tokens2[2], "-[0-9]-#:", "");
-                            swork = Regex.Replace(swork, "-[0-9]-#:", "-#:  ");
+
+                            //spotterCall = Regex.Replace(tokens2[2], "-[0-9]-#:", "");
+                            //swork = Regex.Replace(swork, "-[0-9]-#:", "-#:  ");
+                            spotterCall = Regex.Replace(tokens2[2], MyRegexSuffix().ToString(), "");
+                            swork = Regex.Replace(swork, MyRegexSuffix().ToString(), "-#:  ");
                         }
                         else
                         {
                             spotterCall = Regex.Replace(tokens2[2], "-#:", "");
+                            if (spotterCall.Last() == ':') spotterCall = spotterCall.Remove(spotterCall.Length - 1);
                         }
                         if (tokens2.Length < 4)
                         {
@@ -404,11 +412,26 @@ namespace DXClusterUtil
                         }
                         myCallsignExists = false;
                         spottedCall = tokens2[4];
-                        if (listBoxIgnore is not null && listBoxIgnore.Items.Contains(spottedCall))
+
+                        if (spotterCall == callSign)
+                        {
+                            log4omQueue?.Add(line + "\r\n");
+                            return line;
+                        }
+                        // Spotter is either ignored or not in the reviewed list which would mean they are new
+                        if (listBoxIgnore is not null && listBoxIgnore.Items.Contains(spotterCall))
                         {
                             mutex.ReleaseMutex();
-
-                            return "Ignoring " + spottedCall + "\r\n";
+                            return "!!" + line[2..] + " Ignoring " + spotterCall + "\r\n";
+                        }
+                        if (checkedListBoxReviewed is not null && !checkedListBoxReviewed.Items.Contains(spotterCall))
+                        {
+                            mutex.ReleaseMutex();
+                            if (checkListBoxNewSpotters is not null && !checkListBoxNewSpotters.Items.Contains(spotterCall))
+                            {
+                                checkListBoxNewSpotters.Items.Insert(0, spotterCall);
+                            }
+                            return "!!" + line[2..] + " Not reviewed " + spotterCall + "\r\n";
                         }
                         // Remove any suffix from special callsigns
                         String specialCall = HandleSpecialCalls(spottedCall);
@@ -454,6 +477,10 @@ namespace DXClusterUtil
                                     return ss;
                                 }
                             }
+                        }
+                        if (spotterCall == callSign || spottedCall == callSign)
+                        {
+                            filteredOut = false;
                         }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                         if (!tooWeak && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
@@ -672,6 +699,8 @@ namespace DXClusterUtil
         private bool disposedValue = false; // To detect redundant calls
         public bool myCallsignExists;
         internal string? newSpotters;
+        internal ColorCodedCheckedListBox? checkedListBoxReviewed;
+        internal CheckedListBox? checkListBoxNewSpotters;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -707,6 +736,9 @@ namespace DXClusterUtil
             // TODO: uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }
+
+        [GeneratedRegex("-[0-9]-#")]
+        private static partial Regex MyRegexSuffix();
         #endregion
     }
 }

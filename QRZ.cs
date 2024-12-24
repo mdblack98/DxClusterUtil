@@ -38,43 +38,51 @@ namespace DXClusterUtil
 
         public QRZ(string username, string password)
         {
-            File.Delete(pathQRZLog);
-            //File.Delete(pathQRZError);
-            File.Delete(pathQRZBad);
-            if (!File.Exists(pathQRZAlias))
+            try
             {
-                var stream = File.Create(pathQRZAlias);
-                stream.Dispose();
-
-            }
-            StreamReader aliasFile = new(pathQRZAlias);
-            string? s;
-            while ((s = aliasFile?.ReadLine()) != null)
-            {
-                string[] tokens = s.Split(',');
-                aliasNeeded.Add(tokens[0]);
-            }
-            aliasFile?.Close();
-            aliasFile?.Dispose();
-            if (debug)
-            {
-                try
+                File.Delete(pathQRZLog);
+                //File.Delete(pathQRZError);
+                File.Delete(pathQRZBad);
+                if (!File.Exists(pathQRZAlias))
                 {
-                    File.AppendAllText(pathQRZAlias, "New QRZ instance\n");
+                    var stream = File.Create(pathQRZAlias);
+                    stream.Dispose();
+
                 }
+                StreamReader aliasFile = new(pathQRZAlias);
+                string? s;
+                while ((s = aliasFile?.ReadLine()) != null)
+                {
+                    string[] tokens = s.Split(',');
+                    aliasNeeded.Add(tokens[0]);
+                }
+                aliasFile?.Close();
+                aliasFile?.Dispose();
+                if (debug)
+                {
+                    try
+                    {
+                        File.AppendAllText(pathQRZAlias, "New QRZ instance\n");
+                    }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch { }
+                    catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
+                }
+                if (cacheQRZ.IsEmpty)
+                {
+                    CacheLoad(pathQRZCache);
+                }
+                urlConnect = server + "?username=" + username + ";password=" + password;
+                bool result = Connect(urlConnect);
+                if (result == false)
+                {
+                    isOnline = false;
+                }
             }
-            if (cacheQRZ.IsEmpty)
+            catch (Exception ex)
             {
-                CacheLoad(pathQRZCache);
-            }
-            urlConnect = server + "?username=" + username + ";password=" + password;
-            bool result = Connect(urlConnect);
-            if (result == false)
-            {
-                isOnline = false;
+                MessageBox.Show("QRZ connect error:: " + ex.Message);
+                throw;
             }
         }
         
@@ -434,7 +442,10 @@ namespace DXClusterUtil
                     if (dxcc != null && dxcc.Length > 0)
                         qrzdxcc = Convert.ToInt32(QRZField(dr, "dxcc"));
                     else
-                        MessageBox.Show("Callsign " + callsign + " does not have DXCC field in QRZ xml...need to notify the operator!!");
+                    {
+                        MessageBox.Show("DXClusterUtil says callsign " + callsign + " does not have DXCC field in QRZ xml...need to notify the operator!!\n" + xml);
+                        File.AppendAllText(pathQRZLog, "DXClusterUtil says callsign " + callsign + " does not have DXCC field in QRZ xml...need to notify the operator!!\n" + xml +"\n");
+                    }
 
 #pragma warning restore CA1305 // Specify IFormatProvider
                 }
