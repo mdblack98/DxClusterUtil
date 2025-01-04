@@ -438,7 +438,7 @@ namespace DXClusterUtil
                         }
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached && !tooWeak)
                         {
-                            AddToLog(richTextBox1, ss, myColor);
+                            AddToLog(richTextBox1, ss + " bad call cached", myColor);
                             //RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
                             //richTextBox1.SelectionStart = richTextBox1.Text.Length;
                             //richTextBox1.ScrollToCaret();
@@ -451,15 +451,12 @@ namespace DXClusterUtil
                         {
                             myColor = Color.Red;
                             ++badCalls;
+                            ss += " bad call";
                         }
                         else if (badCallCached)
                         {
                             myColor = Color.IndianRed;
                             ++badCalls;
-                        }
-                        else if (cachedQRZ)
-                        {
-                            myColor = Color.Green;
                         }
                         else if (s.Contains(textBoxCallsign.Text, StringComparison.InvariantCulture))
                         {
@@ -468,12 +465,23 @@ namespace DXClusterUtil
                         }
                         else if (tooWeak)
                         {
-                            myColor = Color.LightBlue;
+                            myColor = Color.DarkGoldenrod;
                             ss += " too weak";
+                        }
+                        else if (ss.Substring(0, 2) != "DX" && !ss.Contains("review",StringComparison.OrdinalIgnoreCase))
+                        {
+                            myColor = Color.MediumBlue;
+                            ss += " filtered";
+                        }
+                        else if (cachedQRZ)
+                        {
+                            myColor = Color.Green;
+                            ss += " cached QRZ";
                         }
                         else
                         {
-                            myColor = Color.Orange;
+                            myColor = Color.Black;
+                            ss += " new QRZ";
                         }
                         labelQRZCache.Text = "" + qrz?.cacheQRZ.Count + "/" + badCalls;
                         labelClusterCache.Text = "" + clusterClient.cacheSpottedCalls.Count;
@@ -512,6 +520,7 @@ namespace DXClusterUtil
                 {
                     labelStatusQServer.BackColor = qServerBackColor;
                     labelStatusQServer.Text = "Client Connected";
+                    
                 }
                 else
                 {
@@ -586,6 +595,10 @@ namespace DXClusterUtil
                 Properties.Settings.Default.Cached = checkBoxCached.Checked;
                 Properties.Settings.Default.Filtered = checkBoxFiltered.Checked;
                 Properties.Settings.Default.USA = checkBoxUSA.Checked;
+                //var myIndex = comboBoxTimeIntervalForDump.SelectedIndex;
+                //ComboBox.ObjectCollection items = comboBoxTimeIntervalForDump.Items;
+                //int myItem = Int32.Parse(items?[myIndex]);
+                //Properties.Settings.Default.TimeIntervalForDump = myItem;
                 Properties.Settings.Default.TimeIntervalForDump = comboBoxTimeIntervalForDump.SelectedIndex;
                 Properties.Settings.Default.TimeIntervalAfter = comboBoxTimeIntervalAfter.SelectedIndex;
                 Properties.Settings.Default.CWMinimum = (int)numericUpDownCwMinimum.Value;
@@ -1087,7 +1100,7 @@ namespace DXClusterUtil
                 checkBoxCached.Checked = Properties.Settings.Default.Cached;
                 checkBoxFiltered.Checked = Properties.Settings.Default.Filtered;
                 checkBoxUSA.Checked = Properties.Settings.Default.USA;
-                comboBoxTimeIntervalForDump.SelectedIndex = comboBoxTimeIntervalForDump.FindStringExact(Properties.Settings.Default.TimeIntervalForDump.ToString(CultureInfo.InvariantCulture));
+                comboBoxTimeIntervalForDump.SelectedIndex = Properties.Settings.Default.TimeIntervalForDump;
                 comboBoxTimeIntervalAfter.SelectedIndex = Properties.Settings.Default.TimeIntervalAfter;
                 numericUpDownCwMinimum.Value = Properties.Settings.Default.CWMinimum;
             }

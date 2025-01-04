@@ -340,7 +340,11 @@ namespace DXClusterUtil
                         var comment = line.Substring(38, 20);
                         var time = line.Substring(70, 3); // use 10 minute cache
                         var key = freq + "|" + spot + "|" + time;
+                        string myTime = line.Substring(70, 4);
+                        if (DateTime.TryParseExact(myTime, "HHmm", null, System.Globalization.DateTimeStyles.None, out DateTime parsedTime))
+                        {
 
+                        }
                         if (!Int32.TryParse(line.AsSpan(73, 1), out int minute))
                         {
                             continue;
@@ -368,21 +372,23 @@ namespace DXClusterUtil
                             swork = line.Replace(sfreq, String.Format(CultureInfo.InvariantCulture, "{0,7:0.0}", ffreq), StringComparison.InvariantCulture);
                             key = ffreq + "|" + spot + "|" + time;
                         }
+                        // Don't remove good lookups from cache
                         if (minute != lastMinute)
                         {
                             int removeMinute = (minute + 1) % 10;
-                            // when the minute rolls over we remove the 10 minute old cache entries
-                            //cache.Clear();
-                            //lastTime = time;
+                            // when the minute rolls over we remove the 10 minute old bad cache entries
+                            // cache.Clear();
+                            // lastTime = time;
                             foreach (var m in cacheSpottedCalls.ToList())
                             {
-                                if (m.Value == removeMinute)
+                                if (m.Key.Contains("BAD",StringComparison.OrdinalIgnoreCase) && m.Value == removeMinute)
                                 {
                                     cacheSpottedCalls.Remove(m.Key);
                                 }
                             }
                             lastMinute = minute;
                         }
+                        
                         ++totalLines;
                         bool filteredOut = false;
                         char[] delim = [' '];
@@ -737,7 +743,7 @@ namespace DXClusterUtil
             GC.SuppressFinalize(this);
         }
 
-        [GeneratedRegex("-[0-9]-#")]
+        [GeneratedRegex("-[0-9]-#:")]
         private static partial Regex MyRegexSuffix();
         #endregion
     }

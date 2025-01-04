@@ -238,7 +238,7 @@
             richTextBox1.Location = new System.Drawing.Point(7, 133);
             richTextBox1.Margin = new System.Windows.Forms.Padding(2);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new System.Drawing.Size(750, 139);
+            richTextBox1.Size = new System.Drawing.Size(750, 165);
             richTextBox1.TabIndex = 14;
             richTextBox1.Text = resources.GetString("richTextBox1.Text");
             richTextBox1.WordWrap = false;
@@ -387,7 +387,7 @@
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(770, 275);
+            ClientSize = new System.Drawing.Size(770, 301);
             Controls.Add(numericUpDownCwMinimum);
             Controls.Add(checkBoxUSA);
             Controls.Add(comboBoxTimeIntervalForDump);
@@ -417,7 +417,7 @@
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "Form1";
-            Text = "DxClusterUtil 241220 by W9MDB";
+            Text = "DxClusterUtil 250101 by W9MDB";
             Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
