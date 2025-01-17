@@ -18,7 +18,7 @@ namespace DXClusterUtil
         readonly ConcurrentBag<string> spotQueue;
         bool running = false;
         bool stop = false;
-        bool connected = false;
+        bool connected;
         private TcpListener? listener;
         NetworkStream? stream;
         Thread? myThreadID;
@@ -47,7 +47,7 @@ namespace DXClusterUtil
                     return;
                 }
             }
-            connected = false;
+            connected = true;
         }
 
         ~QServer()
@@ -71,10 +71,9 @@ namespace DXClusterUtil
 
         void ReadThread()
         {
-            int bytesRead = 0;
+            int? bytesRead = 0;
             connected = true;
-            bool run = true;
-            while (run)
+            while (connected)
             {
                 try
                 {
@@ -83,40 +82,19 @@ namespace DXClusterUtil
                     {
                         networkStream.ReadTimeout = 5000; // Set timeout to 5000ms (5 seconds)
                     }
-                    /*
-                    if (stream is not null && stream.Socket.Available == 0)
-                    {
-                        Thread.Sleep(1000);
-                        connected = false;
-                        continue;
-                    }
-                    connected = true;
-                    */
-                    //if (stream?.DataAvailable == true)
-                    if (stream is not null)
-                    {
-                        bytesRead = (int)(stream.Read(bytes, 0, bytes.Length));
-                    }
-                    //else
-                    //{
-                    //    Thread.Sleep(1000);
-                    //    continue;
-                    //}
-                    //if (bytesRead.HasValue && bytesRead.Value == 0)
-                    if (bytesRead == 0)
+                    bytesRead = stream?.Read(bytes, 0, bytes.Length);
+                    if (bytesRead.HasValue && bytesRead.Value == 0)
                     {
                         connected = false; // mdb
-                        continue;
+                        break;
                     }
-                    /*
                     if (bytesRead is null)
                     {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                         MessageBox.Show("bytesRead is null?");
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                     }
-                    */
-                    //if (bytesRead is not null)
+                    if (bytesRead is not null)
                     {
                         string cmd = Encoding.ASCII.GetString(bytes, 0, (int)bytesRead);
                         if (cmd.Contains("bye", StringComparison.InvariantCulture))
@@ -192,7 +170,6 @@ namespace DXClusterUtil
                 byte[] bytes;
                 while (running)
                 {
-                    if (myThreadID?.ThreadState == ThreadState.Stopped) myThreadID?.Start();
                     try
                     {
                         if (TimeInterval == 0) TimeInterval = 1;
@@ -278,7 +255,6 @@ namespace DXClusterUtil
                     }
                 }
                 stream?.Close();
-                stream = null;
                 if (client is not null && client.Connected) 
                     client?.Close();
                 connected = false;
