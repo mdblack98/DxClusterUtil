@@ -247,7 +247,7 @@ namespace DXClusterUtil
             if (client == null) { 
                 return null; 
             }
-            mutex.WaitOne(2000);
+            mutex.WaitOne(20000);
             if (client.Connected && nStream != null && nStream.DataAvailable)
             {
                 while (clusterQueue.TryTake(out string? command))
@@ -436,7 +436,7 @@ namespace DXClusterUtil
                             mutex.ReleaseMutex();
                             return "!!" + line[2..] + " Ignoring " + spotterCall + "\r\n";
                         }
-                        if (checkedListBoxReviewed is not null && !checkedListBoxReviewed.Items.Contains(spotterCall))
+                        if (checkedListBoxReviewed is not null && !checkedListBoxReviewed.CheckedItems.Contains(spotterCall))
                         {
                             mutex.ReleaseMutex();
                             if (checkListBoxNewSpotters is not null && !checkListBoxNewSpotters.Items.Contains(spotterCall))
@@ -487,8 +487,10 @@ namespace DXClusterUtil
                         }
                         //if (filterUSA && Regex.Match)
                         //{
-//
-  //                      }
+                        //
+                        //                      }
+                        if (!checkedListBoxReviewed!.CheckedItems.Contains(spotterCall))
+                            filteredOut = true;
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                         if (!tooWeak && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
                         {
