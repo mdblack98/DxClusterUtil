@@ -39,7 +39,7 @@ namespace DXClusterUtil
         private readonly string logFile = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_Log.txt");
         readonly Mutex mutex = new(true);
         public int numericUpDownCwMinimum = 0;
-        private string lastcall = "";
+        //private string lastcall = "";
 
         private readonly string pathQRZError = Environment.ExpandEnvironmentVariables("%TEMP%\\DxClusterUtil_qrzerror.txt");
 
@@ -220,21 +220,14 @@ namespace DXClusterUtil
         public string? Get(out bool cachedQRZ, RichTextBox debuglog, string callSign)
         {
             cachedQRZ = false;
-            if (client == null || qrz == null)
+            if (client == null) // then we are done 
             {
-                string s1;
-                bool isNull = client == null;
-                if (isNull)
-                    s1 = "null";
-                else
-                    s1 = "OK";
-                debuglog.AppendText("cluster client is " + s1);
-                isNull = qrz == null;
-                if (isNull)
-                    s1 = "null";
-                else
-                    s1 = "OK";
-                debuglog.AppendText("qrz client is " + s1);
+                debuglog.AppendText("cluster client is null");
+                return null;
+            }
+            if (qrz == null)
+            {
+                debuglog.AppendText("qrz client is null");
                 return null;
             }
             if (clusterQueue.TryTake(out string? result)) // this is reading from Log4OM
@@ -254,7 +247,7 @@ namespace DXClusterUtil
             if (client == null) { 
                 return null; 
             }
-            mutex.WaitOne();
+            mutex.WaitOne(2000);
             if (client.Connected && nStream != null && nStream.DataAvailable)
             {
                 while (clusterQueue.TryTake(out string? command))
@@ -361,11 +354,11 @@ namespace DXClusterUtil
                             cacheAdded = true;
                             cacheSpottedCalls[key] = minute;
                         }
-                        if (key.Equals(lastcall, StringComparison.Ordinal))
-                        {
-                            int i = 1;  // for debugging dups when dups aren't working -- this catches two calls in a row when the first should be cached.
-                        }
-                        lastcall = key;
+                        //if (key.Equals(lastcall, StringComparison.Ordinal))
+                        //{
+                        //    int i = 1;  // for debugging dups when dups aren't working -- this catches two calls in a row when the first should be cached.
+                        //}
+                        //lastcall = key;
                         if (comment.Contains("RTTY", StringComparison.InvariantCulture))
                         {
                             ffreq += rttyOffset / 1000;
@@ -408,7 +401,7 @@ namespace DXClusterUtil
                         }
                         else
                         {
-                            spotterCall = Regex.Replace(tokens2[2], "-#:", "");
+                            spotterCall = MyRegex1().Replace(tokens2[2], "");
                             if (spotterCall.Last() == ':') spotterCall = spotterCall.Remove(spotterCall.Length - 1);
                         }
                         if (tokens2.Length < 4)
@@ -421,8 +414,21 @@ namespace DXClusterUtil
 
                         if (spotterCall == callSign)
                         {
+                            ++totalLinesKept;
                             log4omQueue?.Add(line + "\r\n");
                             return line;
+                        }
+                        if (filterUSA)
+                        {
+                            // don't spot USA callsigns
+                            var firstChar = spottedCall[..1];
+                            //if ((firstChar == "A" && spottedCall[1] <= 'L') || firstChar == "K" || firstChar == "N" || firstChar == "W")
+                            string pattern = @"^(A[A-L]|K|N|W)";
+                            if (Regex.IsMatch(spottedCall, pattern))
+                            {
+                                filteredOut = true;
+                                return "!!" + line[2..] + " USA";
+                            }
                         }
                         // Spotter is either ignored or not in the reviewed list which would mean they are new
                         if (listBoxIgnore is not null && listBoxIgnore.Items.Contains(spotterCall))
@@ -461,15 +467,6 @@ namespace DXClusterUtil
                                 else callSuffixList.Add(spotterCall + ":OK");
                             }
                         }
-                        if (filterUSA)
-                        {
-                            // don't spot USA callsigns
-                            var firstChar = spottedCall[..1];
-                            if ((firstChar == "A" && spottedCall[1] <= 'L') || firstChar == "K" || firstChar == "N" || firstChar == "W")
-                            {
-                                filteredOut = true;
-                            }
-                        }
                         bool tooWeak = false;
                         if (skimmer) { // filter out CW below minimum dB level
                             if (Form1.TryParseSignalStrength(ss, out var signalStrength))
@@ -488,6 +485,10 @@ namespace DXClusterUtil
                         {
                             filteredOut = false;
                         }
+                        //if (filterUSA && Regex.Match)
+                        //{
+//
+  //                      }
                         bool validCall = qrz.GetCallsign(spottedCall, out cachedQRZ);
                         if (!tooWeak && validCall && !filteredOut) // if it's not a skimmer just let it through as long as valid call and hasn't been excluded
                         {
@@ -532,7 +533,11 @@ namespace DXClusterUtil
                             }
                             else
                             {
-                                if (!tooWeak) log4omQueue?.Add(swork + "\r\n");
+                                if (!tooWeak)
+                                {
+                                    ++totalLinesKept;
+                                    log4omQueue?.Add(swork + "\r\n");
+                                }
                                 try
                                 {
                                     File.AppendAllText(logFile, swork + "\r\n");
@@ -687,7 +692,7 @@ namespace DXClusterUtil
         static private String HandleSpecialCalls(String callsign)
         {
             // strip suffixes from special event callsigns
-            MatchCollection mc = Regex.Matches(callsign, "[WKN][0-9][A-WYZ]/");
+            MatchCollection mc = MyRegexSpecialCall().Matches(callsign);
             foreach (Match m in mc)
             {
                 callsign = m.Value[..3];
@@ -745,6 +750,10 @@ namespace DXClusterUtil
 
         [GeneratedRegex("-[0-9]-#:")]
         private static partial Regex MyRegexSuffix();
+        [GeneratedRegex("-#:")]
+        private static partial Regex MyRegex1();
+        [GeneratedRegex("[WKN][0-9][A-WYZ]/")]
+        private static partial Regex MyRegexSpecialCall();
         #endregion
     }
 }

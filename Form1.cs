@@ -16,6 +16,8 @@ using Xamarin.Essentials;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
+using Microsoft.Extensions.Hosting;
+using System.Web.Services.Description;
 
 namespace DXClusterUtil
 {
@@ -267,11 +269,14 @@ namespace DXClusterUtil
             string host = tokens[0];
             int port = Int32.Parse(tokens[1], CultureInfo.InvariantCulture);
             qrz?.Dispose();
-            qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text);
-            if (qrz == null || qrz.isOnline == false)
+            //if (checkBoxQRZ.Checked)
             {
-                if (qrz != null) AddToLog(richTextBox1,"QRZ: " + qrz.xmlError + "\n", Color.Black);
-                return false;
+                qrz = new QRZ(textBoxCallsign.Text, textBoxPassword.Text);
+                if (qrz == null || qrz.isOnline == false)
+                {
+                    if (qrz != null) AddToLog(richTextBox1, "QRZ: " + qrz.xmlError + "\n", Color.Black);
+                    return false;
+                }
             }
             clusterClient = new ClusterClient(host, port, spotQueue, qrz)
             {
@@ -365,7 +370,7 @@ namespace DXClusterUtil
             value = 0;
 
             // Match the "CW [number] dB" pattern
-            var match = Regex.Match(input, @"CW\s+(\+?\d+)\s+dB"); // CW\s\d+\sdB
+            var match = MyRegexCW().Match(input); // CW\s\d+\sdB
 
             if (match.Success && int.TryParse(match.Groups[1].Value, out value))
             {
@@ -436,9 +441,14 @@ namespace DXClusterUtil
                             //log4omQueue?.Add(swork + "\r\n");
                             continue;
                         }
+                        else if (ss[0] == ' ')
+                        {
+                            AddToLog(richTextBox1, ss + " DX Line???", myColor);
+                            continue;
+                        }
                         else if (!filtered && !clusterCached && !dxline && !badCall && !badCallCached && !tooWeak)
                         {
-                            AddToLog(richTextBox1, ss + " bad call cached", myColor);
+                            AddToLog(richTextBox1, ss, myColor);
                             //RichTextBoxExtensions.AppendText(richTextBox1, ss, myColor);
                             //richTextBox1.SelectionStart = richTextBox1.Text.Length;
                             //richTextBox1.ScrollToCaret();
@@ -468,7 +478,7 @@ namespace DXClusterUtil
                             myColor = Color.DarkGoldenrod;
                             ss += " too weak";
                         }
-                        else if (ss.Substring(0, 2) != "DX" && !ss.Contains("review",StringComparison.OrdinalIgnoreCase))
+                        else if (ss[..2] != "DX" && !ss.Contains("review", StringComparison.OrdinalIgnoreCase))
                         {
                             myColor = Color.MediumBlue;
                             ss += " filtered";
@@ -481,7 +491,7 @@ namespace DXClusterUtil
                         else
                         {
                             myColor = Color.Black;
-                            ss += " new QRZ";
+                            if (!ss.Contains("reviewed", StringComparison.OrdinalIgnoreCase)) ss += " new QRZ";
                         }
                         labelQRZCache.Text = "" + qrz?.cacheQRZ.Count + "/" + badCalls;
                         labelClusterCache.Text = "" + clusterClient.cacheSpottedCalls.Count;
@@ -574,9 +584,15 @@ namespace DXClusterUtil
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
-            {             //qrz.CacheSave(textBoxCacheLocation.Text);
-                server?.Stop();
+            try {
+                timer2.Stop();
+                timer1.Stop();
+                timer1.Enabled = false;
+                timer2.Enabled = false;
+                Thread.Sleep(1000);
+                clusterClient!.Dispose();
+                if (server is not null && server.IsConnected()) 
+                    server.Stop();
                 qrz?.CacheSave(pathQRZCache);
                 ReviewedSpottersSave(true);
                 string group = "";
@@ -1168,11 +1184,13 @@ namespace DXClusterUtil
 
         private void Timer2_Tick(object sender, EventArgs e)
         {
+            timer2.Stop();
             TimeSpan tzone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
 #pragma warning disable CA1305 // Specify IFormatProvider
             string myTime = DateTime.UtcNow.ToString("HH:mm:ss");
             labelQDepth.Text = "Q(" + clientQueue.Count.ToString() + ") " + myTime + "(" + tzone.Hours.ToString("+00;-00;+00") + ")";
 #pragma warning restore CA1305 // Specify IFormatProvider
+            timer2.Start();
         }
 
         private void NumericUpDownCwMinimum_ValueChanged(object sender, EventArgs e)
@@ -1180,6 +1198,9 @@ namespace DXClusterUtil
             if (clusterClient is not null)
                 clusterClient!.numericUpDownCwMinimum = (int)numericUpDownCwMinimum!.Value;
         }
+
+        [GeneratedRegex(@"CW\s+(\+?\d+)\s+dB")]
+        private static partial Regex MyRegexCW();
     }
     public static class RichTextBoxExtensions
     {

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "DXCluster"
-#define MyAppVersion "250101"
+#define MyAppVersion "250111"
 #define MyAppPublisher "W9MDB"
 #define MyAppURL "https://github.com/mdblack98/DxClusterUtil"
 #define MyAppExeName "DXClusterUtil.exe"

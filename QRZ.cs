@@ -28,7 +28,7 @@ namespace DXClusterUtil
         public bool debug = false;
         public ConcurrentDictionary<string, string> cacheQRZ = new();
         public ConcurrentDictionary<string, string> cacheQRZBad = new();
-        private readonly ConcurrentBag<string> aliasNeeded = new();
+        private readonly ConcurrentBag<string> aliasNeeded = [];
         readonly Mutex mutexQRZ = new();
         readonly private string pathQRZAlias = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzalias.txt");
         readonly private string pathQRZLog = Environment.ExpandEnvironmentVariables("%TEMP%\\qrzlog.txt");
@@ -209,7 +209,7 @@ namespace DXClusterUtil
                 int n = 0;
                 while (!isOnline)
                 {
-                    Thread.Sleep(5000);
+                    Thread.Sleep(1000);
                     ++n;
                     if (debug)
                     {

@@ -71,7 +71,7 @@ namespace DXClusterUtil
 
         void ReadThread()
         {
-            int? bytesRead = 0;
+            int? bytesRead;
             connected = true;
             while (connected)
             {
@@ -91,7 +91,8 @@ namespace DXClusterUtil
                     if (bytesRead is null)
                     {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
-                        MessageBox.Show("bytesRead is null?");
+                        connected = false;
+                        continue;
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                     }
                     if (bytesRead is not null)
@@ -215,8 +216,11 @@ namespace DXClusterUtil
                         }
                         // Let's see if the client wants to send stuff
                         byte[] tmp = new byte[1];
-                        //stream.Socket.Write(tmp, 0, 0);
-                        //var xxx = stream.Read(tmp, 0, 0);
+                        tmp[0] = 0;
+                        //stream?.Socket.RemoteEndPoint;
+                        //stream?.Write(tmp, 0, 1);
+                          //var xxx = stream?.Read(tmp, 0, 0);
+
                         var xx = stream?.Socket.IsBound;
                         if (client is not null && !client.Connected)
                         {
@@ -241,7 +245,7 @@ namespace DXClusterUtil
                         */
                         //msg = "";
                         //stream.Write(bytes, 0, bytes.Length);
-                        Thread.Sleep(200);
+                        Thread.Sleep(500);
                     }
 #pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
@@ -249,17 +253,21 @@ namespace DXClusterUtil
                     {
                         //if (!WSAGetLastError() == 10053)
                         //{
-                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+                        //MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
                         //}
                         running = false;
                     }
                 }
                 stream?.Close();
+                stream = null;
                 if (client is not null && client.Connected) 
                     client?.Close();
                 connected = false;
+                listener?.Stop();
+                listener?.Dispose();
+                listener = null;
+                running = false;
             }
-            listener?.Stop();
 
         }
 

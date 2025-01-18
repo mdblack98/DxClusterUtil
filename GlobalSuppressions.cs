@@ -5,8 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:DXClusterUtil.Form1.GetStandardBrowserPath~System.String")]
-[assembly: SuppressMessage("Globalization", "CA1304:Specify CultureInfo", Justification = "<Pending>", Scope = "member", Target = "~M:DXClusterUtil.Form1.GetStandardBrowserPath~System.String")]
 [assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:DXClusterUtil.Form1.NumericUpDownCwMinimum_ValueChanged(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:DXClusterUtil.Form1.Form1_Load(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:DXClusterUtil.ClusterClient.Connect(System.String,System.Windows.Forms.RichTextBox,System.Collections.Concurrent.ConcurrentBag{System.String})~System.Boolean")]
+[assembly: SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "<Pending>", Scope = "member", Target = "~M:DXClusterUtil.ClusterClient.Get(System.Boolean@,System.Windows.Forms.RichTextBox,System.String)~System.String")]
