@@ -590,7 +590,7 @@ namespace DXClusterUtil
                 timer1.Enabled = false;
                 timer2.Enabled = false;
                 Thread.Sleep(1000);
-                clusterClient!.Dispose();
+                if (clusterClient is not null) clusterClient!.Dispose();
                 if (server is not null && server.IsConnected()) 
                     server.Stop();
                 qrz?.CacheSave(pathQRZCache);
@@ -615,7 +615,8 @@ namespace DXClusterUtil
                 //ComboBox.ObjectCollection items = comboBoxTimeIntervalForDump.Items;
                 //int myItem = Int32.Parse(items?[myIndex]);
                 //Properties.Settings.Default.TimeIntervalForDump = myItem;
-                Properties.Settings.Default.TimeIntervalForDump = comboBoxTimeIntervalForDump.SelectedIndex;
+                int tmp = comboBoxTimeIntervalForDump.SelectedIndex;
+                Properties.Settings.Default.TimeIntervalForDump = tmp;
                 Properties.Settings.Default.TimeIntervalAfter = comboBoxTimeIntervalAfter.SelectedIndex;
                 Properties.Settings.Default.CWMinimum = (int)numericUpDownCwMinimum.Value;
                 SaveWindowPosition();
@@ -1116,7 +1117,8 @@ namespace DXClusterUtil
                 checkBoxCached.Checked = Properties.Settings.Default.Cached;
                 checkBoxFiltered.Checked = Properties.Settings.Default.Filtered;
                 checkBoxUSA.Checked = Properties.Settings.Default.USA;
-                comboBoxTimeIntervalForDump.SelectedIndex = Properties.Settings.Default.TimeIntervalForDump;
+                int tmp = Properties.Settings.Default.TimeIntervalForDump;
+                comboBoxTimeIntervalForDump.SelectedIndex = tmp;
                 comboBoxTimeIntervalAfter.SelectedIndex = Properties.Settings.Default.TimeIntervalAfter;
                 numericUpDownCwMinimum.Value = Properties.Settings.Default.CWMinimum;
             }

@@ -430,13 +430,15 @@ namespace DXClusterUtil
                                 return "!!" + line[2..] + " USA";
                             }
                         }
+                        bool skimmer = swork.Contains("WPM CQ", StringComparison.InvariantCulture) || swork.Contains("BPS CQ", StringComparison.InvariantCulture) || swork.Contains("WPM BEACON", StringComparison.InvariantCulture) || swork.Contains("WPM NCDXF", StringComparison.InvariantCulture);
+
                         // Spotter is either ignored or not in the reviewed list which would mean they are new
                         if (listBoxIgnore is not null && listBoxIgnore.Items.Contains(spotterCall))
                         {
                             mutex.ReleaseMutex();
                             return "!!" + line[2..] + " Ignoring " + spotterCall + "\r\n";
                         }
-                        if (checkedListBoxReviewed is not null && !checkedListBoxReviewed.CheckedItems.Contains(spotterCall))
+                        if (skimmer && checkedListBoxReviewed is not null && !checkedListBoxReviewed.CheckedItems.Contains(spotterCall))
                         {
                             mutex.ReleaseMutex();
                             if (checkListBoxNewSpotters is not null && !checkListBoxNewSpotters.Items.Contains(spotterCall))
@@ -457,7 +459,11 @@ namespace DXClusterUtil
                             swork = line.Replace(spottedCall, specialCall + spaces, StringComparison.InvariantCulture);
                             //#pragma warning restore CA1806 // Do not ignore method results
                         }
-                        bool skimmer = swork.Contains("WPM CQ", StringComparison.InvariantCulture) || swork.Contains("BPS CQ", StringComparison.InvariantCulture) || swork.Contains("WPM BEACON", StringComparison.InvariantCulture) || swork.Contains("WPM NCDXF", StringComparison.InvariantCulture);
+                        if (!skimmer)
+                        {
+                            log4omQueue?.Add(ss);
+                            return ss;
+                        }
                         if ((line.Contains('-', StringComparison.InvariantCulture) && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))
                         {
                             filteredOut = true; // we dont' filter here if it's not a skimmer
