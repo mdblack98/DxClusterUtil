@@ -247,7 +247,8 @@ namespace DXClusterUtil
             if (client == null) { 
                 return null; 
             }
-            mutex.WaitOne(20000);
+            bool gotIt = mutex.WaitOne(20000);
+            if (!gotIt) return "Unable to get mutex...report bug\r\n";
             if (client.Connected && nStream != null && nStream.DataAvailable)
             {
                 while (clusterQueue.TryTake(out string? command))
@@ -402,7 +403,7 @@ namespace DXClusterUtil
                         else
                         {
                             spotterCall = MyRegex1().Replace(tokens2[2], "");
-                            if (spotterCall.Last() == ':') spotterCall = spotterCall.Remove(spotterCall.Length - 1);
+                            if (spotterCall.Last() == ':') spotterCall = spotterCall[..^1];
                         }
                         if (tokens2.Length < 4)
                         {
@@ -412,10 +413,12 @@ namespace DXClusterUtil
                         myCallsignExists = false;
                         spottedCall = tokens2[4];
 
+                        // allow our own spots to pass through
                         if (spotterCall == callSign)
                         {
                             ++totalLinesKept;
                             log4omQueue?.Add(line + "\r\n");
+                            mutex.ReleaseMutex();
                             return line;
                         }
                         if (filterUSA)
@@ -427,6 +430,7 @@ namespace DXClusterUtil
                             if (Regex.IsMatch(spottedCall, pattern))
                             {
                                 filteredOut = true;
+                                mutex.ReleaseMutex();
                                 return "!!" + line[2..] + " USA";
                             }
                         }
@@ -438,7 +442,7 @@ namespace DXClusterUtil
                             mutex.ReleaseMutex();
                             return "!!" + line[2..] + " Ignoring " + spotterCall + "\r\n";
                         }
-                        if (skimmer && checkedListBoxReviewed is not null && !checkedListBoxReviewed.CheckedItems.Contains(spotterCall))
+                        if (checkedListBoxReviewed is not null && !checkedListBoxReviewed.CheckedItems.Contains(spotterCall))
                         {
                             mutex.ReleaseMutex();
                             if (checkListBoxNewSpotters is not null && !checkListBoxNewSpotters.Items.Contains(spotterCall))
@@ -462,6 +466,7 @@ namespace DXClusterUtil
                         if (!skimmer)
                         {
                             log4omQueue?.Add(ss);
+                            mutex.ReleaseMutex();
                             return ss;
                         }
                         if ((line.Contains('-', StringComparison.InvariantCulture) && !ReviewedSpottersContains(spotterCall)) || (skimmer && ReviewedSpottersIsNotChecked(spotterCall)) || IgnoredSpottersContains(spotterCall))

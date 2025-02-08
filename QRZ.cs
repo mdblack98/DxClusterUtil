@@ -86,6 +86,11 @@ namespace DXClusterUtil
             }
         }
         
+        public void CacheClear()
+        {
+            cacheQRZ.Clear();
+            cacheQRZBad.Clear();
+        }
         public void CacheSave(string filename)
         {
             if (cacheQRZ != null)

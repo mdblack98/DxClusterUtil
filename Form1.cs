@@ -127,6 +127,8 @@ namespace DXClusterUtil
             tooltip.SetToolTip(labelQDepth, tip);
             tip = "CW Skimmer Minimum dB";
             tooltip.SetToolTip(numericUpDownCwMinimum, tip);
+            tip = "Ctrl-click erases QRZ good and bad cache";
+            tooltip.SetToolTip(labelQRZCache, tip);
             var reviewedSpotters = Properties.Settings.Default.ReviewedSpotters;
 
             string[] tokens = reviewedSpotters.Split(';');
@@ -211,7 +213,8 @@ namespace DXClusterUtil
             get { return labelStatusQServer.BackColor; }
             set { labelStatusQServer.BackColor = value; }
         }
-        public static Form1 Instance {
+        public static Form1 Instance
+        {
             get
             {
                 if (_instance == null)
@@ -286,7 +289,7 @@ namespace DXClusterUtil
             try
             {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
-                AddToLog(richTextBox1,"Trying to connect\n", Color.Black);
+                AddToLog(richTextBox1, "Trying to connect\n", Color.Black);
                 richTextBox1.SelectionStart = richTextBox1.TextLength;
                 richTextBox1.ScrollToCaret();
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
@@ -306,7 +309,7 @@ namespace DXClusterUtil
                 {
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
                     buttonStart.Text = "Start";
-                    AddToLog(richTextBox1,"Connect failed....hmmm...no answer from cluster server?\n", Color.Black);
+                    AddToLog(richTextBox1, "Connect failed....hmmm...no answer from cluster server?\n", Color.Black);
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
                 }
                 ReviewedSpottersSave(false);
@@ -350,7 +353,7 @@ namespace DXClusterUtil
             {
                 Disconnect();
                 buttonStart.Text = "Connect";
-                AddToLog(richTextBox1,"Disconnected\n", Color.Black);
+                AddToLog(richTextBox1, "Disconnected\n", Color.Black);
             }
             else
             {
@@ -360,7 +363,7 @@ namespace DXClusterUtil
                 {
                     buttonStart.Text = "Connect";
                     buttonStart.Enabled = true;
-                    AddToLog(richTextBox1,"Disconnected due to error\n", Color.Black);
+                    AddToLog(richTextBox1, "Disconnected due to error\n", Color.Black);
                 }
             }
         }
@@ -435,7 +438,7 @@ namespace DXClusterUtil
                         }
                         if ((filtered || ignored || tooWeak) && !checkBoxFiltered.Checked) continue;
                         else if (clusterCached && !checkBoxCached.Checked) continue;
-                        else if (ss.Contains(textBoxCallsign.Text + ":",StringComparison.InvariantCultureIgnoreCase))
+                        else if (ss.Contains(textBoxCallsign.Text + ":", StringComparison.InvariantCultureIgnoreCase))
                         {
                             AddToLog(richTextBox1, ss, myColor);
                             //log4omQueue?.Add(swork + "\r\n");
@@ -530,7 +533,7 @@ namespace DXClusterUtil
                 {
                     labelStatusQServer.BackColor = qServerBackColor;
                     labelStatusQServer.Text = "Client Connected";
-                    
+
                 }
                 else
                 {
@@ -576,7 +579,7 @@ namespace DXClusterUtil
                 {
                     buttonStart.Enabled = true;
                     buttonStart.Text = "Start";
-                    AddToLog(richTextBox1,"Disconnected due to error\n", Color.Black);
+                    AddToLog(richTextBox1, "Disconnected due to error\n", Color.Black);
                 }
                 startupConnect = false; // don't do it again
             }
@@ -584,14 +587,15 @@ namespace DXClusterUtil
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try {
+            try
+            {
                 timer2.Stop();
                 timer1.Stop();
                 timer1.Enabled = false;
                 timer2.Enabled = false;
                 Thread.Sleep(1000);
                 if (clusterClient is not null) clusterClient!.Dispose();
-                if (server is not null && server.IsConnected()) 
+                if (server is not null && server.IsConnected())
                     server.Stop();
                 qrz?.CacheSave(pathQRZCache);
                 ReviewedSpottersSave(true);
@@ -932,7 +936,7 @@ namespace DXClusterUtil
                 Debug = !Debug;
                 if (clusterClient is not null) clusterClient.debug = Debug;
                 if (qrz is not null) qrz.debug = Debug;
-                AddToLog(richTextBox1,"Debug = " + Debug + "\n", Color.Black);
+                AddToLog(richTextBox1, "Debug = " + Debug + "\n", Color.Black);
             }
         }
 
@@ -1203,6 +1207,17 @@ namespace DXClusterUtil
 
         [GeneratedRegex(@"CW\s+(\+?\d+)\s+dB")]
         private static partial Regex MyRegexCW();
+
+        private void LabelQRZCache_Click(object sender, EventArgs e)
+        {
+            bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
+            //if (ctrlKey)
+            {
+                qrz!.CacheClear();
+                badCalls = 0;
+            }
+            labelQRZCache.Text = "" + qrz?.cacheQRZ.Count + "/" + badCalls;
+        }
     }
     public static class RichTextBoxExtensions
     {

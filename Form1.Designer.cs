@@ -252,6 +252,7 @@
             labelQRZCache.Size = new System.Drawing.Size(66, 15);
             labelQRZCache.TabIndex = 21;
             labelQRZCache.Text = "QRZ Cache";
+            labelQRZCache.Click += LabelQRZCache_Click;
             // 
             // textBoxPassword
             // 
@@ -417,7 +418,7 @@
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "Form1";
-            Text = "DxClusterUtil 250126 by W9MDB";
+            Text = "DxClusterUtil 250208 by W9MDB";
             Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
