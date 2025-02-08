@@ -529,10 +529,13 @@ namespace DXClusterUtil
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                if (server != null && server.IsConnected())
+                if (server != null && server.IsConnected() && server.stream is not null)
                 {
-                    labelStatusQServer.BackColor = qServerBackColor;
-                    labelStatusQServer.Text = "Client Connected";
+                    if (labelStatusQServer.Text != "Client Connected")
+                    {
+                        labelStatusQServer.BackColor = qServerBackColor;
+                        labelStatusQServer.Text = "Client Connected";
+                    }
 
                 }
                 else
@@ -1210,7 +1213,7 @@ namespace DXClusterUtil
 
         private void LabelQRZCache_Click(object sender, EventArgs e)
         {
-            bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
+            //bool ctrlKey = ModifierKeys.HasFlag(Keys.Control);
             //if (ctrlKey)
             {
                 qrz!.CacheClear();

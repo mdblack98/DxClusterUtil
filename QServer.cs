@@ -20,7 +20,7 @@ namespace DXClusterUtil
         bool stop = false;
         bool connected;
         private TcpListener? listener;
-        NetworkStream? stream;
+        public NetworkStream? stream;
         Thread? myThreadID;
 
         public int TimeIntervalAfter { get; set; } // in seconds
@@ -215,11 +215,10 @@ namespace DXClusterUtil
                             //connected = true;
                         }
                         // Let's see if the client wants to send stuff
-                        byte[] tmp = new byte[1];
-                        tmp[0] = 0;
+                        byte[] tmp = [0];
                         //stream?.Socket.RemoteEndPoint;
                         //stream?.Write(tmp, 0, 1);
-                          //var xxx = stream?.Read(tmp, 0, 0);
+                        //var xxx = stream?.Read(tmp, 0, 0);
 
                         var xx = stream?.Socket.IsBound;
                         if (client is not null && !client.Connected)
@@ -264,8 +263,8 @@ namespace DXClusterUtil
                     client?.Close();
                 connected = false;
                 listener?.Stop();
-                listener?.Dispose();
-                listener = null;
+                //listener?.Dispose();
+                //listener = null;
                 running = false;
             }
 
